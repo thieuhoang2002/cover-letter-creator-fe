@@ -4,7 +4,7 @@ import { Outlet } from 'react-router-dom';
 function Template() {
     return (
         <div>
-            <h1>Template Page</h1>
+            {/* <h1>Template Page</h1> */}
             {/* Phần giao diện chung của Template Page */}
 
             {/* Nơi hiển thị các component con (ListTemplate) */}

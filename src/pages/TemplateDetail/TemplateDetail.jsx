@@ -1,35 +1,61 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { Container, Card, CardContent, Typography, Button, Box, CircularProgress } from '@mui/material';
+import { getTemplateById } from '../../apis/template'; // Import API call
 
 function TemplateDetail() {
     const { templateId } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
-    const template = location.state?.template; // Lấy dữ liệu từ state được truyền qua Link
 
-    if (!template) {
-        return (
-            <div>
-                <h1>Template Detail</h1>
-                <p>Không có dữ liệu template được truyền từ trang trước. Template ID: {templateId}</p>
-                {/* Bạn có thể thêm logic để load template dựa trên ID nếu cần */}
-            </div>
-        );
-    }
+    const [template, setTemplate] = useState(location.state?.template || null);
+    const [loading, setLoading] = useState(!template);
+    const [error, setError] = useState(null);
+
+    // Nếu không có template từ location.state, gọi API lấy dữ liệu theo ID
+    useEffect(() => {
+        if (!template) {
+            getTemplateById(templateId)
+                .then((data) => {
+                    setTemplate(data);
+                    setLoading(false);
+                })
+                .catch((err) => {
+                    console.error('Lỗi khi tải template:', err);
+                    setError('Không thể tải dữ liệu mẫu đơn.');
+                    setLoading(false);
+                });
+        }
+    }, [template, templateId]);
 
     const handleEdit = () => {
-        // Chuyển hướng sang Editor và truyền template.content qua state
-        navigate('/editor', { state: { content: template.content } });
+        navigate('/editor', { state: { template: template } });
     };
 
     return (
-        <div>
-            <h1>Template Detail</h1>
-            <p>ID của template: {template.id}</p>
-            <p>Tên template: {template.name}</p>
-            <div dangerouslySetInnerHTML={{ __html: template.content }}></div>
-            <button onClick={handleEdit}>Chỉnh sửa</button>
-        </div>
+        <Container maxWidth="md">
+            <Card sx={{ mt: 4, p: 3 }}>
+                <CardContent>
+                    {loading ? (
+                        <CircularProgress />
+                    ) : error ? (
+                        <Typography color="error">{error}</Typography>
+                    ) : (
+                        <>
+                            <Typography variant="h4" component="div" gutterBottom>
+                                {template.name}
+                            </Typography>
+                            <Box sx={{ border: '1px solid #ddd', p: 2, mt: 2, borderRadius: '5px', backgroundColor: '#f9f9f9' }}>
+                                <div dangerouslySetInnerHTML={{ __html: template.content }}></div>
+                            </Box>
+                            <Button variant="contained" color="primary" sx={{ mt: 3 }} onClick={handleEdit}>
+                                Chỉnh sửa
+                            </Button>
+                        </>
+                    )}
+                </CardContent>
+            </Card>
+        </Container>
     );
 }
 
