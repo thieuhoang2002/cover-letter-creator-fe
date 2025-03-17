@@ -3,10 +3,15 @@ import axios from 'axios';
 // Định nghĩa URL cơ sở của API backend
 const BASE_URL = 'http://localhost:8080/api/templates'; // Thay đổi nếu backend chạy trên cổng hoặc domain khác
 
+const getAuthHeader = () => {
+    const token = localStorage.getItem('token');
+    return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 // Lấy danh sách tất cả các template
 export const getAllTemplates = async () => {
     try {
-        const response = await axios.get(BASE_URL);
+        const response = await axios.get(BASE_URL, { headers: getAuthHeader() });
         return response.data;
     } catch (error) {
         console.error('Lỗi khi lấy danh sách template:', error);
@@ -17,7 +22,7 @@ export const getAllTemplates = async () => {
 // Lấy thông tin một template theo ID
 export const getTemplateById = async (id) => {
     try {
-        const response = await axios.get(`${BASE_URL}/${id}`);
+        const response = await axios.get(`${BASE_URL}/${id}`, { headers: getAuthHeader() });
         return response.data;
     } catch (error) {
         console.error(`Lỗi khi lấy template với id ${id}:`, error);
@@ -28,7 +33,7 @@ export const getTemplateById = async (id) => {
 // Tạo một template mới
 export const createTemplate = async (template) => {
     try {
-        const response = await axios.post(BASE_URL, template);
+        const response = await axios.post(BASE_URL, template, { headers: getAuthHeader() });
         return response.data;
     } catch (error) {
         console.error('Lỗi khi tạo template:', error);
@@ -39,7 +44,7 @@ export const createTemplate = async (template) => {
 // Cập nhật một template theo ID
 export const updateTemplate = async (id, template) => {
     try {
-        const response = await axios.put(`${BASE_URL}/${id}`, template);
+        const response = await axios.put(`${BASE_URL}/${id}`, template, { headers: getAuthHeader() });
         return response.data;
     } catch (error) {
         console.error(`Lỗi khi cập nhật template với id ${id}:`, error);
@@ -50,7 +55,7 @@ export const updateTemplate = async (id, template) => {
 // Xóa một template theo ID
 export const deleteTemplate = async (id) => {
     try {
-        await axios.delete(`${BASE_URL}/${id}`);
+        await axios.delete(`${BASE_URL}/${id}`, { headers: getAuthHeader() });
     } catch (error) {
         console.error(`Lỗi khi xóa template với id ${id}:`, error);
         throw error;

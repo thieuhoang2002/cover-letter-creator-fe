@@ -12,14 +12,15 @@ import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
+import { useAuth } from '../pages/Auth/AuthContext';
 
 const pages = [
     { name: 'Trang chủ', path: '/' },
-    { name: 'Mẫu Đơn Xin Việc', path: '/template/all' }
+    { name: 'Mẫu Đơn Xin Việc', path: '/templates' }
 ];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
-function Navbar({ isAuthenticated }) {
+function Navbar() {
+    const { isAuthenticated, role, logout } = useAuth();
     const [anchorElNav, setAnchorElNav] = React.useState(null);
     const [anchorElUser, setAnchorElUser] = React.useState(null);
 
@@ -35,6 +36,25 @@ function Navbar({ isAuthenticated }) {
     const handleCloseUserMenu = () => {
         setAnchorElUser(null);
     };
+
+    const handleLogout = () => {
+        logout();
+        handleCloseUserMenu();
+    };
+
+    const userSettings = [
+        { name: 'Profile', path: '/profile' },
+        { name: 'Account', path: '/account' },
+        { name: 'Logout', action: handleLogout }
+    ];
+
+    const adminSettings = [
+        { name: 'Profile', path: '/profile' },
+        { name: 'Admin Dashboard', path: '/admin' },
+        { name: 'Logout', action: handleLogout }
+    ];
+
+    const settings = role === 'admin' ? adminSettings : userSettings;
 
     return (
         <AppBar position="static">
@@ -124,14 +144,19 @@ function Navbar({ isAuthenticated }) {
                                     onClose={handleCloseUserMenu}
                                 >
                                     {settings.map((setting) => (
-                                        <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                                            <Typography textAlign="center">{setting}</Typography>
+                                        <MenuItem
+                                            key={setting.name}
+                                            onClick={setting.action || handleCloseUserMenu}
+                                            component={setting.path ? Link : 'div'}
+                                            to={setting.path}
+                                        >
+                                            <Typography textAlign="center">{setting.name}</Typography>
                                         </MenuItem>
                                     ))}
                                 </Menu>
                             </>
                         ) : (
-                            <Button component={Link} to="/auth" sx={{ my: 2, color: 'white' }}>
+                            <Button component={Link} to="/login" sx={{ my: 2, color: 'white' }}>
                                 Đăng nhập
                             </Button>
                         )}
