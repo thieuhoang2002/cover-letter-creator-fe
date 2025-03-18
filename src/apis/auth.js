@@ -29,11 +29,17 @@ export const logoutUser = () => {
     localStorage.removeItem('token');
 };
 
+// auth.js
 export const getRoleFromToken = () => {
     const token = localStorage.getItem('token');
+    console.log('Token from localStorage:', token); // Log để kiểm tra
     if (!token) return null;
-    const decoded = jwtDecode(token);
-    return decoded.role; // Lấy role từ token
+    try {
+        const decoded = jwtDecode(token);
+        return decoded.role;
+    } catch (error) {
+        console.error('Error decoding token:', error.message);
+        return null;
+    }
 };
-
 // Cài đặt jwt-decode: npm install jwt-decode

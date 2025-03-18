@@ -7,6 +7,8 @@ import {
     Container, TextField, Button, Typography, Alert, Box, Paper, IconButton, InputAdornment
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import GoogleLoginButton from '../../components/GoogleLoginButton';
+import GithubLoginButton from '../../components/GithubLoginButton';
 
 export default function Login() {
     const { login } = useAuth();
@@ -85,6 +87,14 @@ export default function Login() {
                     <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
                         Đăng nhập
                     </Button>
+                    <div style={{ marginTop: '20px' }}>
+                        <GoogleLoginButton />
+                    </div>
+
+                    <div style={{ marginTop: '20px' }}>
+                        <GithubLoginButton />
+                    </div>
+
                 </form>
 
                 <Box textAlign="center" mt={2}>

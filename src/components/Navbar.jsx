@@ -16,11 +16,11 @@ import { useAuth } from '../pages/Auth/AuthContext';
 
 const pages = [
     { name: 'Trang chủ', path: '/' },
-    { name: 'Mẫu Đơn Xin Việc', path: '/templates' }
+    { name: 'Mẫu Đơn Xin Việc', path: '/template/all' }
 ];
 
 function Navbar() {
-    const { isAuthenticated, role, logout } = useAuth();
+    const { isAuthenticated, role, avatarUrl, logout } = useAuth();
     const [anchorElNav, setAnchorElNav] = React.useState(null);
     const [anchorElUser, setAnchorElUser] = React.useState(null);
 
@@ -124,7 +124,7 @@ function Navbar() {
                             <>
                                 <Tooltip title="Open settings">
                                     <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                        <Avatar alt="User Avatar" src="/static/images/avatar/2.jpg" />
+                                        <Avatar alt="User Avatar" src={avatarUrl || '/static/images/avatar/2.jpg'} />
                                     </IconButton>
                                 </Tooltip>
                                 <Menu
