@@ -3,15 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { loginUser, getRoleFromToken } from '../../apis/auth';
 import { useAuth } from './AuthContext';
 import { Link } from 'react-router-dom';
+import {
+    Container, TextField, Button, Typography, Alert, Box, Paper, IconButton, InputAdornment
+} from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
-function Login() {
+export default function Login() {
     const { login } = useAuth();
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-    });
+    const [formData, setFormData] = useState({ email: '', password: '' });
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -23,19 +25,13 @@ function Login() {
         try {
             const token = await loginUser(formData);
             login(token);
-            console.log(token);
-            setSuccess('Đăng nhập thành công');
+            setSuccess('Đăng nhập thành công!');
             setError(null);
 
-            // Điều hướng dựa trên role
+            // Điều hướng dựa trên vai trò
             const role = getRoleFromToken();
-            console.log(role);
             setTimeout(() => {
-                if (role === 'admin') {
-                    navigate('/admin');
-                } else {
-                    navigate('/');
-                }
+                navigate(role === 'admin' ? '/admin' : '/');
             }, 2000);
         } catch (err) {
             setError('Đăng nhập thất bại. Vui lòng kiểm tra email hoặc mật khẩu.');
@@ -44,36 +40,59 @@ function Login() {
     };
 
     return (
-        <div>
-            <h1>Đăng nhập</h1>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            {success && <p style={{ color: 'green' }}>{success}</p>}
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Email:</label>
-                    <input
+        <Container maxWidth="sm">
+            <Paper elevation={3} sx={{ p: 4, mt: 6, borderRadius: 2 }}>
+                <Typography variant="h4" textAlign="center" gutterBottom>
+                    Đăng nhập
+                </Typography>
+
+                {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+
+                <form onSubmit={handleSubmit}>
+                    <TextField
+                        label="Email"
                         type="email"
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
+                        fullWidth
                         required
+                        margin="normal"
+                        variant="outlined"
                     />
-                </div>
-                <div>
-                    <label>Mật khẩu:</label>
-                    <input
-                        type="password"
+                    <TextField
+                        label="Mật khẩu"
+                        type={showPassword ? "text" : "password"}
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
+                        fullWidth
                         required
+                        margin="normal"
+                        variant="outlined"
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                        }}
                     />
-                </div>
-                <button type="submit">Đăng nhập</button>
-                Bạn chưa có tài khoản? <Link to="/register">Đăng ký</Link>
-            </form>
-        </div>
+
+                    <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
+                        Đăng nhập
+                    </Button>
+                </form>
+
+                <Box textAlign="center" mt={2}>
+                    <Typography variant="body2">
+                        Bạn chưa có tài khoản? <Link to="/register">Đăng ký</Link>
+                    </Typography>
+                </Box>
+            </Paper>
+        </Container>
     );
 }
-
-export default Login;
