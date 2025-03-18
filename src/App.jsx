@@ -12,6 +12,7 @@ import EditorComponent from './pages/Editor/Editor';
 import Navbar from './components/Navbar';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import AuthCallback from './pages/Auth/AuthCallback';
+import AdminHomePage from './pages/Admin/AdminHomePage';
 
 const gooleClientId = import.meta.env.VITE_CLIENT_ID;
 
@@ -26,7 +27,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/auth-callback" element={<AuthCallback />} />
-            <Route path="/admin" element={<div>Trang Admin</div>} /> {/* Trang mẫu cho admin */}
+            <Route path="/admin" element={<AdminHomePage />} />
             <Route path="/template" element={<Template />}>
               <Route path="all" element={<ListTemplate />} />
               <Route path=":templateId" element={<TemplateDetail />} />

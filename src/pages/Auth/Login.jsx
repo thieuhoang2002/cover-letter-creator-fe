@@ -43,7 +43,7 @@ export default function Login() {
 
     return (
         <Container maxWidth="sm">
-            <Paper elevation={3} sx={{ p: 4, mt: 6, borderRadius: 2 }}>
+            <Paper elevation={3} sx={{ p: 4, mt: 6, borderRadius: 2, marginTop: '64px', padding: '20px' }}>
                 <Typography variant="h4" textAlign="center" gutterBottom>
                     Đăng nhập
                 </Typography>

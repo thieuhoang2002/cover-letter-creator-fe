@@ -34,7 +34,7 @@ function TemplateDetail() {
 
     return (
         <Container maxWidth="md">
-            <Card sx={{ mt: 4, p: 3 }}>
+            <Card sx={{ mt: 4, p: 3, marginTop: '64px', padding: '20px' }}>
                 <CardContent>
                     {loading ? (
                         <CircularProgress />

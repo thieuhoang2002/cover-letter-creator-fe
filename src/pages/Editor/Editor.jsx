@@ -59,7 +59,7 @@ export default function EditorComponent() {
 
     return (
         <Container maxWidth="md">
-            <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
+            <Paper elevation={3} sx={{ p: 3, mt: 4, marginTop: '64px', padding: '20px' }}>
                 <Typography variant="h5" gutterBottom>
                     Đang chỉnh sửa: {template?.name || "Đang tải..."}
                 </Typography>

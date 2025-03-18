@@ -7,7 +7,7 @@ import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 
 function Home() {
     return (
-        <Container maxWidth="lg" sx={{ textAlign: 'center', py: 5 }}>
+        <Container maxWidth="lg" sx={{ textAlign: 'center', py: 5, marginTop: '64px', padding: '20px' }}>
             <Typography variant="h3" fontWeight="bold" gutterBottom>
                 Hỗ Trợ Tạo Đơn Xin Việc
             </Typography>

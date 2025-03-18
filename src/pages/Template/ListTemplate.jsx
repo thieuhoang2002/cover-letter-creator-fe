@@ -32,7 +32,7 @@ function ListTemplate() {
     }
 
     return (
-        <Container sx={{ mt: 4 }}>
+        <Container sx={{ mt: 4, marginTop: '64px', padding: '20px' }}>
             <Typography variant="h4" gutterBottom>Danh Sách Mẫu Đơn</Typography>
             <Grid container spacing={3}>
                 {templates.map((item) => (
