@@ -13,6 +13,7 @@ import Navbar from './components/Navbar';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import AuthCallback from './pages/Auth/AuthCallback';
 import AdminHomePage from './pages/Admin/AdminHomePage';
+import PrivateRoute from './pages/Auth/PrivateRoute';
 
 const gooleClientId = import.meta.env.VITE_CLIENT_ID;
 
@@ -27,8 +28,13 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/auth-callback" element={<AuthCallback />} />
-            <Route path="/admin" element={<AdminHomePage />} />
-            <Route path="/template" element={<Template />}>
+            {/* Route admin - Chỉ cho phép role 'admin' */}
+            <Route path="/admin" element={<PrivateRoute allowedRoles={['admin']} />}>
+              <Route index element={<AdminHomePage />} />
+            </Route>
+            {/* Route template - Chỉ cần đăng nhập, không cần role cụ thể */}
+            <Route path="/template" element={<PrivateRoute />}>
+              <Route index element={<Template />} />
               <Route path="all" element={<ListTemplate />} />
               <Route path=":templateId" element={<TemplateDetail />} />
             </Route>

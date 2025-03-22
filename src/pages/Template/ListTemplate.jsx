@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllTemplates } from '../../apis/template';
+import { getTemplatesActive } from '../../apis/template';
 import { Container, Grid, Card, CardContent, CardMedia, Typography, Button, CircularProgress, Alert } from '@mui/material';
 
 function ListTemplate() {
@@ -11,7 +11,7 @@ function ListTemplate() {
     useEffect(() => {
         const fetchTemplates = async () => {
             try {
-                const data = await getAllTemplates();
+                const data = await getTemplatesActive();
                 setTemplates(data);
                 setLoading(false);
             } catch (err) {

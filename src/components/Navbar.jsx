@@ -43,8 +43,7 @@ function Navbar() {
     };
 
     const userSettings = [
-        { name: 'Profile', path: '/profile' },
-        { name: 'Account', path: '/account' },
+        { name: 'Setting', path: '/setting' },
         { name: 'Logout', action: handleLogout }
     ];
 

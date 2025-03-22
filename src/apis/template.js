@@ -19,6 +19,17 @@ export const getAllTemplates = async () => {
     }
 };
 
+// Lấy danh sách tất cả các template active
+export const getTemplatesActive = async () => {
+    try {
+        const response = await axios.get(`${BASE_URL}/all`, { headers: getAuthHeader() });
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi lấy danh sách template:', error);
+        throw error;
+    }
+};
+
 // Lấy thông tin một template theo ID
 export const getTemplateById = async (id) => {
     try {
