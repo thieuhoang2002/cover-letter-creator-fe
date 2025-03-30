@@ -43,13 +43,19 @@ function Navbar() {
     };
 
     const userSettings = [
-        { name: 'Setting', path: '/setting' },
-        { name: 'Logout', action: handleLogout }
+        { name: 'Thông tin cá nhân', path: '/information' },
+        { name: 'Mẫu đơn yêu thích', path: '/my-love-templates' },
+        { name: 'Tệp đã xuất', path: '/pdf-exported' },
+        { name: 'Đổi mật khẩu', path: '/change-password' },
+        { name: 'Đăng xuất', action: handleLogout }
     ];
 
     const adminSettings = [
-        { name: 'Admin Dashboard', path: '/admin' },
-        { name: 'Logout', action: handleLogout }
+        { name: 'Trang quản trị', path: '/admin' },
+        { name: 'Mẫu đơn yêu thích', path: '/my-love-templates' },
+        { name: 'Tệp đã xuất', path: '/pdf-exported' },
+        { name: 'Đổi mật khẩu', path: '/change-password' },
+        { name: 'Đăng xuất', action: handleLogout }
     ];
 
     const settings = role === 'admin' ? adminSettings : userSettings;

@@ -25,13 +25,14 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUserProfile = async (token) => {
         try {
-            const response = await fetch('http://localhost:8080/api/users/me', {
+            const response = await fetch('http://localhost:8080/api/users/profile/me', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
             });
             if (response.ok) {
                 const user = await response.json();
+                console.log('User profile:', user); // Log để kiểm tra
                 setAvatarUrl(user.avatarUrl);
                 console.log('Avatar URL from API:', user.avatarUrl);
             }

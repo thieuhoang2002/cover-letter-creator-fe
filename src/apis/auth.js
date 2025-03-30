@@ -5,7 +5,7 @@ const BASE_URL = 'http://localhost:8080/api/users';
 
 export const registerUser = async (userData) => {
     try {
-        const response = await axios.post(`${BASE_URL}/register`, userData);
+        const response = await axios.post(`${BASE_URL}/profile/register`, userData);
         return response.data;
     } catch (error) {
         console.error('Lỗi khi đăng ký:', error);

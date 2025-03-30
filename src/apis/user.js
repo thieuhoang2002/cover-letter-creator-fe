@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8080/api/users";
+const BASE_URL = "http://localhost:8080/api/users/profile";
 
 const getAuthHeader = () => {
     const token = localStorage.getItem("token");
@@ -23,16 +23,6 @@ export const getUserById = async (id) => {
         return response.data;
     } catch (error) {
         console.error(`Lỗi khi lấy thông tin người dùng với ID ${id}:`, error);
-        throw error;
-    }
-};
-
-export const registerUser = async (userData) => {
-    try {
-        const response = await axios.post(`${BASE_URL}/register`, userData);
-        return response.data;
-    } catch (error) {
-        console.error("Lỗi khi đăng ký người dùng:", error);
         throw error;
     }
 };

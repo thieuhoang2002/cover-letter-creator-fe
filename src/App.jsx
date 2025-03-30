@@ -28,17 +28,19 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/auth-callback" element={<AuthCallback />} />
+
             {/* Route admin - Chỉ cho phép role 'admin' */}
             <Route path="/admin" element={<PrivateRoute allowedRoles={['admin']} />}>
               <Route index element={<AdminHomePage />} />
             </Route>
-            {/* Route template - Chỉ cần đăng nhập, không cần role cụ thể */}
-            <Route path="/template" element={<PrivateRoute />}>
-              <Route index element={<Template />} />
-              <Route path="all" element={<ListTemplate />} />
-              <Route path=":templateId" element={<TemplateDetail />} />
+
+            <Route path="/template/all" element={<ListTemplate />} />
+            <Route path="/template/:templateId" element={<TemplateDetail />} />
+
+            {/* Route editor - Chỉ cần đăng nhập, không cần role cụ thể */}
+            <Route path="/editor" element={<PrivateRoute />}>
+              <Route index element={<EditorComponent />} />
             </Route>
-            <Route path="/editor" element={<EditorComponent />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
