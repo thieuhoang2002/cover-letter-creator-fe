@@ -38,8 +38,9 @@ function Navbar() {
     };
 
     const handleLogout = () => {
-        logout();
-        handleCloseUserMenu();
+        logout(); // Gọi hàm logout từ context
+        handleCloseUserMenu(); // Đóng menu người dùng
+        window.location.href = '/'; // Reload và chuyển hướng đến trang chủ
     };
 
     const userSettings = [

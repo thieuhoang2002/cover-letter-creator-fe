@@ -55,3 +55,17 @@ export const getCurrentUser = async () => {
         throw error;
     }
 };
+
+export const toggleFavoriteTemplate = async (templateId) => {
+    try {
+        const response = await axios.post(
+            `${BASE_URL}/me/love-template/${templateId}`,
+            {}, // Body rỗng vì API không yêu cầu dữ liệu trong body
+            { headers: getAuthHeader() }
+        );
+        return response.data; // Trả về phản hồi từ API
+    } catch (error) {
+        console.error(`Lỗi khi toggle yêu thích template với ID ${templateId}:`, error);
+        throw error;
+    }
+};

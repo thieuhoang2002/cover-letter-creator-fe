@@ -7,6 +7,8 @@ import {
     Container, TextField, Button, Typography, Alert, Box, Paper, IconButton, InputAdornment
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
 import GoogleLoginButton from '../../components/GoogleLoginButton';
 import GithubLoginButton from '../../components/GithubLoginButton';
 
@@ -16,6 +18,7 @@ export default function Login() {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false); // Trạng thái loading
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -24,6 +27,7 @@ export default function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true); // Bật trạng thái loading
         try {
             const token = await loginUser(formData);
             login(token);
@@ -32,12 +36,15 @@ export default function Login() {
 
             // Điều hướng dựa trên vai trò
             const role = getRoleFromToken();
-            setTimeout(() => {
-                navigate(role === 'admin' ? '/admin' : '/');
-            }, 2000);
+            // setTimeout(() => {
+            //     navigate(role === 'admin' ? '/admin' : '/');
+            // }, 2000);
+            navigate(role === 'admin' ? '/admin' : '/');
         } catch (err) {
             setError('Đăng nhập thất bại. Vui lòng kiểm tra email hoặc mật khẩu.');
             setSuccess(null);
+        } finally {
+            setLoading(false); // Tắt trạng thái loading nếu có lỗi
         }
     };
 
@@ -103,6 +110,13 @@ export default function Login() {
                     </Typography>
                 </Box>
             </Paper>
+            {/* Backdrop hiển thị khi loading */}
+            <Backdrop
+                sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                open={loading}
+            >
+                <CircularProgress color="inherit" />
+            </Backdrop>
         </Container>
     );
 }

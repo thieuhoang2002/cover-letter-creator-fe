@@ -3,6 +3,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import { useLocation } from 'react-router-dom';
 import axios from "axios";
 import { Container, Typography, Button, Paper, CircularProgress, Box } from "@mui/material";
+import { generatePdf } from "../../apis/pdf"; // Import API tạo PDF
 
 export default function EditorComponent() {
     const apiKey = import.meta.env.VITE_API_KEY_TINY;
@@ -31,28 +32,14 @@ export default function EditorComponent() {
 
     const exportPDF = async () => {
         if (editorRef.current) {
-            const contentHtml = editorRef.current.getContent();
-            console.log("HTML gửi đi:", contentHtml);
+            const htmlContent = editorRef.current.getContent();
+            console.log("HTML gửi đi:", htmlContent);
 
             try {
-                const response = await axios.post(
-                    "http://localhost:8080/api/pdf/generate",
-                    contentHtml,
-                    {
-                        headers: { "Content-Type": "text/html" },
-                        responseType: "blob",
-                    }
-                );
-
-                const url = window.URL.createObjectURL(new Blob([response.data]));
-                const link = document.createElement("a");
-                link.href = url;
-                link.setAttribute("download", "don_xin_viec.pdf");
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
+                await generatePdf(htmlContent);
+                console.log('PDF đã được tạo và tải xuống');
             } catch (error) {
-                console.error("Lỗi khi tạo PDF:", error);
+                console.error('Lỗi khi tạo PDF:', error);
             }
         }
     };

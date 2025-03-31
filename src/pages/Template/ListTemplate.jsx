@@ -1,22 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getTemplatesActive } from '../../apis/template';
-import { Container, Grid, Card, CardContent, CardMedia, Typography, Button, CircularProgress, Alert, IconButton } from '@mui/material';
+import { Container, Grid, Card, CardContent, CardMedia, Typography, Button, CircularProgress, Alert, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import { useNavigate } from 'react-router-dom';
+import { getCurrentUser, toggleFavoriteTemplate } from '../../apis/user';
 
 function ListTemplate() {
-    const [templates, setTemplates] = useState([]); // Khởi tạo mặc định là mảng rỗng
+    const navigate = useNavigate();
+
+    const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [favorites, setFavorites] = useState(new Set());
+    const [openDialog, setOpenDialog] = useState(false); // Trạng thái mở/đóng Dialog
+    const [selectedTemplateId, setSelectedTemplateId] = useState(null); // Lưu templateId khi mở Dialog
 
     useEffect(() => {
         const fetchTemplates = async () => {
             try {
                 const data = await getTemplatesActive();
-                console.log('Templates:', data); // Kiểm tra dữ liệu nhận được
-                // Đảm bảo data là mảng, nếu không thì gán mảng rỗng
                 setTemplates(Array.isArray(data) ? data : []);
                 setLoading(false);
 
@@ -33,16 +37,9 @@ function ListTemplate() {
 
     const handleToggleFavorite = async (templateId) => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:8080/api/users/profile/me/love-template/${templateId}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (response.ok) {
+            const response = await toggleFavoriteTemplate(templateId);
+            console.log(response); // Log phản hồi từ API (nếu cần)
+            if (response === "Favorite toggled successfully") {
                 setFavorites(prev => {
                     const newFavorites = new Set(prev);
                     if (newFavorites.has(templateId)) {
@@ -60,6 +57,15 @@ function ListTemplate() {
         }
     };
 
+    const handleDialogClose = () => {
+        setOpenDialog(false);
+    };
+
+    const handleLoginRedirect = () => {
+        setOpenDialog(false);
+        navigate('/login'); // Chuyển hướng đến trang đăng nhập
+    };
+
     if (loading) {
         return <Container sx={{ textAlign: 'center', mt: 4 }}><CircularProgress /></Container>;
     }
@@ -72,7 +78,7 @@ function ListTemplate() {
         <Container sx={{ mt: 4, marginTop: '64px', padding: '20px' }}>
             <Typography variant="h4" gutterBottom>Danh Sách Mẫu Đơn</Typography>
             <Grid container spacing={3}>
-                {(Array.isArray(templates) ? templates : []).map((item) => ( // Thêm kiểm tra ở đây
+                {(Array.isArray(templates) ? templates : []).map((item) => (
                     <Grid item xs={12} sm={6} md={4} key={item.id}>
                         <Card>
                             <CardMedia
@@ -109,19 +115,34 @@ function ListTemplate() {
                     </Grid>
                 ))}
             </Grid>
+
+            {/* Dialog thông báo */}
+            <Dialog
+                open={openDialog}
+                onClose={handleDialogClose}
+            >
+                <DialogTitle>Thông Báo</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Bạn cần đăng nhập để yêu thích mẫu này. Bạn có muốn đăng nhập không?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleDialogClose} color="secondary">
+                        Hủy
+                    </Button>
+                    <Button onClick={handleLoginRedirect} color="primary" autoFocus>
+                        Đăng Nhập
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Container>
     );
 }
 
 async function fetchUserFavorites() {
     try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:8080/api/users/profile/me', {
-            headers: { 'Authorization': `Bearer ${token}` },
-        });
-        if (!response.ok) throw new Error('Failed to fetch user favorites');
-        const user = await response.json();
-        console.log('User favorites:', user.lovedTemplates); // Log để kiểm tra
+        const user = await getCurrentUser(); // Gọi hàm getCurrentUser
         return Array.isArray(user.lovedTemplates) ? user.lovedTemplates : [];
     } catch (error) {
         console.error('Error fetching favorites:', error);
