@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { Editor } from "@tinymce/tinymce-react";
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { Container, Typography, Button, Paper, CircularProgress, Box } from "@mui/material";
 import { generatePdf } from "../../apis/pdf"; // Import API tạo PDF
@@ -9,6 +9,7 @@ export default function EditorComponent() {
     const apiKey = import.meta.env.VITE_API_KEY_TINY;
     const editorRef = useRef(null);
     const location = useLocation();
+    const navigate = useNavigate(); // Khởi tạo navigate
     const template = location.state?.template;
     const passedContent = location.state?.template.content;
     const [content, setContent] = useState(passedContent || "<p>Đang tải nội dung...</p>");
@@ -17,16 +18,8 @@ export default function EditorComponent() {
 
     useEffect(() => {
         if (!passedContent) {
-            fetch("/donxinviec_dev.json")
-                .then((res) => res.json())
-                .then((data) => {
-                    setContent(data.content);
-                    setLoading(false);
-                })
-                .catch((err) => {
-                    console.error("Lỗi tải JSON:", err);
-                    setLoading(false);
-                });
+            console.warn("Không có passedContent, chuyển hướng về /template/all");
+            navigate("/template/all"); // Chuyển hướng về trang /template/all
         }
     }, [passedContent]);
 
