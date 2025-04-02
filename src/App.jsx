@@ -9,6 +9,8 @@ import Template from './pages/Template/Template';
 import TemplateDetail from './pages/TemplateDetail/TemplateDetail';
 import ListTemplate from './pages/Template/ListTemplate';
 import EditorComponent from './pages/Editor/Editor';
+import PdfExported from './pages/PdfExported/PdfExported';
+import LoveTemplate from './pages/LoveTemplate/LoveTemplate';
 import Navbar from './components/Navbar';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import AuthCallback from './pages/Auth/AuthCallback';
@@ -41,6 +43,10 @@ function App() {
             <Route path="/editor" element={<PrivateRoute />}>
               <Route index element={<EditorComponent />} />
             </Route>
+
+            <Route path="/pdf-exported" element={<PdfExported />} />
+
+            <Route path="/my-love-templates" element={<LoveTemplate />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

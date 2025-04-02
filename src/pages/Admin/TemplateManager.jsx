@@ -34,7 +34,7 @@ function TemplateManager() {
             const data = await getAllTemplates();
             setTemplates(data);
         } catch (error) {
-            console.error("Lỗi khi tải danh sách template:", error);
+            console.error("Lỗi khi tải danh sách mẫu đơn:", error);
         } finally {
             setLoading(false);
         }
@@ -67,33 +67,33 @@ function TemplateManager() {
         try {
             if (isEdit && selectedTemplate) {
                 await updateTemplate(selectedTemplate.id, newTemplate);
-                setSnackbarMessage("Cập nhật template thành công!");
+                setSnackbarMessage("Cập nhật mẫu đơn thành công!");
             } else {
                 await createTemplate(newTemplate);
-                setSnackbarMessage("Thêm template thành công!");
+                setSnackbarMessage("Thêm mẫu đơn thành công!");
             }
             setSnackbarOpen(true);
             fetchTemplates();
             handleCloseDialog();
         } catch (error) {
-            console.error("Lỗi khi lưu template:", error);
+            console.error("Lỗi khi lưu mẫu đơn:", error);
         }
     };
 
     const handleDeleteTemplate = async (id) => {
         try {
             await deleteTemplate(id);
-            setSnackbarMessage("Xóa template thành công!");
+            setSnackbarMessage("Xóa mẫu đơn thành công!");
             setSnackbarOpen(true);
             fetchTemplates();
         } catch (error) {
-            console.error("Lỗi khi xóa template:", error);
+            console.error("Lỗi khi xóa mẫu đơn:", error);
         }
     };
 
     const columns = [
         { field: "id", headerName: "ID", width: 70 },
-        { field: "name", headerName: "Tên Template", width: 200 },
+        { field: "name", headerName: "Tên Mẫu Đơn", width: 200 },
         { field: "type", headerName: "Loại", width: 150 },
         { field: "views", headerName: "Lượt xem", width: 100 },
         { field: "status", headerName: "Trạng thái", width: 120 },
@@ -117,10 +117,10 @@ function TemplateManager() {
     return (
         <Box sx={{ width: "100%", p: 3 }}>
             <Typography variant="h6" gutterBottom>
-                Quản lý Templates
+                Quản lý Mẫu Đơn
             </Typography>
             <Button variant="contained" color="primary" onClick={() => handleOpenDialog()}>
-                Thêm Template
+                Thêm Mẫu Đơn Mới
             </Button>
 
             <Box sx={{ height: 400, width: "100%", mt: 2 }}>
@@ -132,14 +132,14 @@ function TemplateManager() {
                 <DialogTitle>{isEdit ? "Chỉnh sửa Template" : "Thêm Template"}</DialogTitle>
                 <DialogContent>
                     <TextField
-                        label="Tên Template"
+                        label="Tên Mẫu Đơn"
                         fullWidth
                         margin="normal"
                         value={newTemplate.name}
                         onChange={(e) => setNewTemplate({ ...newTemplate, name: e.target.value })}
                     />
                     <TextField
-                        label="Loại Template"
+                        label="Loại Mẫu Đơn"
                         fullWidth
                         margin="normal"
                         value={newTemplate.type}
@@ -148,7 +148,7 @@ function TemplateManager() {
 
                     {/* TinyMCE Editor */}
                     <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
-                        Nội dung Template
+                        Nội dung
                     </Typography>
                     <Editor
                         apiKey={apiKey}
