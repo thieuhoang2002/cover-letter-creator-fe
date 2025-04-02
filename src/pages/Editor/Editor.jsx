@@ -4,22 +4,24 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { Container, Typography, Button, Paper, CircularProgress, Box } from "@mui/material";
 import { generatePdf } from "../../apis/pdf"; // Import API tạo PDF
+import { useAuth } from "../../pages/Auth/AuthContext"; // Import AuthContext
 
 export default function EditorComponent() {
     const apiKey = import.meta.env.VITE_API_KEY_TINY;
     const editorRef = useRef(null);
     const location = useLocation();
-    const navigate = useNavigate(); // Khởi tạo navigate
+    const navigate = useNavigate();
     const template = location.state?.template;
     const passedContent = location.state?.template.content;
     const [content, setContent] = useState(passedContent || "<p>Đang tải nội dung...</p>");
     const [loading, setLoading] = useState(!passedContent);
-    const [editorLoading, setEditorLoading] = useState(true); // Trạng thái loading riêng cho Editor
+    const [editorLoading, setEditorLoading] = useState(true);
+    const { userId, email } = useAuth(); // Lấy userId và email từ AuthContext
 
     useEffect(() => {
         if (!passedContent) {
             console.warn("Không có passedContent, chuyển hướng về /template/all");
-            navigate("/template/all"); // Chuyển hướng về trang /template/all
+            navigate("/template/all");
         }
     }, [passedContent]);
 
@@ -28,8 +30,21 @@ export default function EditorComponent() {
             const htmlContent = editorRef.current.getContent();
             console.log("HTML gửi đi:", htmlContent);
 
+            // Kiểm tra userId và email
+            if (!userId || !email) {
+                console.error("User ID hoặc Email bị thiếu");
+                return;
+            }
+
+            // Tạo đối tượng dữ liệu gửi đi
+            const requestData = {
+                id: userId,
+                email: email,
+                htmlContent: htmlContent
+            };
+
             try {
-                await generatePdf(htmlContent);
+                await generatePdf(requestData);
                 console.log('PDF đã được tạo và tải xuống');
             } catch (error) {
                 console.error('Lỗi khi tạo PDF:', error);
@@ -61,7 +76,7 @@ export default function EditorComponent() {
                                 apiKey={apiKey}
                                 onInit={(_evt, editor) => {
                                     editorRef.current = editor;
-                                    setEditorLoading(false); // Khi Editor sẵn sàng, tắt loading
+                                    setEditorLoading(false);
                                 }}
                                 value={content}
                                 onEditorChange={(newContent) => setContent(newContent)}
