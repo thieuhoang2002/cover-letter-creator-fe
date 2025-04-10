@@ -108,6 +108,9 @@ export default function Login() {
                     <Typography variant="body2">
                         Bạn chưa có tài khoản? <Link to="/register">Đăng ký</Link>
                     </Typography>
+                    <Typography variant="body2">
+                        Quên mật khẩu? <Link to="/forgot-password">Đặt lại mật khẩu</Link>
+                    </Typography>
                 </Box>
             </Paper>
             {/* Backdrop hiển thị khi loading */}

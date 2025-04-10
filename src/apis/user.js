@@ -69,3 +69,20 @@ export const toggleFavoriteTemplate = async (templateId) => {
         throw error;
     }
 };
+
+export const changePassword = async (oldPassword, newPassword) => {
+    try {
+        const response = await axios.post(
+            `${BASE_URL}/change-password`,
+            {
+                oldPassword,
+                newPassword
+            },
+            { headers: getAuthHeader() }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Lỗi khi đổi mật khẩu:", error);
+        throw error;
+    }
+};

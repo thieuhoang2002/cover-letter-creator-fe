@@ -16,6 +16,9 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import AuthCallback from './pages/Auth/AuthCallback';
 import AdminHomePage from './pages/Admin/AdminHomePage';
 import PrivateRoute from './pages/Auth/PrivateRoute';
+import ChangePass from './pages/ChangePass/ChangePass';
+import ResetPassword from './pages/ResetPassword/ResetPassword';
+import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
 
 const gooleClientId = import.meta.env.VITE_CLIENT_ID;
 
@@ -47,6 +50,11 @@ function App() {
             <Route path="/pdf-exported" element={<PdfExported />} />
 
             <Route path="/my-love-templates" element={<LoveTemplate />} />
+
+            <Route path="/change-password" element={<ChangePass />} />
+
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
