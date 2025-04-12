@@ -15,7 +15,8 @@ function GithubLoginButton() {
         setError(null);
 
         const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID; // Thêm vào .env
-        const redirectUri = "http://localhost:5173/auth-callback";
+        //const redirectUri = "http://localhost:5173/auth-callback";
+        const redirectUri = "https://cover-letter-creator-fe.vercel.app/auth-callback"; 
         const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user:email`;
 
         window.location.href = githubAuthUrl; // Chuyển hướng tới GitHub

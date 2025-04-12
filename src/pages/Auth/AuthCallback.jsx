@@ -21,7 +21,14 @@ function AuthCallback() {
                 console.error('Invalid token from redirect:', error);
             }
         } else if (code) {
-            fetch('http://localhost:8080/api/users/github-login', {
+            // fetch('http://localhost:8080/api/users/github-login', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ code }),
+            // })
+
+            const urlBE = import.meta.env.VITE_BACKEND_URL;
+            fetch(`${urlBE}/api/users/github-login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ code }),

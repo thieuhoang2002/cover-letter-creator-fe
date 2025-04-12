@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'; // Thêm thư viện để decode JWT
 
-const BASE_URL = 'http://localhost:8080/api/users';
+//const BASE_URL = 'http://localhost:8080/api/users';
+const urlBE = import.meta.env.VITE_BACKEND_URL;
+const BASE_URL = `${urlBE}/api/users`;
 
 export const registerUser = async (userData) => {
     try {

@@ -19,7 +19,14 @@ function GoogleLoginButton() {
         const googleToken = credentialResponse.credential;
 
         try {
-            const response = await fetch('http://localhost:8080/api/users/google-login', {
+            // const response = await fetch('http://localhost:8080/api/users/google-login', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ token: googleToken }),
+            // });
+            
+            const urlBE = import.meta.env.VITE_BACKEND_URL;
+            const response = await fetch(`${urlBE}/api/users/google-login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token: googleToken }),

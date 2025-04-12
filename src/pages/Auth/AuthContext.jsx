@@ -30,7 +30,14 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUserProfile = async (token) => {
         try {
-            const response = await fetch('http://localhost:8080/api/users/profile/me', {
+            // const response = await fetch('http://localhost:8080/api/users/profile/me', {
+            //     headers: {
+            //         'Authorization': `Bearer ${token}`,
+            //     },
+            // });
+
+            const urlBE = import.meta.env.VITE_BACKEND_URL;
+            const response = await fetch(`${urlBE}/api/users/profile/me`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
