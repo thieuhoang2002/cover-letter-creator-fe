@@ -1,6 +1,9 @@
+// AuthContext.jsx
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { getRoleFromToken } from '../../apis/auth';
 import { jwtDecode } from 'jwt-decode';
+// Import hàm fetchUserProfile từ file authcontext.js
+import { fetchUserProfile } from '../../apis/authcontext';
 
 const AuthContext = createContext();
 
@@ -15,7 +18,14 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', token);
         setIsAuthenticated(true);
         setRole(getRoleFromToken());
-        await fetchUserProfile(token); // Lấy thông tin user từ API
+        try {
+            const user = await fetchUserProfile(token);
+            setAvatarUrl(user.avatarUrl);
+            setUserId(user.id);
+            setEmail(user.email);
+        } catch (error) {
+            console.error('Error in login:', error);
+        }
     };
 
     const logout = () => {
@@ -28,32 +38,6 @@ export const AuthProvider = ({ children }) => {
         window.location.href = '/login';
     };
 
-    const fetchUserProfile = async (token) => {
-        try {
-            // const response = await fetch('http://localhost:8080/api/users/profile/me', {
-            //     headers: {
-            //         'Authorization': `Bearer ${token}`,
-            //     },
-            // });
-
-            const urlBE = import.meta.env.VITE_BACKEND_URL;
-            const response = await fetch(`${urlBE}/api/users/profile/me`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            if (response.ok) {
-                const user = await response.json();
-                console.log('User profile:', user);
-                setAvatarUrl(user.avatarUrl);
-                setUserId(user.id);    // Lưu userId
-                setEmail(user.email);  // Lưu email
-            }
-        } catch (error) {
-            console.error('Error fetching user profile:', error);
-        }
-    };
-
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
@@ -64,7 +48,13 @@ export const AuthProvider = ({ children }) => {
                     console.warn('Token hết hạn, đăng xuất...');
                     logout();
                 } else {
-                    fetchUserProfile(token);
+                    fetchUserProfile(token)
+                        .then(user => {
+                            setAvatarUrl(user.avatarUrl);
+                            setUserId(user.id);
+                            setEmail(user.email);
+                        })
+                        .catch(error => console.error('Error fetching profile in useEffect:', error));
                     const timeLeft = (decoded.exp - currentTime) * 1000;
                     setTimeout(() => {
                         console.warn('Token expired, logging out...');

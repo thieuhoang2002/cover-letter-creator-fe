@@ -4,6 +4,9 @@ import { useAuth } from "../pages/Auth/AuthContext";
 import { Button, CircularProgress, Alert } from "@mui/material";
 import GitHubIcon from "@mui/icons-material/GitHub";
 
+// Import hàm từ file loginGithub.js
+import { loginWithGithub } from "../apis/logingithub";
+
 function GithubLoginButton() {
     const { login } = useAuth();
     const navigate = useNavigate();
@@ -11,15 +14,8 @@ function GithubLoginButton() {
     const [loading, setLoading] = useState(false);
 
     const handleGithubLogin = () => {
-        setLoading(true);
-        setError(null);
-
-        const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID; // Thêm vào .env
-        //const redirectUri = "http://localhost:5173/auth-callback";
-        const redirectUri = "https://cover-letter-creator-fe.vercel.app/auth-callback"; 
-        const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user:email`;
-
-        window.location.href = githubAuthUrl; // Chuyển hướng tới GitHub
+        // Gọi hàm loginWithGithub với việc truyền các hàm setLoading và setError
+        loginWithGithub(setLoading, setError);
     };
 
     return (
@@ -37,7 +33,7 @@ function GithubLoginButton() {
                 onClick={handleGithubLogin}
                 disabled={loading}
                 sx={{
-                    backgroundColor: "#24292e", // Màu nền GitHub
+                    backgroundColor: "#24292e",
                     color: "#ffffff",
                     fontSize: "16px",
                     fontWeight: "bold",

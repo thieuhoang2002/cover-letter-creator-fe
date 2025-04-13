@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TextField, Button, Typography, Container, Box, Alert, CircularProgress } from '@mui/material';
-import { changePassword } from '../../apis/user';
+import { changePassword } from '../../apis/profile';
 import { useAuth } from '../Auth/AuthContext';
 
 const ChangePass = () => {

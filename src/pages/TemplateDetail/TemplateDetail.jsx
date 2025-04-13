@@ -66,7 +66,7 @@ function TemplateDetail() {
     }
 
     return (
-        <Container maxWidth="md" sx={{ mt: 4, padding: '20px' }}>
+        <Container maxWidth="md" sx={{ mt: 6, padding: '20px' }}>
             <Paper elevation={3} sx={{ p: 3, borderRadius: '8px' }}>
                 {/* Header */}
                 <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
@@ -97,7 +97,7 @@ function TemplateDetail() {
                 {/* Nội dung chi tiết */}
                 <Grid container spacing={3}>
                     {/* Hình ảnh (nếu có) */}
-                    {template.image && (
+                    {/* {template.image && (
                         <Grid item xs={12} md={4}>
                             <CardMedia
                                 component="img"
@@ -106,18 +106,11 @@ function TemplateDetail() {
                                 sx={{ borderRadius: '8px', maxHeight: '200px', objectFit: 'cover' }}
                             />
                         </Grid>
-                    )}
+                    )} */}
 
                     {/* Thông tin bổ sung */}
-                    <Grid item xs={12} md={template.image ? 8 : 12}>
-                        <Box sx={{ mb: 2 }}>
-                            <Typography variant="body1" color="text.secondary">
-                                <strong>Ngày tạo:</strong> {template.createdAt ? new Date(template.createdAt).toLocaleString() : 'Không có thông tin'}
-                            </Typography>
-                            <Typography variant="body1" color="text.secondary">
-                                <strong>Mô tả:</strong> {template.description || 'Không có mô tả'}
-                            </Typography>
-                        </Box>
+                    {/* <Grid item xs={12} md={template.image ? 8 : 12}> */}
+                    <Grid item xs={12} md={12}>
 
                         {/* Nội dung template */}
                         <Box

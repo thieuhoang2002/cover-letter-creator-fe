@@ -1,9 +1,11 @@
 import axios from 'axios';
 
 // Định nghĩa URL cơ sở của API backend
-//const BASE_URL = 'http://localhost:8080/api/templates'; // Thay đổi nếu backend chạy trên cổng hoặc domain khác
-const urlBE = import.meta.env.VITE_BACKEND_URL;
-const BASE_URL = `${urlBE}/api/templates`;
+const BASE_URL = 'http://localhost:8080/api/templates'; // Thay đổi nếu backend chạy trên cổng hoặc domain khác
+
+//deploy
+// const urlBE = import.meta.env.VITE_BACKEND_URL;
+// const BASE_URL = `${urlBE}/api/templates`;
 
 const getAuthHeader = () => {
     const token = localStorage.getItem('token');
@@ -71,6 +73,29 @@ export const deleteTemplate = async (id) => {
         await axios.delete(`${BASE_URL}/${id}`, { headers: getAuthHeader() });
     } catch (error) {
         console.error(`Lỗi khi xóa template với id ${id}:`, error);
+        throw error;
+    }
+};
+
+export const getTopViewedTemplates = async () => {
+    try {
+        const response = await axios.get(`${BASE_URL}/top-viewed`, {
+            headers: getAuthHeader(),
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Lỗi khi lấy top-viewed templates:", error);
+        throw error;
+    }
+};
+
+// Tăng lượt xem khi người dùng xem chi tiết template
+export const viewTemplateById = async (id) => {
+    try {
+        const response = await axios.get(`${BASE_URL}/${id}`, { headers: getAuthHeader() });
+        return response.data;
+    } catch (error) {
+        console.error(`Lỗi khi tăng lượt xem cho template ${id}:`, error);
         throw error;
     }
 };

@@ -51,7 +51,7 @@ const PdfExported = () => {
 
     const handleDeleteCoverLetter = (id) => {
         setDeletingId(id);
-        setDeleteDialogOpen(true);
+        setDeleteDialogOpen(true); // Mở dialog khi bấm vào nút xóa
     };
 
     const confirmDelete = async () => {
@@ -65,7 +65,7 @@ const PdfExported = () => {
         setSnackbarOpen(true);
 
         if (result.success) {
-            await loadCoverLetters();
+            await loadCoverLetters(); // Tải lại danh sách đơn sau khi xóa
         }
 
         setIsDeleting(false);
@@ -75,7 +75,7 @@ const PdfExported = () => {
 
     const handleDeleteDialogClose = () => {
         setDeleteDialogOpen(false);
-        setDeletingId(null);
+        setDeletingId(null); // Đóng dialog và reset id đang xóa
     };
 
     const handleChangePage = (event, newPage) => {
@@ -176,12 +176,37 @@ const PdfExported = () => {
                 </TableContainer>
             )}
 
+            {/* Dialog xác nhận xóa */}
+            <Dialog
+                open={deleteDialogOpen}
+                onClose={handleDeleteDialogClose}
+            >
+                <DialogTitle>Xác nhận xóa</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Bạn có chắc chắn muốn xóa đơn xin việc này không?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleDeleteDialogClose} color="primary">
+                        Hủy
+                    </Button>
+                    <Button
+                        onClick={confirmDelete} // Gọi hàm xóa khi bấm Xóa
+                        color="error"
+                        disabled={isDeleting}
+                    >
+                        {isDeleting ? <CircularProgress size={20} /> : "Xóa"}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={3000}
                 onClose={handleSnackbarClose}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
+                >
                 <MuiAlert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
                     {snackbarMessage}
                 </MuiAlert>

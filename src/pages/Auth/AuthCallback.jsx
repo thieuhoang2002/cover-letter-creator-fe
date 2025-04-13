@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { jwtDecode } from 'jwt-decode';
+import { handleGithubCallback } from '../../apis/authcallbackgithub';
 
 function AuthCallback() {
     const { login } = useAuth();
@@ -21,33 +22,11 @@ function AuthCallback() {
                 console.error('Invalid token from redirect:', error);
             }
         } else if (code) {
-            // fetch('http://localhost:8080/api/users/github-login', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ code }),
-            // })
-
-            const urlBE = import.meta.env.VITE_BACKEND_URL;
-            fetch(`${urlBE}/api/users/github-login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code }),
-            })
-                .then(response => {
-                    console.log('Response Status:', response.status); // Log status
-                    if (!response.ok) {
-                        return response.text().then(text => { throw new Error(text); });
-                    }
-                    return response.text();
-                })
-                .then(async (jwt) => {
-                    console.log('JWT from GitHub:', jwt);
-                    await login(jwt);
-                    const role = jwtDecode(jwt).role;
-                    navigate(role === 'admin' ? '/admin' : '/');
-                })
+            // Gọi hàm xử lý callback đăng nhập GitHub từ file authcallbackgithub.js
+            handleGithubCallback(code, login, navigate)
                 .catch(error => {
-                    console.error('GitHub login error:', error.message);
+                    // Xử lý lỗi nếu cần (ví dụ: thông báo lỗi cho người dùng)
+                    console.error('Error during GitHub callback processing:', error.message);
                 });
         }
     }, [login, navigate]);

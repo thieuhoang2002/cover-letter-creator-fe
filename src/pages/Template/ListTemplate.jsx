@@ -9,7 +9,8 @@ import {
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUser, toggleFavoriteTemplate } from '../../apis/user';
+import { getCurrentUser, toggleFavoriteTemplate } from '../../apis/profile';
+import { viewTemplateById } from '../../apis/template';
 
 function ListTemplate() {
     const navigate = useNavigate();
@@ -108,6 +109,16 @@ function ListTemplate() {
         setSnackbarOpen(false);
     };
 
+    const handleViewDetail = async (template) => {
+        try {
+            await viewTemplateById(template.id); // Gọi API tăng view
+            navigate(`/template/${template.id}`, { state: { template } }); // Điều hướng đến trang chi tiết
+        } catch (error) {
+            console.error('Lỗi khi tăng lượt xem:', error);
+        }
+    };
+    
+
     if (loading) {
         return (
             <Container sx={{ textAlign: 'center', mt: 4 }}>
@@ -185,23 +196,21 @@ function ListTemplate() {
                                         {template.name}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        Ngành: {template.industry || 'Không xác định'}
+                                        Ngành: {template.type || 'Không xác định'}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        Ngày tạo: {template.createdAt ? new Date(template.createdAt).toLocaleDateString() : 'Không có'}
+                                        Lượt xem: {template.views || 0}
                                     </Typography>
                                 </CardContent>
                                 <CardActions sx={{ justifyContent: 'space-between', p: 2 }}>
-                                    <Button
-                                        component={Link}
-                                        to={`/template/${template.id}`}
-                                        state={{ template }}
-                                        variant="contained"
-                                        color="primary"
-                                        size="small"
-                                    >
-                                        Xem Chi Tiết
-                                    </Button>
+                                <Button
+                                    onClick={() => handleViewDetail(template)}
+                                    variant="contained"
+                                    color="primary"
+                                    size="small"
+                                >
+                                    Xem Chi Tiết
+                                </Button>
                                     <Tooltip title={favorites.has(template.id) ? "Bỏ yêu thích" : "Thêm vào yêu thích"}>
                                         <IconButton onClick={() => handleToggleFavorite(template.id)}>
                                             {favorites.has(template.id) ? (

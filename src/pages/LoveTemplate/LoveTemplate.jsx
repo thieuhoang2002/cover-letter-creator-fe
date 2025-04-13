@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Grid, Card, CardContent, CardMedia, Typography, Button, CircularProgress, Snackbar, IconButton } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import { getCurrentUser, toggleFavoriteTemplate } from '../../apis/user';
+import { getCurrentUser, toggleFavoriteTemplate } from '../../apis/profile';
 
 function LoveTemplate() {
     const [favorites, setFavorites] = useState([]);
