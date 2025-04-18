@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../pages/Auth/AuthContext";
-import { Button, CircularProgress, Alert } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 import GitHubIcon from "@mui/icons-material/GitHub";
+import Alert from '@mui/material/Alert';
 
 // Import hàm từ file loginGithub.js
 import { loginWithGithub } from "../apis/logingithub";

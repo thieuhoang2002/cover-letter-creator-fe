@@ -53,6 +53,7 @@ function Navbar() {
 
     const adminSettings = [
         { name: 'Trang quản trị', path: '/admin' },
+        { name: 'Thông tin cá nhân', path: '/information' },
         { name: 'Mẫu đơn yêu thích', path: '/my-love-templates' },
         { name: 'Tệp đã xuất', path: '/pdf-exported' },
         { name: 'Đổi mật khẩu', path: '/change-password' },
@@ -80,7 +81,7 @@ function Navbar() {
                             textDecoration: 'none',
                         }}
                     >
-                        LOGO
+                        <img src="/logo.png" alt="Logo" style={{ width: '50px', height: '50px' }} />
                     </Typography>
 
                     <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>

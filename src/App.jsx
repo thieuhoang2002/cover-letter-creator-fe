@@ -19,6 +19,7 @@ import PrivateRoute from './pages/Auth/PrivateRoute';
 import ChangePass from './pages/ChangePass/ChangePass';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
+import Information from './pages/Information/Information';
 
 const gooleClientId = import.meta.env.VITE_CLIENT_ID;
 
@@ -40,7 +41,12 @@ function App() {
             </Route>
 
             <Route path="/template/all" element={<ListTemplate />} />
-            <Route path="/template/:templateId" element={<TemplateDetail />} />
+
+            {/* <Route path="/template/:templateId" element={<TemplateDetail />} /> */}
+
+            <Route path="/template/:templateId" element={<PrivateRoute />}>
+              <Route index element={<TemplateDetail />} />
+            </Route>
 
             {/* Route editor - Chỉ cần đăng nhập, không cần role cụ thể */}
             <Route path="/editor" element={<PrivateRoute />}>
@@ -55,6 +61,8 @@ function App() {
 
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+
+            <Route path="/information" element={<Information />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

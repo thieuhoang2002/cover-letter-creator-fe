@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { resetPassword } from "../../apis/resetpass";
 import {
   Box,
@@ -7,14 +7,14 @@ import {
   TextField,
   Typography,
   Container,
-  Alert,
   CircularProgress,
 } from "@mui/material";
+import Alert from '@mui/material/Alert';
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
-
+  const navigate = useNavigate();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,9 +41,13 @@ const ResetPassword = () => {
     try {
       await resetPassword(token, newPassword);
       setSuccessMessage("Đặt lại mật khẩu thành công. Bạn có thể đăng nhập lại.");
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
     } catch (error) {
       setErrorMessage("Token không hợp lệ hoặc đã hết hạn.");
-    } finally {
+    }
+     finally {
       setLoading(false);
     }
   };

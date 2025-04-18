@@ -3,7 +3,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
     Container, Typography, Button, Paper, CircularProgress, Box,
-    Grid, Divider, Tooltip, Snackbar, Alert as MuiAlert
+    Grid, Divider, Tooltip, Snackbar
 } from "@mui/material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
@@ -11,6 +11,9 @@ import DownloadIcon from '@mui/icons-material/Download';
 import RestoreIcon from '@mui/icons-material/Restore';
 import { generatePdf } from "../../apis/pdf";
 import { useAuth } from "../../pages/Auth/AuthContext";
+import { fetchUserProfile } from '../../apis/authcontext';
+import he from 'he';
+import Alert from '@mui/material/Alert';
 
 export default function EditorComponent() {
     const apiKey = import.meta.env.VITE_API_KEY_TINY;
@@ -25,22 +28,38 @@ export default function EditorComponent() {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-    const { userId, email } = useAuth();
+    const { userId, email, token } = useAuth();
+    const [templateUser, setTemplateUser] = useState(null);
 
-    // Kiểm tra và chuyển hướng nếu thiếu dữ liệu
+
     useEffect(() => {
-        if (!passedContent) {
-            console.warn("Không có passedContent, chuyển hướng về /template/all");
-            setSnackbarMessage('Không tìm thấy nội dung template!');
-            setSnackbarSeverity('warning');
-            setSnackbarOpen(true);
-            setTimeout(() => navigate("/template/all"), 2000);
-        }
-    }, [passedContent, navigate]);
+        const fetchData = async () => {
+            if (!passedContent) {
+                console.warn("Không có passedContent, chuyển hướng về /template/all");
+                setSnackbarMessage('Không tìm thấy nội dung template!');
+                setSnackbarSeverity('warning');
+                setSnackbarOpen(true);
+                setTimeout(() => navigate("/template/all"), 2000);
+                return;
+            }
+    
+            try {
+                const user = await fetchUserProfile(token);
+                setTemplateUser(user);
+                //console.log("Passed content:", passedContent);
+                //console.log("User:", user);
+            } catch (error) {
+                console.error("Lỗi khi lấy thông tin người dùng:", error);
+            }
+        };
+    
+        fetchData();
+    }, [passedContent, navigate, token]);
 
     const handleBack = () => {
         navigate("/template/all");
     };
+
 
     const exportPDF = async () => {
         if (!editorRef.current) return;
@@ -104,6 +123,33 @@ export default function EditorComponent() {
     const handleSnackbarClose = () => {
         setSnackbarOpen(false);
     };
+
+    const fillUserInfo = () => {
+        if (!editorRef.current || !userId) return;
+    
+        let rawContent = editorRef.current.getContent();
+        rawContent = he.decode(rawContent); // <-- Decode HTML entities
+        //console.log("raw content:", rawContent);
+    
+        const formattedBirthday = new Date(templateUser.birthday).toLocaleDateString('vi-VN');
+    
+        const replacedContent = rawContent
+            .replace(/\[Họ và tên\]/g, templateUser.name)
+            .replace(/\[Ngày sinh\]/g, formattedBirthday)
+            .replace(/\[Địa chỉ\]/g, templateUser.address || '')
+            .replace(/\[Số điện thoại\]/g, templateUser.phone || '')
+            .replace(/\[Email\]/g, templateUser.email || '')
+            .replace(/\[Trường\]/g, templateUser.school || '')
+            .replace(/\[Chuyên ngành\]/g, templateUser.specialization || '');
+    
+        setContent(replacedContent);
+        editorRef.current.setContent(replacedContent);
+    
+        setSnackbarMessage('Đã thêm thông tin cá nhân vào đơn!');
+        setSnackbarSeverity('info');
+        setSnackbarOpen(true);
+    };
+    
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, padding: '20px' }}>
@@ -213,6 +259,18 @@ export default function EditorComponent() {
                         {/* Nút hành động */}
                         <Grid container spacing={2} justifyContent="flex-end">
                             <Grid item>
+                                <Tooltip title="Thêm thông tin cá nhân vào đơn">
+                                    <Button
+                                        variant="outlined"
+                                        color="success"
+                                        onClick={fillUserInfo}
+                                        disabled={loading || editorLoading || !templateUser}
+                                    >
+                                        Thêm thông tin
+                                    </Button>
+                                </Tooltip>
+                            </Grid>
+                            <Grid item>
                                 <Tooltip title="Khôi phục nội dung ban đầu">
                                     <Button
                                         variant="outlined"
@@ -225,7 +283,7 @@ export default function EditorComponent() {
                                     </Button>
                                 </Tooltip>
                             </Grid>
-                            <Grid item>
+                            {/* <Grid item>
                                 <Button
                                     variant="outlined"
                                     color="primary"
@@ -235,7 +293,7 @@ export default function EditorComponent() {
                                 >
                                     Lưu nháp
                                 </Button>
-                            </Grid>
+                            </Grid> */}
                             <Grid item>
                                 <Button
                                     variant="contained"
@@ -259,9 +317,9 @@ export default function EditorComponent() {
                 onClose={handleSnackbarClose}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             >
-                <MuiAlert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
                     {snackbarMessage}
-                </MuiAlert>
+                </Alert>
             </Snackbar>
         </Container>
     );

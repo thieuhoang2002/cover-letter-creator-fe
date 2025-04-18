@@ -13,9 +13,11 @@ export const AuthProvider = ({ children }) => {
     const [avatarUrl, setAvatarUrl] = useState(null);
     const [userId, setUserId] = useState(null); // Thêm state cho userId
     const [email, setEmail] = useState(null);   // Thêm state cho email
+    const [token, setToken] = useState(localStorage.getItem('token'));
 
     const login = async (token) => {
         localStorage.setItem('token', token);
+        setToken(token);
         setIsAuthenticated(true);
         setRole(getRoleFromToken());
         try {
@@ -30,6 +32,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = () => {
         localStorage.removeItem('token');
+        setToken(null); 
         setIsAuthenticated(false);
         setRole(null);
         setAvatarUrl(null);
@@ -41,6 +44,7 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
+            setToken(token);
             try {
                 const decoded = jwtDecode(token);
                 const currentTime = Date.now() / 1000;
@@ -69,7 +73,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, role, avatarUrl, userId, email, login, logout }}>
+        <AuthContext.Provider value={{token, isAuthenticated, role, avatarUrl, userId, email, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { registerUser } from '../../apis/auth';
 import { Link } from 'react-router-dom';
 import {
-    Container, TextField, Button, Typography, Alert, Box, Paper, IconButton, InputAdornment
+    Container, TextField, Button, Typography, Box, Paper, IconButton, InputAdornment
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import Alert from '@mui/material/Alert';
 
 export default function Register() {
     const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });

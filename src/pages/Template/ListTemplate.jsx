@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getTemplatesActive } from '../../apis/template';
 import {
-    Container, Typography, CircularProgress, Alert, Box, Grid, Card, CardMedia,
+    Container, Typography, CircularProgress, Box, Grid, Card, CardMedia,
     CardContent, CardActions, Button, IconButton, TextField, FormControl,
-    InputLabel, Select, MenuItem, Tooltip, Snackbar, Alert as MuiAlert
+    InputLabel, Select, MenuItem, Tooltip, Snackbar
 } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, toggleFavoriteTemplate } from '../../apis/profile';
 import { viewTemplateById } from '../../apis/template';
+import Alert from '@mui/material/Alert';
 
 function ListTemplate() {
     const navigate = useNavigate();
@@ -26,9 +27,10 @@ function ListTemplate() {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+    const [industries, setIndustries] = useState([]); // Danh sách ngành nghề
 
     // Giả định danh sách ngành nghề (có thể lấy từ API nếu có)
-    const industries = ['Công nghệ', 'Y tế', 'Giáo dục', 'Kinh doanh', 'Khác'];
+    //const industries = ['Công nghệ', 'Y tế', 'Giáo dục', 'Kinh doanh', 'Khác'];
 
     useEffect(() => {
         const fetchTemplates = async () => {
@@ -40,6 +42,7 @@ function ListTemplate() {
 
                 const userFavorites = await fetchUserFavorites();
                 setFavorites(new Set(userFavorites.map(item => item.id)));
+                setIndustries([...new Set(data.map(template => template.type))]); // Lấy danh sách ngành nghề từ dữ liệu mẫu đơn
             } catch (err) {
                 setError('Không thể tải danh sách mẫu đơn. Vui lòng thử lại sau.');
                 setLoading(false);
@@ -63,14 +66,14 @@ function ListTemplate() {
         // Lọc theo ngành nghề
         if (industryFilter) {
             filtered = filtered.filter(template =>
-                template.industry === industryFilter // Giả định template có trường industry
+                template.type === industryFilter // Giả định template có trường industry
             );
         }
 
         // Sắp xếp theo thời gian (giả định có trường createdAt)
         filtered.sort((a, b) => {
-            const dateA = new Date(a.createdAt || 0);
-            const dateB = new Date(b.createdAt || 0);
+            const dateA = new Date(a.updateDate || 0);
+            const dateB = new Date(b.updateDate || 0);
             return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
         });
 
@@ -111,8 +114,8 @@ function ListTemplate() {
 
     const handleViewDetail = async (template) => {
         try {
-            await viewTemplateById(template.id); // Gọi API tăng view
             navigate(`/template/${template.id}`, { state: { template } }); // Điều hướng đến trang chi tiết
+            await viewTemplateById(template.id); // Gọi API tăng view
         } catch (error) {
             console.error('Lỗi khi tăng lượt xem:', error);
         }
@@ -187,7 +190,7 @@ function ListTemplate() {
                                 <CardMedia
                                     component="img"
                                     height="140"
-                                    image={template.image || 'https://via.placeholder.com/150'}
+                                    image={template.image || 'https://placehold.co/150'}
                                     alt={template.name}
                                     sx={{ objectFit: 'cover' }}
                                 />
@@ -200,6 +203,9 @@ function ListTemplate() {
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
                                         Lượt xem: {template.views || 0}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Cập nhật: {new Date(template.updateDate).toLocaleDateString()}
                                     </Typography>
                                 </CardContent>
                                 <CardActions sx={{ justifyContent: 'space-between', p: 2 }}>
@@ -238,9 +244,9 @@ function ListTemplate() {
                 onClose={handleSnackbarClose}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             >
-                <MuiAlert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
                     {snackbarMessage}
-                </MuiAlert>
+                </Alert>
             </Snackbar>
         </Container>
     );

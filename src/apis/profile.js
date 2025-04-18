@@ -1,10 +1,10 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8080/api/users/profile";
+//const BASE_URL = "http://localhost:8080/api/users/profile";
 
 //deploy
-// const urlBE = import.meta.env.VITE_BACKEND_URL;
-// const BASE_URL = `${urlBE}/api/users/profile`;
+const urlBE = import.meta.env.VITE_BACKEND_URL;
+const BASE_URL = `${urlBE}/api/users/profile`;
 
 const getAuthHeader = () => {
     const token = localStorage.getItem("token");
@@ -87,6 +87,34 @@ export const changePassword = async (oldPassword, newPassword) => {
         return response.data;
     } catch (error) {
         console.error("Lỗi khi đổi mật khẩu:", error);
+        throw error;
+    }
+};
+
+export const updateCurrentUserProfile = async (userData) => {
+    try {
+        const response = await axios.put(
+            `${BASE_URL}/me`,
+            userData,
+            { headers: getAuthHeader() }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Lỗi khi cập nhật thông tin người dùng hiện tại:", error);
+        throw error;
+    }
+};
+
+export const changePasswordWithoutOld = async (newPassword) => {
+    try {
+        const response = await axios.post(
+            `${BASE_URL}/change-password-without-old`,
+            { newPassword },
+            { headers: getAuthHeader() }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Lỗi khi đổi mật khẩu không cần mật khẩu cũ:", error);
         throw error;
     }
 };

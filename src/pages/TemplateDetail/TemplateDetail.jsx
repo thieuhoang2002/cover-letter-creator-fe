@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import {
     Container, Card, CardContent, CardMedia, Typography, Button, Box,
-    CircularProgress, Alert, Paper, Divider, Grid, Tooltip
+    CircularProgress, Paper, Divider, Grid, Tooltip
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { getTemplateById } from '../../apis/template';
+import Alert from '@mui/material/Alert';
 
 function TemplateDetail() {
     const { templateId } = useParams();

@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'; // Thêm thư viện để decode JWT
 
-const BASE_URL = 'http://localhost:8080/api/users';
+//const BASE_URL = 'http://localhost:8080/api/users';
 
 //deploy
 
-// const urlBE = import.meta.env.VITE_BACKEND_URL;
-// const BASE_URL = `${urlBE}/api/users`;
+const urlBE = import.meta.env.VITE_BACKEND_URL;
+const BASE_URL = `${urlBE}/api/users`;
 
 export const registerUser = async (userData) => {
     try {
@@ -37,7 +37,7 @@ export const logoutUser = () => {
 // auth.js
 export const getRoleFromToken = () => {
     const token = localStorage.getItem('token');
-    console.log('Token from localStorage:', token); // Log để kiểm tra
+    //console.log('Token from localStorage:', token); // Log để kiểm tra
     if (!token) return null;
     try {
         const decoded = jwtDecode(token);

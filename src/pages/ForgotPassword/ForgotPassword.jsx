@@ -5,10 +5,10 @@ import {
   TextField,
   Typography,
   Container,
-  Alert,
   CircularProgress,
 } from "@mui/material";
 import { requestPasswordReset } from "../../apis/resetpass";
+import Alert from '@mui/material/Alert';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -26,7 +26,7 @@ const ForgotPassword = () => {
       await requestPasswordReset(email);
       setSuccessMessage("Nếu email tồn tại, chúng tôi đã gửi một liên kết đặt lại mật khẩu.");
     } catch (error) {
-      setErrorMessage("Đã xảy ra lỗi. Vui lòng thử lại sau.");
+      setErrorMessage("Đã xảy ra lỗi. Vui lòng thử lại sau. Chú ý: Hãy kiểm tra hộp thư của bạn, rất có thể bạn đã nhận được một email từ chúng tôi gần đây!");
     } finally {
       setLoading(false);
     }

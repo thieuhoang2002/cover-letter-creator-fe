@@ -5,11 +5,12 @@ import {
     Container, Typography, Button, CircularProgress,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
     Paper, IconButton, Box, Tooltip, TablePagination,
-    Snackbar, Alert as MuiAlert, Dialog, DialogTitle, DialogContent,
+    Snackbar, Dialog, DialogTitle, DialogContent,
     DialogContentText, DialogActions
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import Alert from '@mui/material/Alert';
 
 const PdfExported = () => {
     const { userId } = useAuth();
@@ -207,9 +208,9 @@ const PdfExported = () => {
                 onClose={handleSnackbarClose}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
                 >
-                <MuiAlert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
                     {snackbarMessage}
-                </MuiAlert>
+                </Alert>
             </Snackbar>
         </Container>
     );
