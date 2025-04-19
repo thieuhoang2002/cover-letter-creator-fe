@@ -14,20 +14,20 @@ export const loginWithGoogle = async (
         //console.log('Request Headers:', { 'Cookie': document.cookie });
         //console.log('Google Token:', googleToken);
 
-        // const response = await fetch('http://localhost:8080/api/users/google-login', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ token: googleToken }),
-        // });
-
-        //deploy
-
-        const urlBE = import.meta.env.VITE_BACKEND_URL;
-        const response = await fetch(`${urlBE}/api/users/google-login`, {
+        const response = await fetch('http://localhost:8080/api/users/google-login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token: googleToken }),
         });
+
+        //deploy
+
+        // const urlBE = import.meta.env.VITE_BACKEND_URL;
+        // const response = await fetch(`${urlBE}/api/users/google-login`, {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify({ token: googleToken }),
+        // });
 
         if (!response.ok) {
             throw new Error('Đăng nhập Google thất bại từ backend');

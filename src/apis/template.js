@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 // Định nghĩa URL cơ sở của API backend
-//const BASE_URL = 'http://localhost:8080/api/templates'; // Thay đổi nếu backend chạy trên cổng hoặc domain khác
+const BASE_URL = 'http://localhost:8080/api/templates'; // Thay đổi nếu backend chạy trên cổng hoặc domain khác
 
 //deploy
-const urlBE = import.meta.env.VITE_BACKEND_URL;
-const BASE_URL = `${urlBE}/api/templates`;
+// const urlBE = import.meta.env.VITE_BACKEND_URL;
+// const BASE_URL = `${urlBE}/api/templates`;
 
 const getAuthHeader = () => {
     const token = localStorage.getItem('token');

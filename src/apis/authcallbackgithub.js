@@ -4,20 +4,20 @@ import {jwtDecode} from 'jwt-decode';
 export async function handleGithubCallback(code, login, navigate) {
     try {
 
-        // const response = await fetch('http://localhost:8080/api/users/github-login', {
-        //         method: 'POST',
-        //         headers: { 'Content-Type': 'application/json' },
-        //         body: JSON.stringify({ code }),
-        //     });
+        const response = await fetch('http://localhost:8080/api/users/github-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code }),
+            });
 
         // deploy
 
-        const urlBE = import.meta.env.VITE_BACKEND_URL;
-        const response = await fetch(`${urlBE}/api/users/github-login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code }),
-        });
+        // const urlBE = import.meta.env.VITE_BACKEND_URL;
+        // const response = await fetch(`${urlBE}/api/users/github-login`, {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify({ code }),
+        // });
         
         //console.log('Response Status:', response.status); // Log trạng thái response
         
