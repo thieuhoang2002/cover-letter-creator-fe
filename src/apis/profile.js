@@ -1,10 +1,10 @@
 import axios from "axios";
 
-//const BASE_URL = "http://localhost:8080/api/users/profile";
+const BASE_URL = "http://localhost:8080/api/users/profile";
 
 //deploy
-const urlBE = import.meta.env.VITE_BACKEND_URL;
-const BASE_URL = `${urlBE}/api/users/profile`;
+// const urlBE = import.meta.env.VITE_BACKEND_URL;
+// const BASE_URL = `${urlBE}/api/users/profile`;
 
 const getAuthHeader = () => {
     const token = localStorage.getItem("token");
