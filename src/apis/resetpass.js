@@ -1,10 +1,10 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8080/api/auth"; // Điều chỉnh nếu endpoint khác
+//const BASE_URL = "http://localhost:8080/api/auth"; // Điều chỉnh nếu endpoint khác
 
 //deploy
-// const urlBE = import.meta.env.VITE_BACKEND_URL;
-// const BASE_URL = `${urlBE}/api/auth`;
+const urlBE = import.meta.env.VITE_BACKEND_URL;
+const BASE_URL = `${urlBE}/api/auth`;
 
 /**
  * Gửi yêu cầu quên mật khẩu (bằng email).
