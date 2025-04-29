@@ -20,6 +20,7 @@ import ChangePass from './pages/ChangePass/ChangePass';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
 import Information from './pages/Information/Information';
+import CvByAI from './pages/CvByAI/CvByAI';
 import CvEditor from './pages/CvEditor/CvEditor';
 
 const gooleClientId = import.meta.env.VITE_CLIENT_ID;
@@ -65,7 +66,8 @@ function App() {
 
             <Route path="/information" element={<Information />} />
 
-            <Route path="/cv-editor" element={<CvEditor />} />
+            <Route path="/create-cv-with-ai" element={<CvByAI />} />
+            <Route path="/cv-editor-test" element={<CvEditor />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

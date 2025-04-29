@@ -1,393 +1,419 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
+import { Editor } from '@tinymce/tinymce-react';
+import initialCvData from './data_cv';
+import { generateCvContent } from './content';
 import {
-    Box,
-    Typography,
-    Paper,
     Grid,
-    Avatar,
-    Divider,
-    TextField,
-    IconButton,
+    Typography,
     Button,
-    Stack,
-} from "@mui/material";
-import { Delete, Add } from "@mui/icons-material";
-import initialCvData from "./data_cv";
+    List,
+    ListItem,
+    ListItemText,
+    Paper,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-// Hàm giả lập API AI
-const fetchAiSuggestions = async (cvData) => {
-    // Giả lập AI gợi ý dựa trên dữ liệu CV (Ví dụ dùng OpenAI GPT hoặc mô hình NLP)
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            const suggestions = {
-                summary: "Tôi là một lập trình viên phần mềm đam mê công nghệ, luôn tìm kiếm cơ hội học hỏi và phát triển các sản phẩm sáng tạo.",
-                skills: "Java, Python, JavaScript, React, Node.js, SQL, Git",
-                experience: "Kinh nghiệm làm việc trong lĩnh vực phát triển phần mềm với các dự án về ứng dụng web và di động.",
-            };
-            resolve(suggestions);
-        }, 1000);
-    });
-};
-
-export default function CvEditor() {
+const CvEditor = () => {
     const [cvData, setCvData] = useState(initialCvData);
+    const [editorContent, setEditorContent] = useState(generateCvContent(initialCvData));
 
-    // Các state phụ để thêm mới
-    const [newSkill, setNewSkill] = useState("");
-    const [newExp, setNewExp] = useState({ role: "", company: "", time: "", desc: "" });
-    const [newProject, setNewProject] = useState({ name: "", desc: "" });
-    const [newSchool, setNewSchool] = useState({ school: "", major: "", year: "" });
-    const [aiSuggestions, setAiSuggestions] = useState({});
-    const [isLoading, setIsLoading] = useState(false);
+    // State for controlling dialogs
+    const [openSkillDialog, setOpenSkillDialog] = useState(false);
+    const [openExperienceDialog, setOpenExperienceDialog] = useState(false);
+    const [openProjectDialog, setOpenProjectDialog] = useState(false);
 
-    const handleGenerateSuggestions = async () => {
-        setIsLoading(true);
-        const suggestions = await fetchAiSuggestions(cvData);
-        setAiSuggestions(suggestions);
-        setIsLoading(false);
+    // State for form inputs
+    const [newSkill, setNewSkill] = useState('');
+    const [newExperience, setNewExperience] = useState({
+        company: '',
+        role: '',
+        time: '',
+        desc: ''
+    });
+    const [newProject, setNewProject] = useState({
+        name: '',
+        desc: ''
+    });
+
+    // Update TinyMCE content whenever cvData changes
+    useEffect(() => {
+        setEditorContent(generateCvContent(cvData));
+    }, [cvData]);
+
+    // Handlers for adding/removing skills
+    const handleOpenSkillDialog = () => {
+        setNewSkill('');
+        setOpenSkillDialog(true);
     };
 
-    const handleInputChange = (field, value) => {
-        setCvData({ ...cvData, [field]: value });
-    };
-
-    const handleContactChange = (field, value) => {
-        setCvData({ ...cvData, contact: { ...cvData.contact, [field]: value } });
-    };
-
-    const handleEducationChange = (field, value) => {
-        setCvData({ ...cvData, education: { ...cvData.education, [field]: value } });
-    };
-
-    const handleAddEducation = () => {
-        if (newSchool.school && newSchool.major && newSchool.year) {
-            setCvData({
-                ...cvData,
-                education: [...cvData.education, newSchool],
-            });
-            setNewSchool({ school: "", major: "", year: "" });
-        }
-    };
-
-    const handleDeleteEducation = (index) => {
-        const updated = [...cvData.education];
-        updated.splice(index, 1);
-        setCvData({ ...cvData, education: updated });
+    const handleCloseSkillDialog = () => {
+        setOpenSkillDialog(false);
     };
 
     const handleAddSkill = () => {
         if (newSkill.trim()) {
-            setCvData({ ...cvData, skills: [...cvData.skills, newSkill.trim()] });
-            setNewSkill("");
+            setCvData(prev => ({
+                ...prev,
+                skills: [...prev.skills, newSkill.trim()],
+            }));
         }
+        setOpenSkillDialog(false);
     };
 
-    const handleDeleteSkill = (index) => {
-        const updatedSkills = [...cvData.skills];
-        updatedSkills.splice(index, 1);
-        setCvData({ ...cvData, skills: updatedSkills });
+    const removeSkill = (index) => {
+        setCvData(prev => ({
+            ...prev,
+            skills: prev.skills.filter((_, i) => i !== index),
+        }));
+    };
+
+    // Handlers for adding/removing experiences
+    const handleOpenExperienceDialog = () => {
+        setNewExperience({ company: '', role: '', time: '', desc: '' });
+        setOpenExperienceDialog(true);
+    };
+
+    const handleCloseExperienceDialog = () => {
+        setOpenExperienceDialog(false);
     };
 
     const handleAddExperience = () => {
-        if (newExp.role && newExp.company) {
-            setCvData({ ...cvData, experiences: [...cvData.experiences, newExp] });
-            setNewExp({ role: "", company: "", time: "", desc: "" });
+        if (newExperience.company.trim() && newExperience.role.trim()) {
+            setCvData(prev => ({
+                ...prev,
+                experiences: [...prev.experiences, {
+                    company: newExperience.company.trim() || "New Company",
+                    role: newExperience.role.trim() || "New Role",
+                    time: newExperience.time.trim() || "MM/YYYY - MM/YYYY",
+                    desc: newExperience.desc.trim() || "Description of the role.",
+                }],
+            }));
         }
+        setOpenExperienceDialog(false);
     };
 
-    const handleDeleteExperience = (index) => {
-        const updated = [...cvData.experiences];
-        updated.splice(index, 1);
-        setCvData({ ...cvData, experiences: updated });
+    const removeExperience = (index) => {
+        setCvData(prev => ({
+            ...prev,
+            experiences: prev.experiences.filter((_, i) => i !== index),
+        }));
+    };
+
+    // Handlers for adding/removing projects
+    const handleOpenProjectDialog = () => {
+        setNewProject({ name: '', desc: '' });
+        setOpenProjectDialog(true);
+    };
+
+    const handleCloseProjectDialog = () => {
+        setOpenProjectDialog(false);
     };
 
     const handleAddProject = () => {
-        if (newProject.name && newProject.desc) {
-            setCvData({ ...cvData, projects: [...cvData.projects, newProject] });
-            setNewProject({ name: "", desc: "" });
+        if (newProject.name.trim()) {
+            setCvData(prev => ({
+                ...prev,
+                projects: [...prev.projects, {
+                    name: newProject.name.trim() || "New Project",
+                    desc: newProject.desc.trim() || "Project description.",
+                }],
+            }));
         }
+        setOpenProjectDialog(false);
     };
 
-    const handleDeleteProject = (index) => {
-        const updated = [...cvData.projects];
-        updated.splice(index, 1);
-        setCvData({ ...cvData, projects: updated });
+    const removeProject = (index) => {
+        setCvData(prev => ({
+            ...prev,
+            projects: prev.projects.filter((_, i) => i !== index),
+        }));
+    };
+
+    const handleEditorChange = (content) => {
+        console.log('Content updated:', content);
     };
 
     return (
-        <Box p={4} maxWidth="900px" margin="auto">
-            <Paper elevation={3} sx={{ p: 4 }}>
-                <Grid container spacing={4}>
-                    {/* Left */}
-                    <Grid item xs={12} md={4}>
-                        <Box textAlign="center">
-                            <Avatar src={cvData.avatarUrl} sx={{ width: 120, height: 120, margin: "auto" }} />
-                            <TextField
-                                label="Link Avatar"
-                                variant="standard"
-                                fullWidth
-                                value={cvData.avatarUrl}
-                                onChange={(e) => handleInputChange("avatarUrl", e.target.value)}
-                                sx={{ mt: 2 }}
-                            />
-                        </Box>
+        <Grid container spacing={2} sx={{ padding: '20px', height: '100vh' }}>
+            {/* Left Side: TinyMCE Editor */}
+            <Grid item xs={12} md={9}>
+                <Typography variant="h5" align="center" gutterBottom>
+                    CV Preview
+                </Typography>
+                <Editor
+                    apiKey="your-tinymce-api-key"
+                    init={{
+                        height: '80vh',
+                        menubar: true,
+                        plugins: [
+                            'advlist autolink lists link image charmap print preview anchor',
+                            'searchreplace visualblocks code fullscreen',
+                            'insertdatetime media table paste code help wordcount'
+                        ],
+                        toolbar:
+                            'undo redo | formatselect | bold italic | \
+              alignleft aligncenter alignright alignjustify | \
+              bullist numlist outdent indent | removeformat | help'
+                    }}
+                    value={editorContent}
+                    onEditorChange={handleEditorChange}
+                />
+            </Grid>
 
-                        <Box mt={3}>
-                            <TextField
-                                label="Tên"
-                                variant="standard"
-                                fullWidth
-                                value={cvData.name}
-                                onChange={(e) => handleInputChange("name", e.target.value)}
-                            />
-                            <TextField
-                                label="Chức danh"
-                                variant="standard"
-                                fullWidth
-                                value={cvData.title}
-                                onChange={(e) => handleInputChange("title", e.target.value)}
-                                sx={{ mt: 2 }}
-                            />
-                        </Box>
+            {/* Right Side: Controls */}
+            <Grid item xs={12} md={3}>
+                <Paper elevation={3} sx={{ padding: '15px', height: '100%', overflowY: 'auto' }}>
+                    <Typography variant="h6" align="center" gutterBottom>
+                        CV Controls
+                    </Typography>
 
-                        <Box mt={4}>
-                            <Typography variant="subtitle2">Liên hệ</Typography>
-                            <Divider sx={{ mb: 1 }} />
-                            <TextField
-                                label="Email"
-                                variant="standard"
-                                fullWidth
-                                value={cvData.contact.email}
-                                onChange={(e) => handleContactChange("email", e.target.value)}
-                                sx={{ mb: 2 }}
-                            />
-                            <TextField
-                                label="Số điện thoại"
-                                variant="standard"
-                                fullWidth
-                                value={cvData.contact.phone}
-                                onChange={(e) => handleContactChange("phone", e.target.value)}
-                                sx={{ mb: 2 }}
-                            />
-                            <TextField
-                                label="Địa chỉ"
-                                variant="standard"
-                                fullWidth
-                                value={cvData.contact.address}
-                                onChange={(e) => handleContactChange("address", e.target.value)}
-                            />
-                        </Box>
-
-                        <Box mt={4}>
-                            <Typography variant="subtitle2">Kỹ năng</Typography>
-                            <Divider sx={{ mb: 1 }} />
-                            <Stack direction="row" flexWrap="wrap" gap={1}>
+                    {/* Skills Section */}
+                    <Accordion defaultExpanded>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ backgroundColor: '#f5f5f5' }}>
+                            <Typography variant="subtitle1" color="primary">
+                                Kỹ năng
+                            </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <List dense>
                                 {cvData.skills.map((skill, index) => (
-                                    <Button
+                                    <ListItem
                                         key={index}
-                                        size="small"
-                                        variant="outlined"
-                                        color="primary"
-                                        onClick={() => handleDeleteSkill(index)}
+                                        secondaryAction={
+                                            <Button
+                                                color="error"
+                                                size="small"
+                                                onClick={() => removeSkill(index)}
+                                                sx={{ minWidth: '30px', padding: '2px' }}
+                                            >
+                                                <DeleteIcon fontSize="small" />
+                                            </Button>
+                                        }
                                     >
-                                        {skill} ❌
-                                    </Button>
+                                        <ListItemText primary={skill} />
+                                    </ListItem>
                                 ))}
-                            </Stack>
-                            <Box display="flex" gap={1} mt={1}>
-                                <TextField
-                                    label="Thêm kỹ năng"
-                                    size="small"
-                                    value={newSkill}
-                                    onChange={(e) => setNewSkill(e.target.value)}
-                                />
-                                <IconButton color="primary" onClick={handleAddSkill}>
-                                    <Add />
-                                </IconButton>
-                            </Box>
-                        </Box>
-                    </Grid>
-
-                    {/* Right */}
-                    <Grid item xs={12} md={8}>
-                        {/* Kinh nghiệm */}
-                        <Box>
-                            <Typography variant="h6">Kinh nghiệm làm việc</Typography>
-                            <Divider sx={{ mb: 2 }} />
-                            {cvData.experiences.map((exp, index) => (
-                                <Box key={index} mb={2}>
-                                    <Typography fontWeight="bold">{exp.role}</Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {exp.company} | {exp.time}
-                                    </Typography>
-                                    <Typography variant="body2">{exp.desc}</Typography>
-                                    <Button size="small" color="error" onClick={() => handleDeleteExperience(index)}>
-                                        Xoá
-                                    </Button>
-                                </Box>
-                            ))}
-                            <Box mt={2}>
-                                <TextField
-                                    label="Chức vụ"
-                                    size="small"
-                                    fullWidth
-                                    value={newExp.role}
-                                    onChange={(e) => setNewExp({ ...newExp, role: e.target.value })}
-                                    sx={{ mb: 1 }}
-                                />
-                                <TextField
-                                    label="Công ty"
-                                    size="small"
-                                    fullWidth
-                                    value={newExp.company}
-                                    onChange={(e) => setNewExp({ ...newExp, company: e.target.value })}
-                                    sx={{ mb: 1 }}
-                                />
-                                <TextField
-                                    label="Thời gian"
-                                    size="small"
-                                    fullWidth
-                                    value={newExp.time}
-                                    onChange={(e) => setNewExp({ ...newExp, time: e.target.value })}
-                                    sx={{ mb: 1 }}
-                                />
-                                <TextField
-                                    label="Mô tả"
-                                    size="small"
-                                    fullWidth
-                                    multiline
-                                    value={newExp.desc}
-                                    onChange={(e) => setNewExp({ ...newExp, desc: e.target.value })}
-                                />
-                                <Button onClick={handleAddExperience} variant="outlined" fullWidth sx={{ mt: 1 }}>
-                                    Thêm Kinh Nghiệm
-                                </Button>
-                            </Box>
-                        </Box>
-
-                        {/* Dự án */}
-                        <Box mt={4}>
-                            <Typography variant="h6">Dự án cá nhân</Typography>
-                            <Divider sx={{ mb: 2 }} />
-                            {cvData.projects.map((proj, index) => (
-                                <Box key={index} mb={2}>
-                                    <Typography fontWeight="bold">{proj.name}</Typography>
-                                    <Typography variant="body2">{proj.desc}</Typography>
-                                    <Button size="small" color="error" onClick={() => handleDeleteProject(index)}>
-                                        Xoá
-                                    </Button>
-                                </Box>
-                            ))}
-                            <Box mt={2}>
-                                <TextField
-                                    label="Tên dự án"
-                                    size="small"
-                                    fullWidth
-                                    value={newProject.name}
-                                    onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
-                                    sx={{ mb: 1 }}
-                                />
-                                <TextField
-                                    label="Mô tả"
-                                    size="small"
-                                    fullWidth
-                                    multiline
-                                    value={newProject.desc}
-                                    onChange={(e) => setNewProject({ ...newProject, desc: e.target.value })}
-                                />
-                                <Button onClick={handleAddProject} variant="outlined" fullWidth sx={{ mt: 1 }}>
-                                    Thêm Dự Án
-                                </Button>
-                            </Box>
-                        </Box>
-
-                        {/* Học vấn */}
-                        <Box mt={4}>
-                            <Typography variant="h6">Học vấn</Typography>
-                            <Divider sx={{ mb: 2 }} />
-                            {cvData.education.map((edu, index) => (
-                                <Box key={index} mb={2}>
-                                    <Typography fontWeight="bold">{edu.school}</Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {edu.major} | {edu.year}
-                                    </Typography>
-                                    <Button size="small" color="error" onClick={() => handleDeleteEducation(index)}>
-                                        Xoá
-                                    </Button>
-                                </Box>
-                            ))}
-                            <Box mt={2}>
-                                <TextField
-                                    label="Tên trường"
-                                    size="small"
-                                    fullWidth
-                                    value={newSchool.school}
-                                    onChange={(e) => setNewSchool({ ...newSchool, school: e.target.value })}
-                                    sx={{ mb: 1 }}
-                                />
-                                <TextField
-                                    label="Ngành học"
-                                    size="small"
-                                    fullWidth
-                                    value={newSchool.major}
-                                    onChange={(e) => setNewSchool({ ...newSchool, major: e.target.value })}
-                                    sx={{ mb: 1 }}
-                                />
-                                <TextField
-                                    label="Năm học"
-                                    size="small"
-                                    fullWidth
-                                    value={newSchool.year}
-                                    onChange={(e) => setNewSchool({ ...newSchool, year: e.target.value })}
-                                />
-                                <Button onClick={handleAddEducation} variant="outlined" fullWidth sx={{ mt: 1 }}>
-                                    Thêm Trường Học
-                                </Button>
-                            </Box>
-                        </Box>
-                        {/* Gợi ý AI */}
-                        <Box mt={4}>
-                            <Typography variant="h6">Gợi ý AI</Typography>
-                            <Divider sx={{ mb: 2 }} />
-                            {isLoading ? (
-                                <Typography variant="body2" color="text.secondary">
-                                    Đang tải gợi ý từ AI...
-                                </Typography>
-                            ) : (
-                                <>
-                                    <Box mt={2}>
-                                        <Typography variant="body2" fontWeight="bold">
-                                            Gợi ý về tóm tắt:
-                                        </Typography>
-                                        <Typography variant="body2">{aiSuggestions.summary}</Typography>
-                                    </Box>
-
-                                    <Box mt={2}>
-                                        <Typography variant="body2" fontWeight="bold">
-                                            Gợi ý về kỹ năng:
-                                        </Typography>
-                                        <Typography variant="body2">{aiSuggestions.skills}</Typography>
-                                    </Box>
-
-                                    <Box mt={2}>
-                                        <Typography variant="body2" fontWeight="bold">
-                                            Gợi ý về kinh nghiệm:
-                                        </Typography>
-                                        <Typography variant="body2">{aiSuggestions.experience}</Typography>
-                                    </Box>
-                                </>
-                            )}
+                            </List>
                             <Button
-                                onClick={handleGenerateSuggestions}
-                                variant="outlined"
-                                sx={{ mt: 2 }}
+                                variant="contained"
+                                color="success"
+                                startIcon={<AddIcon />}
+                                onClick={handleOpenSkillDialog}
+                                fullWidth
+                                size="small"
+                                sx={{ mt: 1 }}
                             >
-                                Gợi ý từ AI
+                                Thêm kỹ năng
                             </Button>
-                        </Box>
-                    </Grid>
-                </Grid>
-            </Paper>
-        </Box>
+                        </AccordionDetails>
+                    </Accordion>
+
+                    {/* Experiences Section */}
+                    <Accordion defaultExpanded>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ backgroundColor: '#f5f5f5' }}>
+                            <Typography variant="subtitle1" color="primary">
+                                Kinh nghiệm
+                            </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <List dense>
+                                {cvData.experiences.map((exp, index) => (
+                                    <ListItem
+                                        key={index}
+                                        secondaryAction={
+                                            <Button
+                                                color="error"
+                                                size="small"
+                                                onClick={() => removeExperience(index)}
+                                                sx={{ minWidth: '30px', padding: '2px' }}
+                                            >
+                                                <DeleteIcon fontSize="small" />
+                                            </Button>
+                                        }
+                                    >
+                                        <ListItemText
+                                            primary={`${exp.role} tại ${exp.company}`}
+                                            secondary={`(${exp.time})`}
+                                        />
+                                    </ListItem>
+                                ))}
+                            </List>
+                            <Button
+                                variant="contained"
+                                color="success"
+                                startIcon={<AddIcon />}
+                                onClick={handleOpenExperienceDialog}
+                                fullWidth
+                                size="small"
+                                sx={{ mt: 1 }}
+                            >
+                                Thêm kinh nghiệm
+                            </Button>
+                        </AccordionDetails>
+                    </Accordion>
+
+                    {/* Projects Section */}
+                    <Accordion defaultExpanded>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ backgroundColor: '#f5f5f5' }}>
+                            <Typography variant="subtitle1" color="primary">
+                                Dự án
+                            </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <List dense>
+                                {cvData.projects.map((project, index) => (
+                                    <ListItem
+                                        key={index}
+                                        secondaryAction={
+                                            <Button
+                                                color="error"
+                                                size="small"
+                                                onClick={() => removeProject(index)}
+                                                sx={{ minWidth: '30px', padding: '2px' }}
+                                            >
+                                                <DeleteIcon fontSize="small" />
+                                            </Button>
+                                        }
+                                    >
+                                        <ListItemText primary={project.name} />
+                                    </ListItem>
+                                ))}
+                            </List>
+                            <Button
+                                variant="contained"
+                                color="success"
+                                startIcon={<AddIcon />}
+                                onClick={handleOpenProjectDialog}
+                                fullWidth
+                                size="small"
+                                sx={{ mt: 1 }}
+                            >
+                                Thêm dự án
+                            </Button>
+                        </AccordionDetails>
+                    </Accordion>
+                </Paper>
+            </Grid>
+
+            {/* Dialog for Adding Skill */}
+            <Dialog open={openSkillDialog} onClose={handleCloseSkillDialog}>
+                <DialogTitle>Thêm kỹ năng mới</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        label="Tên kỹ năng"
+                        fullWidth
+                        variant="outlined"
+                        value={newSkill}
+                        onChange={(e) => setNewSkill(e.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseSkillDialog} color="primary">
+                        Hủy
+                    </Button>
+                    <Button onClick={handleAddSkill} color="primary" variant="contained">
+                        OK
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Dialog for Adding Experience */}
+            <Dialog open={openExperienceDialog} onClose={handleCloseExperienceDialog}>
+                <DialogTitle>Thêm kinh nghiệm mới</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        label="Tên công ty"
+                        fullWidth
+                        variant="outlined"
+                        value={newExperience.company}
+                        onChange={(e) => setNewExperience(prev => ({ ...prev, company: e.target.value }))}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Vị trí"
+                        fullWidth
+                        variant="outlined"
+                        value={newExperience.role}
+                        onChange={(e) => setNewExperience(prev => ({ ...prev, role: e.target.value }))}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Thời gian (VD: 06/2023 - 12/2023)"
+                        fullWidth
+                        variant="outlined"
+                        value={newExperience.time}
+                        onChange={(e) => setNewExperience(prev => ({ ...prev, time: e.target.value }))}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Mô tả"
+                        fullWidth
+                        variant="outlined"
+                        multiline
+                        rows={3}
+                        value={newExperience.desc}
+                        onChange={(e) => setNewExperience(prev => ({ ...prev, desc: e.target.value }))}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseExperienceDialog} color="primary">
+                        Hủy
+                    </Button>
+                    <Button onClick={handleAddExperience} color="primary" variant="contained">
+                        OK
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Dialog for Adding Project */}
+            <Dialog open={openProjectDialog} onClose={handleCloseProjectDialog}>
+                <DialogTitle>Thêm dự án mới</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        label="Tên dự án"
+                        fullWidth
+                        variant="outlined"
+                        value={newProject.name}
+                        onChange={(e) => setNewProject(prev => ({ ...prev, name: e.target.value }))}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Mô tả"
+                        fullWidth
+                        variant="outlined"
+                        multiline
+                        rows={3}
+                        value={newProject.desc}
+                        onChange={(e) => setNewProject(prev => ({ ...prev, desc: e.target.value }))}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseProjectDialog} color="primary">
+                        Hủy
+                    </Button>
+                    <Button onClick={handleAddProject} color="primary" variant="contained">
+                        OK
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </Grid>
     );
-}
+};
+
+export default CvEditor;

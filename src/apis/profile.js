@@ -31,6 +31,17 @@ export const getUserById = async (id) => {
     }
 };
 
+// Tạo một người dùng mới
+export const createUser = async (user) => {
+    try {
+        const response = await axios.post(BASE_URL, user, { headers: getAuthHeader() });
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi tạo user:', error);
+        throw error;
+    }
+};
+
 export const updateUser = async (id, userData) => {
     try {
         const response = await axios.put(`${BASE_URL}/${id}`, userData, { headers: getAuthHeader() });

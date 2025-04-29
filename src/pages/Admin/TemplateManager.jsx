@@ -166,33 +166,33 @@ function TemplateManager() {
                             autosave_retention: '2m',
                             image_advtab: true,
                             link_list: [
-                              { title: 'My page 1', value: 'https://www.tiny.cloud' },
-                              { title: 'My page 2', value: 'http://www.moxiecode.com' }
+                                { title: 'My page 1', value: 'https://www.tiny.cloud' },
+                                { title: 'My page 2', value: 'http://www.moxiecode.com' }
                             ],
                             image_list: [
-                              { title: 'My page 1', value: 'https://www.tiny.cloud' },
-                              { title: 'My page 2', value: 'http://www.moxiecode.com' }
+                                { title: 'My page 1', value: 'https://www.tiny.cloud' },
+                                { title: 'My page 2', value: 'http://www.moxiecode.com' }
                             ],
                             image_class_list: [
-                              { title: 'None', value: '' },
-                              { title: 'Some class', value: 'class-name' }
+                                { title: 'None', value: '' },
+                                { title: 'Some class', value: 'class-name' }
                             ],
                             importcss_append: true,
                             file_picker_callback: (callback, value, meta) => {
-                              /* Provide file and text for the link dialog */
-                              if (meta.filetype === 'file') {
-                                callback('https://www.google.com/logos/google.jpg', { text: 'My text' });
-                              }
-                          
-                              /* Provide image and alt text for the image dialog */
-                              if (meta.filetype === 'image') {
-                                callback('https://www.google.com/logos/google.jpg', { alt: 'My alt text' });
-                              }
-                          
-                              /* Provide alternative source and posted for the media dialog */
-                              if (meta.filetype === 'media') {
-                                callback('movie.mp4', { source2: 'alt.ogg', poster: 'https://www.google.com/logos/google.jpg' });
-                              }
+                                /* Provide file and text for the link dialog */
+                                if (meta.filetype === 'file') {
+                                    callback('https://www.google.com/logos/google.jpg', { text: 'My text' });
+                                }
+
+                                /* Provide image and alt text for the image dialog */
+                                if (meta.filetype === 'image') {
+                                    callback('https://www.google.com/logos/google.jpg', { alt: 'My alt text' });
+                                }
+
+                                /* Provide alternative source and posted for the media dialog */
+                                if (meta.filetype === 'media') {
+                                    callback('movie.mp4', { source2: 'alt.ogg', poster: 'https://www.google.com/logos/google.jpg' });
+                                }
                             },
                             height: 600,
                             image_caption: true,
@@ -201,7 +201,7 @@ function TemplateManager() {
                             toolbar_mode: 'sliding',
                             contextmenu: 'link image table',
                             content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:16px }'
-                          }}
+                        }}
                         onEditorChange={(content) => setNewTemplate({ ...newTemplate, content })}
                     />
 

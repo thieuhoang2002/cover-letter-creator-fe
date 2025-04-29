@@ -16,7 +16,9 @@ import { useAuth } from '../pages/Auth/AuthContext';
 
 const pages = [
     { name: 'Trang chủ', path: '/' },
-    { name: 'Mẫu Đơn Xin Việc', path: '/template/all' }
+    { name: 'Tạo CV với AI thần kỳ', path: '/create-cv-with-ai' },
+    { name: 'CV Hiện Đại', path: '/cv-editor-test' },
+    { name: 'Đơn Xin Việc Nhà Nước', path: '/template/all' }
 ];
 
 function Navbar() {
