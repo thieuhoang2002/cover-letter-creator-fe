@@ -22,6 +22,9 @@ import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
 import Information from './pages/Information/Information';
 import CvByAI from './pages/CvByAI/CvByAI';
 import CvEditor from './pages/CvEditor/CvEditor';
+import ListModernCV from './pages/ModernCV/ListModernCV';
+import ModernCVDetail from './pages/ModernCVDetail/ModernCVDetail';
+import ModernCVEditor from './pages/ModernCVEditor/ModernCVEditor';
 
 const gooleClientId = import.meta.env.VITE_CLIENT_ID;
 
@@ -43,6 +46,7 @@ function App() {
             </Route>
 
             <Route path="/template/all" element={<ListTemplate />} />
+            <Route path="/modern-cv/all" element={<ListModernCV />} />
 
             {/* <Route path="/template/:templateId" element={<TemplateDetail />} /> */}
 
@@ -50,9 +54,17 @@ function App() {
               <Route index element={<TemplateDetail />} />
             </Route>
 
+            <Route path="/modern-cv/:templateId" element={<PrivateRoute />}>
+              <Route index element={<ModernCVDetail />} />
+            </Route>
+
             {/* Route editor - Chỉ cần đăng nhập, không cần role cụ thể */}
             <Route path="/editor" element={<PrivateRoute />}>
               <Route index element={<EditorComponent />} />
+            </Route>
+
+            <Route path="/modern-cv-editor" element={<PrivateRoute />}>
+              <Route index element={<ModernCVEditor />} />
             </Route>
 
             <Route path="/pdf-exported" element={<PdfExported />} />

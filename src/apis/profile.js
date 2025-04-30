@@ -85,6 +85,20 @@ export const toggleFavoriteTemplate = async (templateId) => {
     }
 };
 
+export const toggleFavoriteModernTemplate = async (templateId) => {
+    try {
+        const response = await axios.post(
+            `${BASE_URL}/me/love-modern-template/${templateId}`,
+            {}, // Body rỗng vì API không yêu cầu dữ liệu trong body
+            { headers: getAuthHeader() }
+        );
+        return response.data; // Trả về phản hồi từ API
+    } catch (error) {
+        console.error(`Lỗi khi toggle yêu thích template với ID ${templateId}:`, error);
+        throw error;
+    }
+};
+
 export const changePassword = async (oldPassword, newPassword) => {
     try {
         const response = await axios.post(
