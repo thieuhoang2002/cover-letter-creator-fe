@@ -44,6 +44,7 @@ export default function ModernCVEditor() {
 
             try {
                 const user = await fetchUserProfile(token);
+                console.log("Thông tin người dùng:", user);
                 setTemplateUser(user);
             } catch (error) {
                 console.error("Lỗi khi lấy thông tin người dùng:", error);
@@ -121,21 +122,65 @@ export default function ModernCVEditor() {
     };
 
     const fillUserInfo = () => {
-        if (!editorRef.current || !userId) return;
+        if (!editorRef.current || !templateUser) return;
 
         let rawContent = editorRef.current.getContent();
         rawContent = he.decode(rawContent);
 
-        const formattedBirthday = new Date(templateUser.birthday).toLocaleDateString('vi-VN');
+        const formattedBirthday = templateUser.birthday
+            ? new Date(templateUser.birthday).toLocaleDateString('vi-VN')
+            : '';
+
+        // Định dạng danh sách kỹ năng
+        const skillsList = templateUser.skills && templateUser.skills.length > 0
+            ? `<ul>${templateUser.skills.map(skill => `<li>${skill.name}</li>`).join('')}</ul>`
+            : '<p>Chưa có kỹ năng</p>';
+
+        // Định dạng danh sách kinh nghiệm làm việc
+        const experiencesList = templateUser.experiences && templateUser.experiences.length > 0
+            ? `<ul>${templateUser.experiences.map(exp => `
+                <li>
+                    <strong>${exp.company}</strong> - ${exp.role} (${exp.time})<br/>
+                    ${exp.description}
+                </li>`).join('')}</ul>`
+            : '<p>Chưa có kinh nghiệm</p>';
+
+        // Định dạng danh sách học vấn
+        const educationsList = templateUser.educations && templateUser.educations.length > 0
+            ? `<ul>${templateUser.educations.map(edu => `
+                <li>
+                    <strong>${edu.school}</strong> - ${edu.degree || 'N/A'} (${edu.time})<br/>
+                    Chuyên ngành: ${edu.fieldOfStudy || 'N/A'}
+                </li>`).join('')}</ul>`
+            : '<p>Chưa có học vấn</p>';
+
+        // Định dạng danh sách chứng chỉ
+        const certificatesList = templateUser.certificates && templateUser.certificates.length > 0
+            ? `<ul>${templateUser.certificates.map(cert => `
+                <li>
+                    <strong>${cert.name}</strong> - ${cert.issuer} (${cert.issueDate})
+                </li>`).join('')}</ul>`
+            : '<p>Chưa có chứng chỉ</p>';
+
+        // Định dạng danh sách sở thích
+        const hobbiesList = templateUser.hobbies && templateUser.hobbies.length > 0
+            ? `<ul>${templateUser.hobbies.map(hobby => `<li>${hobby.name}</li>`).join('')}</ul>`
+            : '<p>Chưa có sở thích</p>';
 
         const replacedContent = rawContent
-            .replace(/\[Họ và tên\]/g, templateUser.name)
+            .replace(/\[Ảnh đại diện\]/g, templateUser.avatarUrl || '')
+            .replace(/\[Họ và tên\]/g, templateUser.name || '')
             .replace(/\[Ngày sinh\]/g, formattedBirthday)
             .replace(/\[Địa chỉ\]/g, templateUser.address || '')
             .replace(/\[Số điện thoại\]/g, templateUser.phone || '')
             .replace(/\[Email\]/g, templateUser.email || '')
-            .replace(/\[Trường\]/g, templateUser.school || '')
-            .replace(/\[Chuyên ngành\]/g, templateUser.specialization || '');
+            .replace(/\[Trường\]/g, templateUser.educations?.[0]?.school || '')
+            .replace(/\[Chuyên ngành\]/g, templateUser.specialization || '')
+            .replace(/\[Kỹ năng\]/g, skillsList)
+            .replace(/\[Kinh nghiệm làm việc\]/g, experiencesList)
+            .replace(/\[Học vấn\]/g, educationsList)
+            .replace(/\[Chứng chỉ\]/g, certificatesList)
+            .replace(/\[Sở thích\]/g, hobbiesList);
 
         setContent(replacedContent);
         editorRef.current.setContent(replacedContent);
@@ -272,7 +317,7 @@ export default function ModernCVEditor() {
                                     </Button>
                                 </Tooltip>
                             </Grid>
-                            <Grid item>
+                            {/* <Grid item>
                                 <Tooltip title="Lưu nội dung nháp">
                                     <Button
                                         variant="outlined"
@@ -284,7 +329,7 @@ export default function ModernCVEditor() {
                                         Lưu nháp
                                     </Button>
                                 </Tooltip>
-                            </Grid>
+                            </Grid> */}
                             <Grid item>
                                 <Tooltip title="Tải xuống PDF">
                                     <Button

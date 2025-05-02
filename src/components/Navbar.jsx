@@ -17,7 +17,7 @@ import { useAuth } from '../pages/Auth/AuthContext';
 const pages = [
     { name: 'Trang chủ', path: '/' },
     { name: 'Tạo CV với AI thần kỳ', path: '/create-cv-with-ai' },
-    { name: 'CV Hiện Đại', path: '/cv-editor-test' },
+    // { name: 'CV Hiện Đại', path: '/cv-editor-test' },
     { name: 'Đơn Xin Việc Nhà Nước', path: '/template/all' },
     { name: 'List CV Hiện Đại', path: '/modern-cv/all' }
 ];

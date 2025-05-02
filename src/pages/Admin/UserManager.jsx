@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
     Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle,
-    TextField, Snackbar, CircularProgress, Select, MenuItem, InputLabel, FormControl
+    TextField, Snackbar, CircularProgress, Select, MenuItem
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { getAllUsers, createUser, updateUser, deleteUser } from "../../apis/profile";
@@ -21,7 +21,6 @@ function UserManager() {
         birthday: "",
         address: "",
         phone: "",
-        school: "",
         specialization: ""
     });
     const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -37,7 +36,7 @@ function UserManager() {
             const data = await getAllUsers();
             setUsers(data);
         } catch (error) {
-            console.error("Lỗi khi tải danh sách nguời dùng:", error);
+            console.error("Lỗi khi tải danh sách người dùng:", error);
         } finally {
             setLoading(false);
         }
@@ -56,12 +55,12 @@ function UserManager() {
                 birthday: user.birthday,
                 address: user.address,
                 phone: user.phone,
-                school: user.school,
-                specialization: user.specialization 
+                specialization: user.specialization
             });
         } else {
             setIsEdit(false);
-            setNewUser({ name: "",
+            setNewUser({
+                name: "",
                 email: "",
                 password: "",
                 role: "",
@@ -69,8 +68,8 @@ function UserManager() {
                 birthday: "",
                 address: "",
                 phone: "",
-                university: "",
-                specialization: "" });
+                specialization: ""
+            });
         }
         setOpenDialog(true);
     };
@@ -112,14 +111,7 @@ function UserManager() {
         { field: "id", headerName: "ID", width: 70 },
         { field: "name", headerName: "Tên người dùng", width: 180 },
         { field: "email", headerName: "Email", width: 180 },
-        { field: "password", headerName: "Mật khẩu", width: 100 },
-        { field: "role", headerName: "Vai trò", width: 70 },
-        { field: "avatarUrl", headerName: "Ảnh đại diện", width: 100 },
-        { field: "birthday", headerName: "Ngày sinh", width: 110 },
-        { field: "address", headerName: "Địa chỉ", width: 120 },
-        { field: "phone", headerName: "Số điện thoại", width: 110 },
-        { field: "school", headerName: "Trường", width: 130 },
-        { field: "specialization", headerName: "Chuyên ngành", width: 120 },
+        { field: "role", headerName: "Vai trò", width: 100 },
         {
             field: "actions",
             headerName: "Hành động",
@@ -129,9 +121,6 @@ function UserManager() {
                     <Button color="primary" onClick={() => handleOpenDialog(params.row)}>
                         Chỉnh sửa
                     </Button>
-                    {/* <Button color="error" onClick={() => handleDeleteTemplate(params.row.id)}>
-                        Xóa
-                    </Button> */}
                 </>
             ),
         },
@@ -150,7 +139,7 @@ function UserManager() {
                 {loading ? <CircularProgress /> : <DataGrid rows={users} columns={columns} pageSize={5} />}
             </Box>
 
-            {/* Dialog Thêm / Chỉnh sửa template */}
+            {/* Dialog Thêm / Chỉnh sửa người dùng */}
             <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
                 <DialogTitle>{isEdit ? "Chỉnh sửa Người dùng" : "Thêm Người dùng"}</DialogTitle>
                 <DialogContent>
@@ -168,7 +157,6 @@ function UserManager() {
                         value={newUser.email}
                         onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                     />
-
                     <TextField
                         label="Mật khẩu"
                         fullWidth
@@ -176,7 +164,6 @@ function UserManager() {
                         value={newUser.password}
                         onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
                     />
-
                     <TextField
                         name="role"
                         fullWidth
@@ -184,13 +171,11 @@ function UserManager() {
                         label="Vai trò"
                         margin="normal"
                         value={newUser.role}
-                        
                         onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
                     >
                         <MenuItem value={"user"}>User</MenuItem>
                         <MenuItem value={"admin"}>Admin</MenuItem>
                     </TextField>
-
                     <TextField
                         label="URL ảnh đại diện"
                         fullWidth
@@ -198,7 +183,6 @@ function UserManager() {
                         value={newUser.avatarUrl}
                         onChange={(e) => setNewUser({ ...newUser, avatarUrl: e.target.value })}
                     />
-                    
                     <TextField
                         name="birthday"
                         label="Ngày sinh"
@@ -208,10 +192,9 @@ function UserManager() {
                         value={newUser.birthday}
                         InputLabelProps={{
                             shrink: true,
-                          }}
+                        }}
                         onChange={(e) => setNewUser({ ...newUser, birthday: e.target.value })}
                     />
-
                     <TextField
                         label="Địa chỉ"
                         fullWidth
@@ -219,7 +202,6 @@ function UserManager() {
                         value={newUser.address}
                         onChange={(e) => setNewUser({ ...newUser, address: e.target.value })}
                     />
-
                     <TextField
                         label="Số điện thoại"
                         fullWidth
@@ -227,15 +209,6 @@ function UserManager() {
                         value={newUser.phone}
                         onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
                     />
-
-                    <TextField
-                        label="Trường"
-                        fullWidth
-                        margin="normal"
-                        value={newUser.school}
-                        onChange={(e) => setNewUser({ ...newUser, school: e.target.value })}
-                    />
-
                     <TextField
                         label="Chuyên ngành"
                         fullWidth

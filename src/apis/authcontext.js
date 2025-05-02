@@ -19,7 +19,7 @@ export async function fetchUserProfile(token) {
 
         if (response.ok) {
             const user = await response.json();
-            //console.log('User profile:', user);
+            console.log('User profile:', user);
             return user;
         } else {
             throw new Error('Error fetching user profile');

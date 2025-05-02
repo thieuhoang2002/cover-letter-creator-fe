@@ -35,15 +35,79 @@ export const getActiveModernTemplates = async () => {
 };
 
 // Lấy thông tin một modern template theo ID
+// export const getModernTemplateById = async (id) => {
+//     try {
+//         const response = await axios.get(`${BASE_URL}/${id}`, { headers: getAuthHeader() });
+//         return response.data;
+//     } catch (error) {
+//         console.error(`Lỗi khi lấy modern template với id ${id}:`, error);
+//         throw error;
+//     }
+// };
+
+// Lấy thông tin một modern template theo ID
 export const getModernTemplateById = async (id) => {
     try {
-        const response = await axios.get(`${BASE_URL}/${id}`, { headers: getAuthHeader() });
-        return response.data;
+        // Construct the URL, optionally including userId if provided
+        const url = `${BASE_URL}/${id}`;
+
+        const response = await axios.get(url, { headers: getAuthHeader() });
+
+        // Ensure the response data includes the new fields
+        const templateData = response.data;
+        console.log('Template data:', templateData); // Debugging line
+        if (!templateData) {
+            throw new Error('No template data returned');
+        }
+
+        // Optionally validate or transform the response data
+        return {
+            id: templateData.id,
+            name: templateData.name,
+            type: templateData.type,
+            content: templateData.content,
+            image: templateData.image,
+            views: templateData.views,
+            updateDate: templateData.updateDate,
+            status: templateData.status,
+            isFavorite: templateData.isFavorite || false,
+            skills: templateData.skills || [],
+            experiences: templateData.experiences || [],
+            educations: templateData.educations || [],
+            certificates: templateData.certificates || [],
+            hobbies: templateData.hobbies || [],
+        };
     } catch (error) {
-        console.error(`Lỗi khi lấy modern template với id ${id}:`, error);
-        throw error;
+        // Enhanced error handling
+        let errorMessage = `Lỗi khi lấy modern template với id ${id}`;
+        if (error.response) {
+            // Server responded with a status other than 2xx
+            switch (error.response.status) {
+                case 404:
+                    errorMessage = `Không tìm thấy template với id ${id}`;
+                    break;
+                case 401:
+                    errorMessage = 'Không có quyền truy cập template';
+                    break;
+                case 500:
+                    errorMessage = 'Lỗi server khi lấy template';
+                    break;
+                default:
+                    errorMessage = error.response.data.message || errorMessage;
+            }
+        } else if (error.request) {
+            // No response received
+            errorMessage = 'Không thể kết nối đến server';
+        } else {
+            // Other errors
+            errorMessage = error.message;
+        }
+
+        console.error(errorMessage, error);
+        throw new Error(errorMessage);
     }
 };
+
 
 // Tạo một modern template mới
 export const createModernTemplate = async (template) => {

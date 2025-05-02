@@ -7,6 +7,7 @@ import { Dashboard, People, Settings, Article, Logout, ChevronLeft, ChevronRight
 import TemplateManager from "./TemplateManager";
 import UserManager from "./UserManager";
 import AdminDashboard from "./AdminDashboard";
+import ModernCVTemplateManager from "./ModernCVTemplateManager";
 import { useNavigate } from 'react-router-dom';
 
 const fullDrawerWidth = 240;
@@ -21,7 +22,8 @@ function AdminHomePage() {
     const menuItems = [
         { text: "Tổng Quan", icon: <Dashboard />, page: "dashboard" },
         { text: "Người dùng", icon: <People />, page: "users" },
-        { text: "Mẫu Đơn", icon: <Article />, page: "templates" },
+        { text: "Mẫu Đơn Nhà Nước", icon: <Article />, page: "templates" },
+        { text: "Mẫu Đơn Tư Nhân", icon: <Article />, page: "moderncvs" },
         // { text: "Settings", icon: <Settings />, page: "settings" },
     ];
 
@@ -145,6 +147,7 @@ function AdminHomePage() {
                     {selectedPage === "dashboard" && <AdminDashboard />}
                     {selectedPage === "users" && <UserManager />}
                     {selectedPage === "templates" && <TemplateManager />}
+                    {selectedPage === "moderncvs" && <ModernCVTemplateManager />}
                     {/*selectedPage === "settings" && <Typography>Cài đặt (Chưa triển khai)</Typography>} */}
                 </Box>
             </Box>

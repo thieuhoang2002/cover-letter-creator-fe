@@ -98,7 +98,7 @@ function ModernCVDetail() {
                 {/* Nội dung chi tiết */}
                 <Grid container spacing={3}>
                     {/* Hình ảnh (nếu có) */}
-                    {template.image && (
+                    {/* {template.image && (
                         <Grid item xs={12} md={4}>
                             <CardMedia
                                 component="img"
@@ -107,10 +107,10 @@ function ModernCVDetail() {
                                 sx={{ borderRadius: '8px', maxHeight: '200px', objectFit: 'cover' }}
                             />
                         </Grid>
-                    )}
+                    )} */}
 
                     {/* Nội dung template */}
-                    <Grid item xs={12} md={template.image ? 8 : 12}>
+                    <Grid item xs={12} md={template.image ? 12 : 12}>
                         <Box
                             sx={{
                                 border: '1px solid #ddd',
