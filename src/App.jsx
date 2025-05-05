@@ -25,6 +25,7 @@ import CvEditor from './pages/CvEditor/CvEditor';
 import ListModernCV from './pages/ModernCV/ListModernCV';
 import ModernCVDetail from './pages/ModernCVDetail/ModernCVDetail';
 import ModernCVEditor from './pages/ModernCVEditor/ModernCVEditor';
+import EditorCvAI from './pages/CvByAI/EditorCvAI';
 
 const gooleClientId = import.meta.env.VITE_CLIENT_ID;
 
@@ -80,6 +81,9 @@ function App() {
 
             <Route path="/create-cv-with-ai" element={<CvByAI />} />
             <Route path="/cv-editor-test" element={<CvEditor />} />
+            <Route path="/cv-editor-ai" element={<EditorCvAI />} />
+
+            {/* Route Auth */}
           </Routes>
         </BrowserRouter>
       </AuthProvider>

@@ -63,7 +63,7 @@ function UserManager() {
                 name: "",
                 email: "",
                 password: "",
-                role: "",
+                role: null,
                 avatarUrl: "",
                 birthday: "",
                 address: "",
