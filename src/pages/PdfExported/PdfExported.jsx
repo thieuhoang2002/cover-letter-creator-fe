@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { generatePdf, fetchCoverLetters, deleteCoverLetter } from '../../apis/pdf';
 import { fetchCoverLetters as fetchCoverLettersModernCV, deleteCoverLetter as deleteCoverLetterModernCV } from '../../apis/pdfModernCV';
+import { fetchCoverLetters as fetchCoverLettersAICV, deleteCoverLetter as deleteCoverLetterAICV } from '../../apis/pdfAICV';
 import { useAuth } from '../../pages/Auth/AuthContext';
 import {
     Container, Typography, Button, CircularProgress,
@@ -17,16 +18,18 @@ const PdfExported = () => {
     const { userId } = useAuth();
     const [coverLetters, setCoverLetters] = useState([]);
     const [modernCVs, setModernCVs] = useState([]);
+    const [aiCVs, setAiCVs] = useState([]); // Thêm state cho AICV
     const [loading, setLoading] = useState(true);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
     const [pageCoverLetters, setPageCoverLetters] = useState(0);
     const [pageModernCVs, setPageModernCVs] = useState(0);
+    const [pageAiCVs, setPageAiCVs] = useState(0); // Thêm state cho phân trang AICV
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
-    const [deletingType, setDeletingType] = useState(null); // 'coverLetter' hoặc 'modernCV'
+    const [deletingType, setDeletingType] = useState(null); // 'coverLetter', 'modernCV', hoặc 'aiCV'
     const [isDeleting, setIsDeleting] = useState(false);
     const [tabValue, setTabValue] = useState(0); // Quản lý tab hiện tại
 
@@ -38,7 +41,7 @@ const PdfExported = () => {
 
     const loadAllData = async () => {
         setLoading(true);
-        await Promise.all([loadCoverLetters(), loadModernCVs()]);
+        await Promise.all([loadCoverLetters(), loadModernCVs(), loadAiCVs()]);
         setLoading(false);
     };
 
@@ -58,7 +61,6 @@ const PdfExported = () => {
         const result = await fetchCoverLettersModernCV(userId);
         if (result.success) {
             setModernCVs(result.data);
-            console.log(result.data);
         } else {
             setSnackbarMessage(result.message);
             setSnackbarSeverity('error');
@@ -67,8 +69,24 @@ const PdfExported = () => {
         }
     };
 
+    const loadAiCVs = async () => {
+        const result = await fetchCoverLettersAICV(userId);
+        if (result.success) {
+            setAiCVs(result.data);
+        } else {
+            setSnackbarMessage(result.message);
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+            setAiCVs([]);
+        }
+    };
+
     const handleGeneratePdf = () => {
-        window.history.pushState({}, '', tabValue === 0 ? '/template/all' : '/modern-cv/all');
+        let path;
+        if (tabValue === 0) path = '/template/all';
+        else if (tabValue === 1) path = '/modern-cv/all';
+        else path = '/ai-cv/all'; // Điều hướng cho AICV
+        window.history.pushState({}, '', path);
         window.dispatchEvent(new PopStateEvent('popstate'));
     };
 
@@ -85,8 +103,10 @@ const PdfExported = () => {
         let result;
         if (deletingType === 'coverLetter') {
             result = await deleteCoverLetter(deletingId);
-        } else {
+        } else if (deletingType === 'modernCV') {
             result = await deleteCoverLetterModernCV(deletingId);
+        } else {
+            result = await deleteCoverLetterAICV(deletingId); // Xử lý xóa AICV
         }
 
         setSnackbarMessage(result.message);
@@ -94,7 +114,7 @@ const PdfExported = () => {
         setSnackbarOpen(true);
 
         if (result.success) {
-            await loadAllData(); // Tải lại cả hai danh sách
+            await loadAllData(); // Tải lại tất cả danh sách
         }
 
         setIsDeleting(false);
@@ -117,10 +137,15 @@ const PdfExported = () => {
         setPageModernCVs(newPage);
     };
 
+    const handleChangePageAiCVs = (event, newPage) => {
+        setPageAiCVs(newPage);
+    };
+
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPageCoverLetters(0);
         setPageModernCVs(0);
+        setPageAiCVs(0);
     };
 
     const handleTabChange = (event, newValue) => {
@@ -147,13 +172,14 @@ const PdfExported = () => {
 
             <Box sx={{ mb: 3, textAlign: 'center' }}>
                 <Button variant="contained" color="primary" onClick={handleGeneratePdf}>
-                    Tạo {tabValue === 0 ? 'Đơn Xin Việc' : 'CV Hiện Đại'} Mới
+                    Tạo {tabValue === 0 ? 'Đơn Xin Việc' : tabValue === 1 ? 'CV Hiện Đại' : 'AI CV'} Mới
                 </Button>
             </Box>
 
             <Tabs value={tabValue} onChange={handleTabChange} centered sx={{ mb: 3 }}>
                 <Tab label="Đơn Xin Việc" />
                 <Tab label="CV Hiện Đại" />
+                <Tab label="AI CV" />
             </Tabs>
 
             {tabValue === 0 ? (
@@ -221,7 +247,7 @@ const PdfExported = () => {
                         />
                     </TableContainer>
                 )
-            ) : (
+            ) : tabValue === 1 ? (
                 modernCVs.length === 0 ? (
                     <Typography align="center" variant="body1" sx={{ mt: 3 }}>
                         Bạn chưa xuất PDF CV hiện đại nào.
@@ -286,6 +312,69 @@ const PdfExported = () => {
                         />
                     </TableContainer>
                 )
+            ) : (
+                aiCVs.length === 0 ? (
+                    <Typography align="center" variant="body1" sx={{ mt: 3 }}>
+                        Bạn chưa xuất PDF AI CV nào.
+                    </Typography>
+                ) : (
+                    <TableContainer component={Paper} sx={{ boxShadow: 3 }}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell><Typography variant="subtitle1">STT</Typography></TableCell>
+                                    <TableCell><Typography variant="subtitle1">Ngày Tạo</Typography></TableCell>
+                                    <TableCell><Typography variant="subtitle1">Hành Động</Typography></TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {aiCVs.slice(pageAiCVs * rowsPerPage, pageAiCVs * rowsPerPage + rowsPerPage).map((pdf, index) => (
+                                    <TableRow key={pdf.id}>
+                                        <TableCell>{pageAiCVs * rowsPerPage + index + 1}</TableCell>
+                                        <TableCell>{new Date(pdf.createdAt).toLocaleString()}</TableCell>
+                                        <TableCell>
+                                            <Tooltip title="Xem PDF">
+                                                <IconButton
+                                                    component="a"
+                                                    href={pdf.urlGoogleDrive}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    color="primary"
+                                                >
+                                                    <VisibilityIcon />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="Xóa PDF">
+                                                <span>
+                                                    <IconButton
+                                                        onClick={() => handleDelete(pdf.id, 'aiCV')}
+                                                        color="error"
+                                                        disabled={isDeleting && deletingId === pdf.id}
+                                                    >
+                                                        {isDeleting && deletingId === pdf.id ? (
+                                                            <CircularProgress size={24} />
+                                                        ) : (
+                                                            <DeleteIcon />
+                                                        )}
+                                                    </IconButton>
+                                                </span>
+                                            </Tooltip>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                        <TablePagination
+                            rowsPerPageOptions={[5, 10, 25]}
+                            component="div"
+                            count={aiCVs.length}
+                            rowsPerPage={rowsPerPage}
+                            page={pageAiCVs}
+                            onPageChange={handleChangePageAiCVs}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                        />
+                    </TableContainer>
+                )
             )}
 
             {/* Dialog xác nhận xóa */}
@@ -296,7 +385,7 @@ const PdfExported = () => {
                 <DialogTitle>Xác nhận xóa</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        Bạn có chắc chắn muốn xóa {deletingType === 'coverLetter' ? 'đơn xin việc' : 'CV hiện đại'} này không?
+                        Bạn có chắc chắn muốn xóa {deletingType === 'coverLetter' ? 'đơn xin việc' : deletingType === 'modernCV' ? 'CV hiện đại' : 'AI CV'} này không?
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>

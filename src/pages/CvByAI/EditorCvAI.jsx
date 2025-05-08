@@ -9,7 +9,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
 import DownloadIcon from '@mui/icons-material/Download';
 import RestoreIcon from '@mui/icons-material/Restore';
-import { generatePdf } from "../../apis/pdfModernCV";
+import { generatePdf } from "../../apis/pdfAICV";
 import { useAuth } from "../../pages/Auth/AuthContext";
 import { fetchUserProfile } from '../../apis/authcontext';
 import he from 'he';

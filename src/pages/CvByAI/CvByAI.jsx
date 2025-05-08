@@ -2,15 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { getCurrentUser } from '../../apis/profile';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import {
+    Container,
+    Typography,
+    TextField,
+    Select,
+    MenuItem,
+    Button,
+    FormControl,
+    InputLabel,
+    Box
+} from '@mui/material';
 
 const CvByAI = () => {
     const navigate = useNavigate();
     const [userData, setUserData] = useState(null);
     const [formData, setFormData] = useState({
         position: '',
-        layout: 'modern',
-        font: 'Arial',
-        styles: 'professional',
         theme: 'light',
         response_format: 'html',
         placeholders: ['[Your Name]', '[Your Email]'],
@@ -45,7 +53,6 @@ const CvByAI = () => {
                 ...formData,
             });
             const cvHtml = response.data.content;
-            // Navigate to ModernCVEditor with the generated HTML
             navigate('/cv-editor-ai', {
                 state: {
                     template: {
@@ -63,82 +70,57 @@ const CvByAI = () => {
     };
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Generate CV</h1>
-            {error && <p className="text-red-500">{error}</p>}
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="block">Position Applying For</label>
-                    <input
-                        type="text"
-                        name="position"
-                        value={formData.position}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded"
-                        required
-                    />
-                </div>
-                <div>
-                    <label className="block">Layout</label>
-                    <select
-                        name="layout"
-                        value={formData.layout}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded"
-                    >
-                        <option value="modern">Modern</option>
-                        <option value="classic">Classic</option>
-                        <option value="creative">Creative</option>
-                    </select>
-                </div>
-                <div>
-                    <label className="block">Font</label>
-                    <select
-                        name="font"
-                        value={formData.font}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded"
-                    >
-                        <option value="Arial">Arial</option>
-                        <option value="Times New Roman">Times New Roman</option>
-                        <option value="Helvetica">Helvetica</option>
-                    </select>
-                </div>
-                <div>
-                    <label className="block">Style</label>
-                    <select
-                        name="styles"
-                        value={formData.styles}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded"
-                    >
-                        <option value="professional">Professional</option>
-                        <option value="minimalist">Minimalist</option>
-                        <option value="bold">Bold</option>
-                    </select>
-                </div>
-                <div>
-                    <label className="block">Theme</label>
-                    <select
+        <Container maxWidth="sm" sx={{ py: 4, mt: 6 }}>
+            <Typography variant="h4" gutterBottom>
+                TẠO CV VỚI AI THẦN KỲ
+            </Typography>
+
+            {error && (
+                <Typography color="error" variant="body2" sx={{ mb: 2 }}>
+                    {error}
+                </Typography>
+            )}
+
+            <form onSubmit={handleSubmit}>
+                <TextField
+                    fullWidth
+                    label="Vị trí ứng tuyển"
+                    name="position"
+                    value={formData.position}
+                    onChange={handleInputChange}
+                    required
+                    margin="normal"
+                />
+
+                <FormControl fullWidth margin="normal">
+                    <InputLabel id="theme-label">Chủ đề màu sắc</InputLabel>
+                    <Select
+                        labelId="theme-label"
+                        id="theme"
                         name="theme"
                         value={formData.theme}
                         onChange={handleInputChange}
-                        className="w-full p-2 border rounded"
+                        label="Chủ đề màu sắc"
                     >
-                        <option value="light">Light</option>
-                        <option value="dark">Dark</option>
-                        <option value="blue">Blue</option>
-                    </select>
-                </div>
-                <button
-                    type="submit"
-                    className="bg-blue-500 text-white p-2 rounded"
-                    disabled={loading}
-                >
-                    {loading ? 'Generating...' : 'Generate CV'}
-                </button>
+                        <MenuItem value="light">Light</MenuItem>
+                        <MenuItem value="dark">Dark</MenuItem>
+                        <MenuItem value="blue">Blue</MenuItem>
+                    </Select>
+                </FormControl>
+
+                <Box mt={3}>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        type="submit"
+                        fullWidth
+                        disabled={loading}
+                    >
+                        {loading ? 'Generating...' : 'Generate CV'}
+                    </Button>
+                </Box>
             </form>
-        </div>
+        </Container>
     );
 };
 
