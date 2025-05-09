@@ -88,7 +88,7 @@ function LoveTemplate() {
                                 <CardMedia
                                     component="img"
                                     height="140"
-                                    image={item.image}
+                                    image={item.image || 'https://placehold.co/150'}
                                     alt={item.name}
                                 />
                                 <CardContent>
