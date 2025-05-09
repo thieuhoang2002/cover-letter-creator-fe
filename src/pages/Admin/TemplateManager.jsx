@@ -128,7 +128,7 @@ function TemplateManager() {
             </Box>
 
             {/* Dialog Thêm / Chỉnh sửa template */}
-            <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+            <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth disableEnforceFocus>
                 <DialogTitle>{isEdit ? "Chỉnh sửa Template" : "Thêm Template"}</DialogTitle>
                 <DialogContent>
                     <TextField

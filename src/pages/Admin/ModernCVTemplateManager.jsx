@@ -133,7 +133,7 @@ function ModernCVTemplateManager() {
             </Box>
 
             {/* Dialog Thêm / Chỉnh sửa template */}
-            <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+            <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth disableEnforceFocus>
                 <DialogTitle>{isEdit ? "Chỉnh sửa Mẫu CV" : "Thêm Mẫu CV"}</DialogTitle>
                 <DialogContent>
                     <TextField

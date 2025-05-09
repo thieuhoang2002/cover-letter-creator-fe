@@ -233,7 +233,7 @@ function ListModernCV() {
 async function fetchUserFavorites() {
     try {
         const user = await getCurrentUser();
-        return Array.isArray(user.lovedTemplatesModern) ? user.lovedTemplatesModern : [];
+        return Array.isArray(user.lovedModernTemplates) ? user.lovedModernTemplates : [];
     } catch (error) {
         console.error('Lỗi khi lấy danh sách yêu thích:', error);
         return [];
