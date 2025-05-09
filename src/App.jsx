@@ -79,9 +79,15 @@ function App() {
 
             <Route path="/information" element={<Information />} />
 
-            <Route path="/create-cv-with-ai" element={<CvByAI />} />
             <Route path="/cv-editor-test" element={<CvEditor />} />
-            <Route path="/cv-editor-ai" element={<EditorCvAI />} />
+
+            <Route path="/create-cv-with-ai" element={<PrivateRoute />}>
+              <Route index element={<CvByAI />} />
+            </Route>
+
+            <Route path="/cv-editor-ai" element={<PrivateRoute />}>
+              <Route index element={<EditorCvAI />} />
+            </Route>
 
             {/* Route Auth */}
           </Routes>
