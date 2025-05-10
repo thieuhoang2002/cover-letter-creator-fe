@@ -37,6 +37,15 @@ const Information = () => {
     severity: "success",
   });
 
+  // Trạng thái để theo dõi các mục mới chưa lưu
+  const [pendingItems, setPendingItems] = useState({
+    skills: false,
+    experiences: false,
+    certificates: false,
+    educations: false,
+    hobbies: false,
+  });
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -89,12 +98,18 @@ const Information = () => {
       ...prev,
       [field]: [...prev[field], newItem],
     }));
+    // Đánh dấu là có mục mới chưa lưu
+    setPendingItems((prev) => ({ ...prev, [field]: true }));
   };
 
   const handleRemoveItem = (field, index) => {
     setFormData((prev) => {
       const updatedList = [...prev[field]];
       updatedList.splice(index, 1);
+      // Nếu xóa mục mới, reset trạng thái pending
+      if (!updatedList.some((item) => !item.id)) {
+        setPendingItems((prev) => ({ ...prev, [field]: false }));
+      }
       return { ...prev, [field]: updatedList };
     });
   };
@@ -102,7 +117,7 @@ const Information = () => {
   const validateForm = () => {
     const lists = [
       {
-        field: "skills",
+        field: "skills", // Sửa lỗi: từ "skills Diaz" thành "skills"
         name: "Kỹ năng",
         fields: ["name"],
       },
@@ -129,6 +144,14 @@ const Information = () => {
     ];
 
     for (const list of lists) {
+      // Kiểm tra xem formData[list.field] có tồn tại và là mảng không
+      if (!Array.isArray(formData[list.field])) {
+        return {
+          isValid: false,
+          message: `Dữ liệu ${list.name} không hợp lệ`,
+        };
+      }
+
       for (const item of formData[list.field]) {
         for (const key of list.fields) {
           if (!item[key] || item[key].trim() === "") {
@@ -164,6 +187,17 @@ const Information = () => {
         message: "Cập nhật thông tin thành công",
         severity: "success",
       });
+      // Reset trạng thái pending sau khi lưu thành công
+      setPendingItems({
+        skills: false,
+        experiences: false,
+        certificates: false,
+        educations: false,
+        hobbies: false,
+      });
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (error) {
       console.error("Lỗi cập nhật thông tin:", error);
       setSnackbar({
@@ -214,9 +248,15 @@ const Information = () => {
         variant="outlined"
         startIcon={<Add />}
         onClick={() => handleAddItem(field, defaultItem)}
+        disabled={pendingItems[field]} // Vô hiệu hóa nếu có mục mới chưa lưu
       >
         Thêm {labelMap.title.toLowerCase()}
       </Button>
+      {pendingItems[field] && (
+        <Typography variant="caption" color="textSecondary" display="block" mt={1}>
+          Vui lòng lưu trước khi thêm {labelMap.title.toLowerCase()} mới.
+        </Typography>
+      )}
     </Box>
   );
 

@@ -52,6 +52,14 @@ const CvByAI = () => {
                 userData,
                 ...formData,
             });
+
+            //deploy
+            // const urlBE = import.meta.env.VITE_BACKEND_URL;
+            // const response = await axios.post(`${urlBE}/api/ai/generate-cv`, {
+            //     userData,
+            //     ...formData,
+            // });
+
             const cvHtml = response.data.content;
             navigate('/cv-editor-ai', {
                 state: {

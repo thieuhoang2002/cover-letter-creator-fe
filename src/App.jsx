@@ -26,6 +26,7 @@ import ListModernCV from './pages/ModernCV/ListModernCV';
 import ModernCVDetail from './pages/ModernCVDetail/ModernCVDetail';
 import ModernCVEditor from './pages/ModernCVEditor/ModernCVEditor';
 import EditorCvAI from './pages/CvByAI/EditorCvAI';
+import FollowCV from './pages/FollowCV/FollowCV';
 
 const gooleClientId = import.meta.env.VITE_CLIENT_ID;
 
@@ -87,6 +88,10 @@ function App() {
 
             <Route path="/cv-editor-ai" element={<PrivateRoute />}>
               <Route index element={<EditorCvAI />} />
+            </Route>
+
+            <Route path="/follow-cv" element={<PrivateRoute />}>
+              <Route index element={<FollowCV />} />
             </Route>
 
             {/* Route Auth */}

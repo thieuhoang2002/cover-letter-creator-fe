@@ -50,6 +50,7 @@ function Navbar() {
         { name: 'Thông tin cá nhân', path: '/information' },
         { name: 'Mẫu đơn yêu thích', path: '/my-love-templates' },
         { name: 'Tệp đã xuất', path: '/pdf-exported' },
+        { name: 'Theo dõi CV', path: '/follow-cv' },
         { name: 'Đổi mật khẩu', path: '/change-password' },
         { name: 'Đăng xuất', action: handleLogout }
     ];
@@ -59,6 +60,7 @@ function Navbar() {
         { name: 'Thông tin cá nhân', path: '/information' },
         { name: 'Mẫu đơn yêu thích', path: '/my-love-templates' },
         { name: 'Tệp đã xuất', path: '/pdf-exported' },
+        { name: 'Theo dõi CV', path: '/follow-cv' },
         { name: 'Đổi mật khẩu', path: '/change-password' },
         { name: 'Đăng xuất', action: handleLogout }
     ];

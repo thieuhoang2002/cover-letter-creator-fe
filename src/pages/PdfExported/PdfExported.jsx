@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { generatePdf, fetchCoverLetters, deleteCoverLetter } from '../../apis/pdf';
 import { fetchCoverLetters as fetchCoverLettersModernCV, deleteCoverLetter as deleteCoverLetterModernCV } from '../../apis/pdfModernCV';
 import { fetchCoverLetters as fetchCoverLettersAICV, deleteCoverLetter as deleteCoverLetterAICV } from '../../apis/pdfAICV';
+import { addFollowedCV } from '../../apis/followedCVApi';
 import { useAuth } from '../../pages/Auth/AuthContext';
 import {
     Container, Typography, Button, CircularProgress,
@@ -12,26 +13,27 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import Alert from '@mui/material/Alert';
 
 const PdfExported = () => {
-    const { userId } = useAuth();
+    const { userId, token } = useAuth();
     const [coverLetters, setCoverLetters] = useState([]);
     const [modernCVs, setModernCVs] = useState([]);
-    const [aiCVs, setAiCVs] = useState([]); // Thêm state cho AICV
+    const [aiCVs, setAiCVs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
     const [pageCoverLetters, setPageCoverLetters] = useState(0);
     const [pageModernCVs, setPageModernCVs] = useState(0);
-    const [pageAiCVs, setPageAiCVs] = useState(0); // Thêm state cho phân trang AICV
+    const [pageAiCVs, setPageAiCVs] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
-    const [deletingType, setDeletingType] = useState(null); // 'coverLetter', 'modernCV', hoặc 'aiCV'
+    const [deletingType, setDeletingType] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [tabValue, setTabValue] = useState(0); // Quản lý tab hiện tại
+    const [tabValue, setTabValue] = useState(0);
 
     useEffect(() => {
         if (userId) {
@@ -85,7 +87,7 @@ const PdfExported = () => {
         let path;
         if (tabValue === 0) path = '/template/all';
         else if (tabValue === 1) path = '/modern-cv/all';
-        else path = '/ai-cv/all'; // Điều hướng cho AICV
+        else path = '/ai-cv/all';
         window.history.pushState({}, '', path);
         window.dispatchEvent(new PopStateEvent('popstate'));
     };
@@ -106,7 +108,7 @@ const PdfExported = () => {
         } else if (deletingType === 'modernCV') {
             result = await deleteCoverLetterModernCV(deletingId);
         } else {
-            result = await deleteCoverLetterAICV(deletingId); // Xử lý xóa AICV
+            result = await deleteCoverLetterAICV(deletingId);
         }
 
         setSnackbarMessage(result.message);
@@ -114,13 +116,32 @@ const PdfExported = () => {
         setSnackbarOpen(true);
 
         if (result.success) {
-            await loadAllData(); // Tải lại tất cả danh sách
+            await loadAllData();
         }
 
         setIsDeleting(false);
         setDeleteDialogOpen(false);
         setDeletingId(null);
         setDeletingType(null);
+    };
+
+    const handleFollow = async (pdf, type) => {
+        const data = {
+            urlGoogleDrive: pdf.urlGoogleDrive,
+            name: type === 'coverLetter' ? pdf.template.name : type === 'modernCV' ? pdf.templateModernCV.name : 'AI CV',
+            note: '',
+            company: '',
+            status: 'pending'
+        };
+        const result = await addFollowedCV(data);
+        setSnackbarMessage(result.message);
+        setSnackbarSeverity(result.success ? 'success' : 'error');
+        setSnackbarOpen(true);
+        setTimeout(() => {
+            if (result.success) {
+                window.location = '/follow-cv';
+            }
+        }, 500);
     };
 
     const handleDeleteDialogClose = () => {
@@ -216,6 +237,14 @@ const PdfExported = () => {
                                                     <VisibilityIcon />
                                                 </IconButton>
                                             </Tooltip>
+                                            <Tooltip title="Theo Dõi CV">
+                                                <IconButton
+                                                    onClick={() => handleFollow(pdf, 'coverLetter')}
+                                                    color="success"
+                                                >
+                                                    <AddCircleOutlineIcon />
+                                                </IconButton>
+                                            </Tooltip>
                                             <Tooltip title="Xóa PDF">
                                                 <span>
                                                     <IconButton
@@ -281,6 +310,14 @@ const PdfExported = () => {
                                                     <VisibilityIcon />
                                                 </IconButton>
                                             </Tooltip>
+                                            <Tooltip title="Theo Dõi CV">
+                                                <IconButton
+                                                    onClick={() => handleFollow(pdf, 'modernCV')}
+                                                    color="success"
+                                                >
+                                                    <AddCircleOutlineIcon />
+                                                </IconButton>
+                                            </Tooltip>
                                             <Tooltip title="Xóa PDF">
                                                 <span>
                                                     <IconButton
@@ -344,6 +381,14 @@ const PdfExported = () => {
                                                     <VisibilityIcon />
                                                 </IconButton>
                                             </Tooltip>
+                                            <Tooltip title="Theo Dõi CV">
+                                                <IconButton
+                                                    onClick={() => handleFollow(pdf, 'aiCV')}
+                                                    color="success"
+                                                >
+                                                    <AddCircleOutlineIcon />
+                                                </IconButton>
+                                            </Tooltip>
                                             <Tooltip title="Xóa PDF">
                                                 <span>
                                                     <IconButton
@@ -377,7 +422,6 @@ const PdfExported = () => {
                 )
             )}
 
-            {/* Dialog xác nhận xóa */}
             <Dialog
                 open={deleteDialogOpen}
                 onClose={handleDeleteDialogClose}
@@ -385,7 +429,7 @@ const PdfExported = () => {
                 <DialogTitle>Xác nhận xóa</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        Bạn có chắc chắn muốn xóa {deletingType === 'coverLetter' ? 'đơn xin việc' : deletingType === 'modernCV' ? 'CV hiện đại' : 'AI CV'} này không?
+                        Bạn có chắc chắn muốn xóa {deletingType === 'coverLetter' ? 'đơn xin việc' : deletingType === 'modernCV' ? 'CV hiện đại' : 'AI CV'} này không? Bạn sẽ không thể xem file này trong mục "Theo dõi CV" nữa.
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
