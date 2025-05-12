@@ -127,7 +127,7 @@ function ListModernCV() {
     }
 
     return (
-        <Container sx={{ mt: 4, padding: '20px' }}>
+        <Container sx={{ mt: 8, padding: '20px' }}>
             <Typography variant="h4" gutterBottom align="center">
                 Danh Sách Mẫu CV Hiện Đại
             </Typography>
