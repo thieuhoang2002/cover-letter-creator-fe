@@ -48,17 +48,17 @@ const CvByAI = () => {
         setLoading(true);
         setError('');
         try {
-            const response = await axios.post('http://localhost:8080/api/ai/generate-cv', {
-                userData,
-                ...formData,
-            });
-
-            //deploy
-            // const urlBE = import.meta.env.VITE_BACKEND_URL;
-            // const response = await axios.post(`${urlBE}/api/ai/generate-cv`, {
+            // const response = await axios.post('http://localhost:8080/api/ai/generate-cv', {
             //     userData,
             //     ...formData,
             // });
+
+            //deploy
+            const urlBE = import.meta.env.VITE_BACKEND_URL;
+            const response = await axios.post(`${urlBE}/api/ai/generate-cv`, {
+                userData,
+                ...formData,
+            });
 
             const cvHtml = response.data.content;
             navigate('/cv-editor-ai', {

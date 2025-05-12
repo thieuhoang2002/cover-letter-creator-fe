@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8080/api/ai-cv/pdf';
+//const BASE_URL = 'http://localhost:8080/api/ai-cv/pdf';
 
 //deploy
-// const urlBE = import.meta.env.VITE_BACKEND_URL;
-// const BASE_URL = `${urlBE}/api/pdf`;
+const urlBE = import.meta.env.VITE_BACKEND_URL;
+const BASE_URL = `${urlBE}/api/pdf`;
 
 const getAuthHeader = () => {
     const token = localStorage.getItem('token');
