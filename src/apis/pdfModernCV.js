@@ -4,7 +4,7 @@ import axios from 'axios';
 
 //deploy
 const urlBE = import.meta.env.VITE_BACKEND_URL;
-const BASE_URL = `${urlBE}/api/pdf`;
+const BASE_URL = `${urlBE}/api/modern-cv/pdf`;
 
 const getAuthHeader = () => {
     const token = localStorage.getItem('token');
