@@ -24,6 +24,7 @@ const CvByAI = () => {
         placeholders: ['[Your Name]', '[Your Email]'],
     });
     const [loading, setLoading] = useState(false);
+    const [loadingSeconds, setLoadingSeconds] = useState(0);
     const [error, setError] = useState('');
 
     useEffect(() => {
@@ -37,6 +38,19 @@ const CvByAI = () => {
         };
         fetchUserData();
     }, []);
+
+    useEffect(() => {
+        let interval;
+        if (loading) {
+            setLoadingSeconds(0); // Reset giây khi bắt đầu loading
+            interval = setInterval(() => {
+                setLoadingSeconds((prev) => prev + 1);
+            }, 1000);
+        } else {
+            clearInterval(interval);
+        }
+        return () => clearInterval(interval); // Dọn dẹp interval khi component unmount hoặc loading thay đổi
+    }, [loading]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -124,7 +138,7 @@ const CvByAI = () => {
                         fullWidth
                         disabled={loading}
                     >
-                        {loading ? 'Generating...' : 'Generate CV'}
+                        {loading ? `Đang tạo CV... (${loadingSeconds}s)` : 'Tạo CV'}
                     </Button>
                 </Box>
             </form>
