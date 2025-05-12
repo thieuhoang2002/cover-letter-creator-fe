@@ -68,11 +68,21 @@ const CvByAI = () => {
             // });
 
             //deploy
+            const getAuthHeader = () => {
+                const token = localStorage.getItem('token');
+                return token ? { Authorization: `Bearer ${token}` } : {};
+            };
             const urlBE = import.meta.env.VITE_BACKEND_URL;
-            const response = await axios.post(`${urlBE}/api/ai/generate-cv`, {
-                userData,
-                ...formData,
-            });
+            const response = await axios.post(
+                `${urlBE}/api/ai/generate-cv`,
+                {
+                    userData,
+                    ...formData,
+                },
+                {
+                    headers: getAuthHeader(), // Thêm header vào đây
+                }
+            );
 
             const cvHtml = response.data.content;
             navigate('/cv-editor-ai', {
