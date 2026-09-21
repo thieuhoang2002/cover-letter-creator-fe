@@ -88,7 +88,7 @@ const ResetPassword = () => {
     setSuccessMessage("");
 
     try {
-      await resetPassword(token, newPassword);
+      await resetPassword(token ? token.trim() : "", newPassword);
       setSuccessMessage("Đặt lại mật khẩu thành công! Bạn sẽ được chuyển tới trang đăng nhập...");
       setTimeout(() => {
         navigate("/login");

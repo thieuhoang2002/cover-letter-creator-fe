@@ -9,12 +9,36 @@ import {
   CircularProgress,
   Paper,
   IconButton,
+  Tabs,
+  Tab,
+  Card,
+  CardContent,
+  Stack,
+  Chip,
+  Grid,
+  Divider,
 } from "@mui/material";
-import { Add, Delete } from "@mui/icons-material";
+import {
+  Add,
+  Delete,
+  Person,
+  School,
+  Work,
+  WorkspacePremium,
+  Psychology,
+  Favorite,
+  Save,
+  CheckCircle,
+} from "@mui/icons-material";
 import Alert from "@mui/material/Alert";
 import { getCurrentUser, updateCurrentUserProfile } from "../../apis/profile";
+import { useThemeMode } from "../../context/ThemeContext";
 
 const Information = () => {
+  const { mode } = useThemeMode();
+  const isDark = mode === "dark";
+
+  const [activeTab, setActiveTab] = useState(0);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -31,19 +55,11 @@ const Information = () => {
   });
 
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success",
-  });
-
-  // Trạng thái để theo dõi các mục mới chưa lưu
-  const [pendingItems, setPendingItems] = useState({
-    skills: false,
-    experiences: false,
-    certificates: false,
-    educations: false,
-    hobbies: false,
   });
 
   useEffect(() => {
@@ -58,11 +74,11 @@ const Information = () => {
           birthday: user.birthday ? user.birthday.split("T")[0] : "",
           avatarUrl: user.avatarUrl || "",
           specialization: user.specialization || "",
-          skills: user.skills || [],
-          experiences: user.experiences || [],
-          certificates: user.certificates || [],
-          hobbies: user.hobbies || [],
-          educations: user.educations || [],
+          skills: Array.isArray(user.skills) ? user.skills : [],
+          experiences: Array.isArray(user.experiences) ? user.experiences : [],
+          certificates: Array.isArray(user.certificates) ? user.certificates : [],
+          hobbies: Array.isArray(user.hobbies) ? user.hobbies : [],
+          educations: Array.isArray(user.educations) ? user.educations : [],
         });
       } catch (error) {
         console.error("Lỗi khi lấy thông tin người dùng:", error);
@@ -88,7 +104,7 @@ const Information = () => {
   const handleListChange = (field, index, key, value) => {
     setFormData((prev) => {
       const updatedList = [...prev[field]];
-      updatedList[index][key] = value;
+      updatedList[index] = { ...updatedList[index], [key]: value };
       return { ...prev, [field]: updatedList };
     });
   };
@@ -98,303 +114,646 @@ const Information = () => {
       ...prev,
       [field]: [...prev[field], newItem],
     }));
-    // Đánh dấu là có mục mới chưa lưu
-    setPendingItems((prev) => ({ ...prev, [field]: true }));
   };
 
   const handleRemoveItem = (field, index) => {
     setFormData((prev) => {
       const updatedList = [...prev[field]];
       updatedList.splice(index, 1);
-      // Nếu xóa mục mới, reset trạng thái pending
-      if (!updatedList.some((item) => !item.id)) {
-        setPendingItems((prev) => ({ ...prev, [field]: false }));
-      }
       return { ...prev, [field]: updatedList };
     });
   };
 
-  const validateForm = () => {
-    const lists = [
-      {
-        field: "skills", // Sửa lỗi: từ "skills Diaz" thành "skills"
-        name: "Kỹ năng",
-        fields: ["name"],
-      },
-      {
-        field: "experiences",
-        name: "Kinh nghiệm làm việc",
-        fields: ["company", "role", "time", "description"],
-      },
-      {
-        field: "certificates",
-        name: "Chứng chỉ",
-        fields: ["name", "issuer", "issueDate"],
-      },
-      {
-        field: "educations",
-        name: "Học vấn",
-        fields: ["school", "fieldOfStudy", "degree", "time"],
-      },
-      {
-        field: "hobbies",
-        name: "Sở thích",
-        fields: ["name"],
-      },
-    ];
-
-    for (const list of lists) {
-      // Kiểm tra xem formData[list.field] có tồn tại và là mảng không
-      if (!Array.isArray(formData[list.field])) {
-        return {
-          isValid: false,
-          message: `Dữ liệu ${list.name} không hợp lệ`,
-        };
-      }
-
-      for (const item of formData[list.field]) {
-        for (const key of list.fields) {
-          if (!item[key] || item[key].trim() === "") {
-            return {
-              isValid: false,
-              message: `Trường "${key}" trong "${list.name}" không được để trống`,
-            };
-          }
-        }
-      }
-    }
-
-    return { isValid: true };
-  };
-
   const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const validation = validateForm();
-    if (!validation.isValid) {
-      setSnackbar({
-        open: true,
-        message: validation.message,
-        severity: "error",
-      });
-      return;
-    }
-
+    if (e) e.preventDefault();
+    setSaving(true);
     try {
       await updateCurrentUserProfile(formData);
       setSnackbar({
         open: true,
-        message: "Cập nhật thông tin thành công",
+        message: "Lưu hồ sơ cá nhân thành công!",
         severity: "success",
       });
-      // Reset trạng thái pending sau khi lưu thành công
-      setPendingItems({
-        skills: false,
-        experiences: false,
-        certificates: false,
-        educations: false,
-        hobbies: false,
-      });
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
     } catch (error) {
       console.error("Lỗi cập nhật thông tin:", error);
       setSnackbar({
         open: true,
-        message: "Cập nhật thất bại",
+        message: "Cập nhật hồ sơ thất bại. Vui lòng thử lại sau.",
         severity: "error",
       });
+    } finally {
+      setSaving(false);
     }
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" mt={5}>
-        <CircularProgress />
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="70vh">
+        <CircularProgress sx={{ color: "#10b981" }} />
       </Box>
     );
   }
 
-  const renderDynamicList = (field, labelMap, defaultItem) => (
-    <Box mb={2}>
-      <Typography variant="h6" mt={2} mb={1}>
-        {labelMap.title}
-      </Typography>
-      {formData[field].map((item, index) => (
-        <Box key={index} mb={1} display="flex" gap={2} alignItems="center">
-          {Object.keys(labelMap.fields).map((key) => (
-            <TextField
-              key={key}
-              label={labelMap.fields[key]}
-              value={item[key] || ""}
-              onChange={(e) =>
-                handleListChange(field, index, key, e.target.value)
-              }
-              size="small"
-            />
-          ))}
-          <IconButton onClick={() => handleRemoveItem(field, index)}>
-            <Delete />
-          </IconButton>
-        </Box>
-      ))}
-      <Button
-        size="small"
-        variant="outlined"
-        startIcon={<Add />}
-        onClick={() => handleAddItem(field, defaultItem)}
-        disabled={pendingItems[field]} // Vô hiệu hóa nếu có mục mới chưa lưu
-      >
-        Thêm {labelMap.title.toLowerCase()}
-      </Button>
-      {pendingItems[field] && (
-        <Typography variant="caption" color="textSecondary" display="block" mt={1}>
-          Vui lòng lưu trước khi thêm {labelMap.title.toLowerCase()} mới.
-        </Typography>
-      )}
-    </Box>
-  );
-
   return (
-    <Paper elevation={3} sx={{ p: 4, maxWidth: 800, mx: "auto", mt: 5 }}>
-      <Typography variant="h5" gutterBottom>
-        Thông tin cá nhân
-      </Typography>
-
-      <Box display="flex" justifyContent="center" mb={2}>
-        <Avatar src={formData.avatarUrl} sx={{ width: 80, height: 80 }} />
-      </Box>
-
-      <Box component="form" onSubmit={handleSubmit} noValidate>
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Link Avatar"
-          name="avatarUrl"
-          value={formData.avatarUrl}
-          onChange={handleChange}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Họ tên"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Email"
-          name="email"
-          type="email"
-          value={formData.email}
-          onChange={handleChange}
-          disabled
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Số điện thoại"
-          name="phone"
-          value={formData.phone}
-          onChange={handleChange}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Địa chỉ"
-          name="address"
-          value={formData.address}
-          onChange={handleChange}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Ngày sinh"
-          name="birthday"
-          type="date"
-          value={formData.birthday}
-          onChange={handleChange}
-          InputLabelProps={{
-            shrink: true,
+    <Box
+      sx={{
+        minHeight: "calc(100vh - 64px)",
+        background: isDark
+          ? "radial-gradient(ellipse at top, #1e293b 0%, #0f172a 100%)"
+          : "radial-gradient(ellipse at top, #f0fdf4 0%, #f8fafc 100%)",
+        py: 5,
+        px: { xs: 2, md: 4 },
+      }}
+    >
+      <Box sx={{ maxWidth: 960, mx: "auto" }}>
+        {/* Header Profile Summary */}
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3.5,
+            mb: 3,
+            borderRadius: 4,
+            bgcolor: isDark ? "rgba(30, 41, 59, 0.85)" : "#ffffff",
+            boxShadow: isDark
+              ? "0 10px 25px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.06)"
+              : "0 10px 25px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.04)",
+            backdropFilter: "blur(12px)",
           }}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Chuyên ngành"
-          name="specialization"
-          value={formData.specialization}
-          onChange={handleChange}
-        />
-
-        {renderDynamicList("skills", {
-          title: "Kỹ năng",
-          fields: { name: "Tên kỹ năng" },
-        }, { name: "" })}
-
-        {renderDynamicList("experiences", {
-          title: "Kinh nghiệm làm việc",
-          fields: {
-            company: "Công ty",
-            role: "Vai trò",
-            time: "Thời gian",
-            description: "Mô tả",
-          },
-        }, { company: "", role: "", time: "", description: "" })}
-
-        {renderDynamicList("certificates", {
-          title: "Chứng chỉ",
-          fields: {
-            name: "Tên chứng chỉ",
-            issuer: "Tổ chức cấp",
-            issueDate: "Ngày cấp (yyyy-mm)",
-          },
-        }, { name: "", issuer: "", issueDate: "" })}
-
-        {renderDynamicList("educations", {
-          title: "Học vấn",
-          fields: {
-            school: "Tên trường",
-            fieldOfStudy: "Ngành học",
-            degree: "Bằng cấp",
-            time: "Thời gian",
-          },
-        }, { school: "", fieldOfStudy: "", degree: "", time: "" })}
-
-        {renderDynamicList("hobbies", {
-          title: "Sở thích",
-          fields: { name: "Tên sở thích" },
-        }, { name: "" })}
-
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          fullWidth
-          sx={{ mt: 2 }}
         >
-          Cập nhật
-        </Button>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={3}
+            alignItems={{ xs: "center", sm: "center" }}
+            justifyContent="space-between"
+          >
+            <Stack direction="row" spacing={2.5} alignItems="center">
+              <Avatar
+                src={formData.avatarUrl}
+                alt={formData.name}
+                sx={{
+                  width: 76,
+                  height: 76,
+                  border: "3px solid #10b981",
+                  boxShadow: "0 4px 12px rgba(16, 185, 129, 0.25)",
+                  fontSize: "1.75rem",
+                  fontWeight: 700,
+                  bgcolor: "#10b981",
+                }}
+              >
+                {formData.name ? formData.name.charAt(0).toUpperCase() : "U"}
+              </Avatar>
+              <Box>
+                <Typography variant="h5" fontWeight={700} color={isDark ? "#f8fafc" : "#0f172a"}>
+                  {formData.name || "Chưa đặt họ tên"}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  {formData.email}
+                </Typography>
+                {formData.specialization && (
+                  <Chip
+                    label={formData.specialization}
+                    size="small"
+                    color="primary"
+                    sx={{
+                      mt: 1,
+                      fontWeight: 600,
+                      background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                    }}
+                  />
+                )}
+              </Box>
+            </Stack>
+
+            <Button
+              variant="contained"
+              startIcon={saving ? <CircularProgress size={18} color="inherit" /> : <Save />}
+              onClick={handleSubmit}
+              disabled={saving}
+              sx={{
+                borderRadius: 2.5,
+                px: 3.5,
+                py: 1.2,
+                fontWeight: 600,
+                textTransform: "none",
+                fontSize: "0.95rem",
+                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)",
+                "&:hover": {
+                  background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+                },
+              }}
+            >
+              {saving ? "Đang lưu..." : "Lưu thay đổi"}
+            </Button>
+          </Stack>
+        </Paper>
+
+        {/* Tab Navigation */}
+        <Paper
+          elevation={0}
+          sx={{
+            borderRadius: 4,
+            bgcolor: isDark ? "rgba(30, 41, 59, 0.85)" : "#ffffff",
+            boxShadow: isDark
+              ? "0 10px 25px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.06)"
+              : "0 10px 25px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.04)",
+            overflow: "hidden",
+          }}
+        >
+          <Tabs
+            value={activeTab}
+            onChange={(e, val) => setActiveTab(val)}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              borderBottom: 1,
+              borderColor: isDark ? "rgba(255,255,255,0.08)" : "divider",
+              px: 2,
+              "& .MuiTab-root": {
+                fontWeight: 600,
+                textTransform: "none",
+                fontSize: "0.925rem",
+                py: 2,
+              },
+            }}
+          >
+            <Tab icon={<Person fontSize="small" />} iconPosition="start" label="Thông tin cá nhân" />
+            <Tab icon={<Work fontSize="small" />} iconPosition="start" label="Kinh nghiệm & Học vấn" />
+            <Tab icon={<Psychology fontSize="small" />} iconPosition="start" label="Kỹ năng & Chứng chỉ" />
+            <Tab icon={<Favorite fontSize="small" />} iconPosition="start" label="Sở thích" />
+          </Tabs>
+
+          <Box p={{ xs: 2.5, sm: 4 }}>
+            {/* Tab 0: Basic Information */}
+            {activeTab === 0 && (
+              <Box component="form" onSubmit={handleSubmit}>
+                <Typography variant="subtitle1" fontWeight={700} color={isDark ? "#f8fafc" : "#0f172a"} mb={2}>
+                  Thông tin liên hệ & Cơ bản
+                </Typography>
+                <Grid container spacing={2.5}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Họ và tên"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Địa chỉ Email"
+                      name="email"
+                      value={formData.email}
+                      disabled
+                      helperText="Email định danh tài khoản, không thể thay đổi"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Số điện thoại"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="0987 654 321"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Ngày sinh"
+                      name="birthday"
+                      type="date"
+                      value={formData.birthday}
+                      onChange={handleChange}
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Chuyên môn / Nghề nghiệp"
+                      name="specialization"
+                      value={formData.specialization}
+                      onChange={handleChange}
+                      placeholder="Fullstack Developer, Marketing Specialist..."
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Link ảnh đại diện (URL)"
+                      name="avatarUrl"
+                      value={formData.avatarUrl}
+                      onChange={handleChange}
+                      placeholder="https://example.com/avatar.jpg"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Địa chỉ cư trú"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      placeholder="Quận 1, TP. Hồ Chí Minh"
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
+
+            {/* Tab 1: Experience & Education */}
+            {activeTab === 1 && (
+              <Box>
+                {/* Experiences */}
+                <Box mb={4}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                    <Typography variant="subtitle1" fontWeight={700} color={isDark ? "#f8fafc" : "#0f172a"}>
+                      Kinh nghiệm làm việc ({formData.experiences.length})
+                    </Typography>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<Add />}
+                      onClick={() =>
+                        handleAddItem("experiences", {
+                          company: "",
+                          role: "",
+                          time: "",
+                          description: "",
+                        })
+                      }
+                      sx={{ textTransform: "none", borderRadius: 2 }}
+                    >
+                      Thêm kinh nghiệm
+                    </Button>
+                  </Stack>
+
+                  {formData.experiences.length === 0 ? (
+                    <Typography variant="body2" color="textSecondary" sx={{ py: 2, textAlign: "center" }}>
+                      Chưa có mục kinh nghiệm làm việc nào. Bấm "Thêm kinh nghiệm" để bổ sung.
+                    </Typography>
+                  ) : (
+                    formData.experiences.map((item, index) => (
+                      <Card
+                        key={index}
+                        variant="outlined"
+                        sx={{
+                          mb: 2,
+                          p: 2.5,
+                          borderRadius: 3,
+                          bgcolor: isDark ? "rgba(255,255,255,0.02)" : "#fafafa",
+                        }}
+                      >
+                        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
+                          <Chip
+                            label={`Kinh nghiệm #${index + 1}`}
+                            size="small"
+                            color="success"
+                            variant="outlined"
+                          />
+                          <IconButton size="small" color="error" onClick={() => handleRemoveItem("experiences", index)}>
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </Stack>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              fullWidth
+                              size="small"
+                              label="Tên công ty / Doanh nghiệp"
+                              value={item.company || ""}
+                              onChange={(e) => handleListChange("experiences", index, "company", e.target.value)}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              fullWidth
+                              size="small"
+                              label="Vị trí / Chức danh"
+                              value={item.role || ""}
+                              onChange={(e) => handleListChange("experiences", index, "role", e.target.value)}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={4}>
+                            <TextField
+                              fullWidth
+                              size="small"
+                              label="Thời gian làm việc"
+                              placeholder="2022 - Hiện tại"
+                              value={item.time || ""}
+                              onChange={(e) => handleListChange("experiences", index, "time", e.target.value)}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={8}>
+                            <TextField
+                              fullWidth
+                              size="small"
+                              label="Mô tả công việc & Thành tựu"
+                              multiline
+                              rows={2}
+                              value={item.description || ""}
+                              onChange={(e) => handleListChange("experiences", index, "description", e.target.value)}
+                            />
+                          </Grid>
+                        </Grid>
+                      </Card>
+                    ))
+                  )}
+                </Box>
+
+                <Divider sx={{ my: 3 }} />
+
+                {/* Educations */}
+                <Box>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                    <Typography variant="subtitle1" fontWeight={700} color={isDark ? "#f8fafc" : "#0f172a"}>
+                      Học vấn & Bằng cấp ({formData.educations.length})
+                    </Typography>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<Add />}
+                      onClick={() =>
+                        handleAddItem("educations", {
+                          school: "",
+                          fieldOfStudy: "",
+                          degree: "",
+                          time: "",
+                        })
+                      }
+                      sx={{ textTransform: "none", borderRadius: 2 }}
+                    >
+                      Thêm học vấn
+                    </Button>
+                  </Stack>
+
+                  {formData.educations.length === 0 ? (
+                    <Typography variant="body2" color="textSecondary" sx={{ py: 2, textAlign: "center" }}>
+                      Chưa có mục học vấn nào. Bấm "Thêm học vấn" để bắt đầu.
+                    </Typography>
+                  ) : (
+                    formData.educations.map((item, index) => (
+                      <Card
+                        key={index}
+                        variant="outlined"
+                        sx={{
+                          mb: 2,
+                          p: 2.5,
+                          borderRadius: 3,
+                          bgcolor: isDark ? "rgba(255,255,255,0.02)" : "#fafafa",
+                        }}
+                      >
+                        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
+                          <Chip
+                            label={`Học vấn #${index + 1}`}
+                            size="small"
+                            color="info"
+                            variant="outlined"
+                          />
+                          <IconButton size="small" color="error" onClick={() => handleRemoveItem("educations", index)}>
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </Stack>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              fullWidth
+                              size="small"
+                              label="Trường / Cơ sở đào tạo"
+                              value={item.school || ""}
+                              onChange={(e) => handleListChange("educations", index, "school", e.target.value)}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              fullWidth
+                              size="small"
+                              label="Ngành học"
+                              value={item.fieldOfStudy || ""}
+                              onChange={(e) => handleListChange("educations", index, "fieldOfStudy", e.target.value)}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              fullWidth
+                              size="small"
+                              label="Bằng cấp / Trình độ"
+                              placeholder="Cử nhân, Kỹ sư, Thạc sĩ..."
+                              value={item.degree || ""}
+                              onChange={(e) => handleListChange("educations", index, "degree", e.target.value)}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              fullWidth
+                              size="small"
+                              label="Thời gian học"
+                              placeholder="2018 - 2022"
+                              value={item.time || ""}
+                              onChange={(e) => handleListChange("educations", index, "time", e.target.value)}
+                            />
+                          </Grid>
+                        </Grid>
+                      </Card>
+                    ))
+                  )}
+                </Box>
+              </Box>
+            )}
+
+            {/* Tab 2: Skills & Certificates */}
+            {activeTab === 2 && (
+              <Box>
+                {/* Skills */}
+                <Box mb={4}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                    <Typography variant="subtitle1" fontWeight={700} color={isDark ? "#f8fafc" : "#0f172a"}>
+                      Kỹ năng chuyên môn ({formData.skills.length})
+                    </Typography>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<Add />}
+                      onClick={() => handleAddItem("skills", { name: "" })}
+                      sx={{ textTransform: "none", borderRadius: 2 }}
+                    >
+                      Thêm kỹ năng
+                    </Button>
+                  </Stack>
+
+                  <Grid container spacing={2}>
+                    {formData.skills.map((item, index) => (
+                      <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <TextField
+                            fullWidth
+                            size="small"
+                            label={`Kỹ năng #${index + 1}`}
+                            value={item.name || ""}
+                            onChange={(e) => handleListChange("skills", index, "name", e.target.value)}
+                          />
+                          <IconButton size="small" color="error" onClick={() => handleRemoveItem("skills", index)}>
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </Stack>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+
+                <Divider sx={{ my: 3 }} />
+
+                {/* Certificates */}
+                <Box>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                    <Typography variant="subtitle1" fontWeight={700} color={isDark ? "#f8fafc" : "#0f172a"}>
+                      Chứng chỉ & Giải thưởng ({formData.certificates.length})
+                    </Typography>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<Add />}
+                      onClick={() =>
+                        handleAddItem("certificates", {
+                          name: "",
+                          issuer: "",
+                          issueDate: "",
+                        })
+                      }
+                      sx={{ textTransform: "none", borderRadius: 2 }}
+                    >
+                      Thêm chứng chỉ
+                    </Button>
+                  </Stack>
+
+                  {formData.certificates.length === 0 ? (
+                    <Typography variant="body2" color="textSecondary" sx={{ py: 2, textAlign: "center" }}>
+                      Chưa có chứng chỉ nào. Bấm "Thêm chứng chỉ" để bổ sung.
+                    </Typography>
+                  ) : (
+                    formData.certificates.map((item, index) => (
+                      <Card
+                        key={index}
+                        variant="outlined"
+                        sx={{
+                          mb: 2,
+                          p: 2.5,
+                          borderRadius: 3,
+                          bgcolor: isDark ? "rgba(255,255,255,0.02)" : "#fafafa",
+                        }}
+                      >
+                        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
+                          <Chip
+                            label={`Chứng chỉ #${index + 1}`}
+                            size="small"
+                            color="secondary"
+                            variant="outlined"
+                          />
+                          <IconButton size="small" color="error" onClick={() => handleRemoveItem("certificates", index)}>
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </Stack>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} sm={5}>
+                            <TextField
+                              fullWidth
+                              size="small"
+                              label="Tên chứng chỉ"
+                              value={item.name || ""}
+                              onChange={(e) => handleListChange("certificates", index, "name", e.target.value)}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={4}>
+                            <TextField
+                              fullWidth
+                              size="small"
+                              label="Tổ chức cấp"
+                              value={item.issuer || ""}
+                              onChange={(e) => handleListChange("certificates", index, "issuer", e.target.value)}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={3}>
+                            <TextField
+                              fullWidth
+                              size="small"
+                              label="Ngày cấp"
+                              placeholder="Tháng 06/2023"
+                              value={item.issueDate || ""}
+                              onChange={(e) => handleListChange("certificates", index, "issueDate", e.target.value)}
+                            />
+                          </Grid>
+                        </Grid>
+                      </Card>
+                    ))
+                  )}
+                </Box>
+              </Box>
+            )}
+
+            {/* Tab 3: Hobbies */}
+            {activeTab === 3 && (
+              <Box>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                  <Typography variant="subtitle1" fontWeight={700} color={isDark ? "#f8fafc" : "#0f172a"}>
+                    Sở thích cá nhân ({formData.hobbies.length})
+                  </Typography>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<Add />}
+                    onClick={() => handleAddItem("hobbies", { name: "" })}
+                    sx={{ textTransform: "none", borderRadius: 2 }}
+                  >
+                    Thêm sở thích
+                  </Button>
+                </Stack>
+
+                <Grid container spacing={2}>
+                  {formData.hobbies.map((item, index) => (
+                    <Grid item xs={12} sm={6} md={4} key={index}>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <TextField
+                          fullWidth
+                          size="small"
+                          label={`Sở thích #${index + 1}`}
+                          value={item.name || ""}
+                          onChange={(e) => handleListChange("hobbies", index, "name", e.target.value)}
+                        />
+                        <IconButton size="small" color="error" onClick={() => handleRemoveItem("hobbies", index)}>
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Stack>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            )}
+          </Box>
+        </Paper>
       </Box>
 
+      {/* Snackbar feedback */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert severity={snackbar.severity} onClose={handleCloseSnackbar}>
+        <Alert
+          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+          severity={snackbar.severity}
+          variant="filled"
+          icon={<CheckCircle fontSize="inherit" />}
+          sx={{ borderRadius: 2.5 }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Paper>
+    </Box>
   );
 };
 

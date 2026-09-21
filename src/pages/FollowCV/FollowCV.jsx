@@ -5,15 +5,51 @@ import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
     Paper, IconButton, Box, TablePagination,
     Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions,
-    TextField, Button, DialogContentText
+    TextField, Button, DialogContentText, Chip, MenuItem, Select, FormControl, InputLabel,
+    Grid, Card, CardContent, Stack
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import WorkIcon from '@mui/icons-material/Work';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { fetchFollowedCVs, updateFollowedCV, deleteFollowedCV } from '../../apis/followedCVApi';
+import { useThemeMode } from '../../context/ThemeContext';
+
+const STATUS_CONFIG = {
+    pending: { label: 'Chờ phản hồi', color: 'warning', icon: <HourglassEmptyIcon fontSize="small" /> },
+    'đang chờ': { label: 'Chờ phản hồi', color: 'warning', icon: <HourglassEmptyIcon fontSize="small" /> },
+    interview: { label: 'Phỏng vấn', color: 'info', icon: <WorkIcon fontSize="small" /> },
+    'phỏng vấn': { label: 'Phỏng vấn', color: 'info', icon: <WorkIcon fontSize="small" /> },
+    accepted: { label: 'Trúng tuyển', color: 'success', icon: <CheckCircleOutlineIcon fontSize="small" /> },
+    'trúng tuyển': { label: 'Trúng tuyển', color: 'success', icon: <CheckCircleOutlineIcon fontSize="small" /> },
+    rejected: { label: 'Từ chối', color: 'error', icon: <HighlightOffIcon fontSize="small" /> },
+    'từ chối': { label: 'Từ chối', color: 'error', icon: <HighlightOffIcon fontSize="small" /> },
+};
+
+const getStatusBadge = (rawStatus) => {
+    const key = (rawStatus || '').toLowerCase().trim();
+    const config = STATUS_CONFIG[key] || { label: rawStatus || 'Chưa cập nhật', color: 'default' };
+    return (
+        <Chip
+            size="small"
+            label={config.label}
+            color={config.color}
+            variant="outlined"
+            icon={config.icon}
+            sx={{ fontWeight: 600, borderRadius: 2 }}
+        />
+    );
+};
 
 const FollowCV = () => {
-    const { token } = useAuth(); // Giả định useAuth cung cấp token
+    const { token } = useAuth();
+    const { mode } = useThemeMode();
+    const isDark = mode === 'dark';
+
     const [followedCVs, setFollowedCVs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -25,7 +61,7 @@ const FollowCV = () => {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [editingCV, setEditingCV] = useState(null);
     const [deletingCVId, setDeletingCVId] = useState(null);
-    const [formData, setFormData] = useState({ note: '', company: '', status: '' });
+    const [formData, setFormData] = useState({ note: '', company: '', status: 'Chờ phản hồi' });
 
     useEffect(() => {
         if (token) {
@@ -37,14 +73,8 @@ const FollowCV = () => {
         setLoading(true);
         const result = await fetchFollowedCVs();
         if (result.success) {
-            setFollowedCVs(result.data);
-            setSnackbarMessage(result.message);
-            setSnackbarSeverity('success');
-            setSnackbarOpen(true);
+            setFollowedCVs(result.data || []);
         } else {
-            setSnackbarMessage(result.message);
-            setSnackbarSeverity('error');
-            setSnackbarOpen(true);
             setFollowedCVs([]);
         }
         setLoading(false);
@@ -52,21 +82,25 @@ const FollowCV = () => {
 
     const handleEdit = (cv) => {
         setEditingCV(cv);
-        setFormData({ note: cv.note || '', company: cv.company || '', status: cv.status || 'pending' });
+        setFormData({
+            note: cv.note || '',
+            company: cv.company || '',
+            status: cv.status || 'Chờ phản hồi'
+        });
         setEditDialogOpen(true);
     };
 
     const handleUpdate = async () => {
+        if (!editingCV) return;
         const result = await updateFollowedCV(editingCV.id, formData);
-        setSnackbarMessage(result.message);
+        setSnackbarMessage(result.message || 'Cập nhật trạng thái thành công!');
         setSnackbarSeverity(result.success ? 'success' : 'error');
         setSnackbarOpen(true);
         if (result.success) {
             setEditDialogOpen(false);
-            loadFollowedCVs(); // Tải lại danh sách
-            setTimeout(() => {
-                window.location.reload();
-            }, 500);
+            setFollowedCVs((prev) =>
+                prev.map((item) => (item.id === editingCV.id ? { ...item, ...formData } : item))
+            );
         }
     };
 
@@ -78,185 +112,330 @@ const FollowCV = () => {
     const confirmDelete = async () => {
         if (!deletingCVId) return;
         const result = await deleteFollowedCV(deletingCVId);
-        setSnackbarMessage(result.message);
+        setSnackbarMessage(result.message || 'Đã xóa CV khỏi danh sách theo dõi');
         setSnackbarSeverity(result.success ? 'success' : 'error');
         setSnackbarOpen(true);
         if (result.success) {
             setDeleteDialogOpen(false);
+            setFollowedCVs((prev) => prev.filter((item) => item.id !== deletingCVId));
             setDeletingCVId(null);
-            loadFollowedCVs(); // Tải lại danh sách
-            setTimeout(() => {
-                window.location.reload();
-            }
-                , 500);
         }
     };
 
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
-    };
-
-    const handleSnackbarClose = () => {
-        setSnackbarOpen(false);
-    };
-
-    const handleEditDialogClose = () => {
-        setEditDialogOpen(false);
-        setEditingCV(null);
-        setFormData({ note: '', company: '', status: '' });
-    };
-
-    const handleDeleteDialogClose = () => {
-        setDeleteDialogOpen(false);
-        setDeletingCVId(null);
+    // Stats calculations
+    const stats = {
+        total: followedCVs.length,
+        pending: followedCVs.filter(c => ['pending', 'đang chờ', 'chờ phản hồi'].includes((c.status || '').toLowerCase().trim())).length,
+        interview: followedCVs.filter(c => ['interview', 'phỏng vấn'].includes((c.status || '').toLowerCase().trim())).length,
+        accepted: followedCVs.filter(c => ['accepted', 'trúng tuyển'].includes((c.status || '').toLowerCase().trim())).length,
     };
 
     if (loading) {
         return (
-            <Container sx={{ textAlign: 'center', mt: 4 }}>
-                <CircularProgress />
-            </Container>
+            <Box display="flex" justifyContent="center" alignItems="center" minHeight="70vh">
+                <CircularProgress sx={{ color: '#10b981' }} />
+            </Box>
         );
     }
 
     return (
-        <Container sx={{ mt: 4, padding: '20px' }}>
-            <Typography variant="h4" gutterBottom align="center" sx={{ mt: 4 }}>
-                Danh Sách CV Theo Dõi
-            </Typography>
+        <Box
+            sx={{
+                minHeight: 'calc(100vh - 64px)',
+                background: isDark
+                    ? 'radial-gradient(ellipse at top, #1e293b 0%, #0f172a 100%)'
+                    : 'radial-gradient(ellipse at top, #f0fdf4 0%, #f8fafc 100%)',
+                py: 5,
+                px: { xs: 2, md: 4 },
+            }}
+        >
+            <Container maxWidth="lg">
+                {/* Header */}
+                <Box mb={4} textAlign="center">
+                    <Typography variant="h4" fontWeight={800} color={isDark ? '#f8fafc' : '#0f172a'} gutterBottom>
+                        Theo Dõi Tiến Trình Ứng Tuyển
+                    </Typography>
+                    <Typography variant="body1" color="textSecondary">
+                        Quản lý trạng thái phỏng vấn, công ty đã nộp và ghi chú hồ sơ xin việc của bạn.
+                    </Typography>
+                </Box>
 
-            {followedCVs.length === 0 ? (
-                <Typography align="center" variant="body1" sx={{ mt: 3 }}>
-                    Bạn chưa theo dõi CV nào.
-                </Typography>
-            ) : (
-                <TableContainer component={Paper} sx={{ boxShadow: 3 }}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell><Typography variant="subtitle1">Tên</Typography></TableCell>
-                                <TableCell><Typography variant="subtitle1">Công Ty</Typography></TableCell>
-                                <TableCell><Typography variant="subtitle1">Ghi Chú</Typography></TableCell>
-                                <TableCell><Typography variant="subtitle1">Trạng Thái</Typography></TableCell>
-                                <TableCell><Typography variant="subtitle1">Hành Động</Typography></TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {followedCVs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((cv) => (
-                                <TableRow key={cv.id}>
-                                    <TableCell>{cv.name}</TableCell>
-                                    <TableCell>{cv.company || 'Chưa cập nhật'}</TableCell>
-                                    <TableCell>{cv.note || 'Chưa có ghi chú'}</TableCell>
-                                    <TableCell>{cv.status}</TableCell>
-                                    <TableCell>
-                                        <IconButton
-                                            component="a"
-                                            href={cv.urlGoogleDrive || cv.fileUrl || cv.url || cv.downloadUrl || cv.r2Url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            color="primary"
-                                        >
-                                            <VisibilityIcon />
-                                        </IconButton>
-                                        <IconButton
-                                            onClick={() => handleEdit(cv)}
-                                            color="primary"
-                                        >
-                                            <EditIcon />
-                                        </IconButton>
-                                        <IconButton
-                                            onClick={() => handleDelete(cv.id)}
-                                            color="error"
-                                        >
-                                            <DeleteIcon />
-                                        </IconButton>
-                                    </TableCell>
+                {/* KPI Metrics */}
+                <Grid container spacing={2.5} mb={4}>
+                    <Grid item xs={6} sm={3}>
+                        <Card
+                            elevation={0}
+                            sx={{
+                                p: 2.5,
+                                borderRadius: 3.5,
+                                bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
+                                boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
+                                borderLeft: '4px solid #10b981',
+                            }}
+                        >
+                            <Typography variant="caption" color="textSecondary" fontWeight={600} textTransform="uppercase">
+                                Tổng số hồ sơ
+                            </Typography>
+                            <Typography variant="h4" fontWeight={800} color={isDark ? '#f8fafc' : '#0f172a'} mt={0.5}>
+                                {stats.total}
+                            </Typography>
+                        </Card>
+                    </Grid>
+                    <Grid item xs={6} sm={3}>
+                        <Card
+                            elevation={0}
+                            sx={{
+                                p: 2.5,
+                                borderRadius: 3.5,
+                                bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
+                                boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
+                                borderLeft: '4px solid #f59e0b',
+                            }}
+                        >
+                            <Typography variant="caption" color="textSecondary" fontWeight={600} textTransform="uppercase">
+                                Chờ phản hồi
+                            </Typography>
+                            <Typography variant="h4" fontWeight={800} color="#f59e0b" mt={0.5}>
+                                {stats.pending}
+                            </Typography>
+                        </Card>
+                    </Grid>
+                    <Grid item xs={6} sm={3}>
+                        <Card
+                            elevation={0}
+                            sx={{
+                                p: 2.5,
+                                borderRadius: 3.5,
+                                bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
+                                boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
+                                borderLeft: '4px solid #3b82f6',
+                            }}
+                        >
+                            <Typography variant="caption" color="textSecondary" fontWeight={600} textTransform="uppercase">
+                                Đang phỏng vấn
+                            </Typography>
+                            <Typography variant="h4" fontWeight={800} color="#3b82f6" mt={0.5}>
+                                {stats.interview}
+                            </Typography>
+                        </Card>
+                    </Grid>
+                    <Grid item xs={6} sm={3}>
+                        <Card
+                            elevation={0}
+                            sx={{
+                                p: 2.5,
+                                borderRadius: 3.5,
+                                bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
+                                boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
+                                borderLeft: '4px solid #10b981',
+                            }}
+                        >
+                            <Typography variant="caption" color="textSecondary" fontWeight={600} textTransform="uppercase">
+                                Đã trúng tuyển
+                            </Typography>
+                            <Typography variant="h4" fontWeight={800} color="#10b981" mt={0.5}>
+                                {stats.accepted}
+                            </Typography>
+                        </Card>
+                    </Grid>
+                </Grid>
+
+                {/* Table */}
+                {followedCVs.length === 0 ? (
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            p: 6,
+                            borderRadius: 4,
+                            textAlign: 'center',
+                            bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
+                        }}
+                    >
+                        <AssignmentIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
+                        <Typography variant="h6" fontWeight={700} color={isDark ? '#f8fafc' : '#0f172a'}>
+                            Chưa có CV nào trong danh sách theo dõi
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" mt={1}>
+                            Bạn có thể thêm CV vào mục theo dõi từ trang "Danh sách CV đã xuất" để quản lý quá trình nộp đơn.
+                        </Typography>
+                    </Paper>
+                ) : (
+                    <TableContainer
+                        component={Paper}
+                        elevation={0}
+                        sx={{
+                            borderRadius: 4,
+                            bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
+                            boxShadow: '0 10px 30px rgba(0,0,0,0.04)',
+                            overflow: 'hidden',
+                        }}
+                    >
+                        <Table>
+                            <TableHead sx={{ bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc' }}>
+                                <TableRow>
+                                    <TableCell sx={{ fontWeight: 700 }}>Tên Hồ Sơ / CV</TableCell>
+                                    <TableCell sx={{ fontWeight: 700 }}>Công Ty Ứng Tuyển</TableCell>
+                                    <TableCell sx={{ fontWeight: 700 }}>Ghi Chú Tiến Độ</TableCell>
+                                    <TableCell sx={{ fontWeight: 700 }}>Trạng Thái</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700 }}>Thao Tác</TableCell>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                    <TablePagination
-                        rowsPerPageOptions={[5, 10, 25]}
-                        component="div"
-                        count={followedCVs.length}
-                        rowsPerPage={rowsPerPage}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                    />
-                </TableContainer>
-            )}
+                            </TableHead>
+                            <TableBody>
+                                {followedCVs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((cv) => (
+                                    <TableRow
+                                        key={cv.id}
+                                        hover
+                                        sx={{
+                                            '&:last-child td, &:last-child th': { border: 0 },
+                                            transition: 'background-color 0.2s',
+                                        }}
+                                    >
+                                        <TableCell sx={{ fontWeight: 600 }}>{cv.name}</TableCell>
+                                        <TableCell>{cv.company || <Typography variant="caption" color="textSecondary">Chưa nhập</Typography>}</TableCell>
+                                        <TableCell sx={{ maxWidth: 260 }}>{cv.note || <Typography variant="caption" color="textSecondary">Chưa có ghi chú</Typography>}</TableCell>
+                                        <TableCell>{getStatusBadge(cv.status)}</TableCell>
+                                        <TableCell align="right">
+                                            <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                                {(cv.urlGoogleDrive || cv.fileUrl || cv.url || cv.downloadUrl || cv.r2Url) && (
+                                                    <IconButton
+                                                        component="a"
+                                                        href={cv.urlGoogleDrive || cv.fileUrl || cv.url || cv.downloadUrl || cv.r2Url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        size="small"
+                                                        sx={{ color: '#10b981' }}
+                                                        title="Xem file PDF"
+                                                    >
+                                                        <VisibilityIcon fontSize="small" />
+                                                    </IconButton>
+                                                )}
+                                                <IconButton
+                                                    onClick={() => handleEdit(cv)}
+                                                    size="small"
+                                                    sx={{ color: '#3b82f6' }}
+                                                    title="Chỉnh sửa ghi chú & trạng thái"
+                                                >
+                                                    <EditIcon fontSize="small" />
+                                                </IconButton>
+                                                <IconButton
+                                                    onClick={() => handleDelete(cv.id)}
+                                                    size="small"
+                                                    color="error"
+                                                    title="Xóa theo dõi"
+                                                >
+                                                    <DeleteIcon fontSize="small" />
+                                                </IconButton>
+                                            </Stack>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                        <TablePagination
+                            rowsPerPageOptions={[5, 10, 25]}
+                            component="div"
+                            count={followedCVs.length}
+                            rowsPerPage={rowsPerPage}
+                            page={page}
+                            onPageChange={(e, newPage) => setPage(newPage)}
+                            onRowsPerPageChange={(e) => {
+                                setRowsPerPage(parseInt(e.target.value, 10));
+                                setPage(0);
+                            }}
+                            labelRowsPerPage="Số hàng mỗi trang:"
+                        />
+                    </TableContainer>
+                )}
 
-            {/* Dialog chỉnh sửa CV */}
-            <Dialog open={editDialogOpen} onClose={handleEditDialogClose}>
-                <DialogTitle>Chỉnh sửa CV Theo Dõi</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        label="Ghi Chú"
-                        fullWidth
-                        value={formData.note}
-                        onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                        margin="normal"
-                    />
-                    <TextField
-                        label="Công Ty"
-                        fullWidth
-                        value={formData.company}
-                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                        margin="normal"
-                    />
-                    <TextField
-                        label="Trạng Thái"
-                        fullWidth
-                        value={formData.status}
-                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                        margin="normal"
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleEditDialogClose} color="primary">
-                        Hủy
-                    </Button>
-                    <Button onClick={handleUpdate} color="primary">
-                        Lưu
-                    </Button>
-                </DialogActions>
-            </Dialog>
+                {/* Edit Dialog */}
+                <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
+                    <DialogTitle sx={{ fontWeight: 700 }}>
+                        Cập nhật tiến trình CV: {editingCV?.name}
+                    </DialogTitle>
+                    <DialogContent>
+                        <TextField
+                            label="Tên Công Ty"
+                            fullWidth
+                            value={formData.company}
+                            onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                            margin="normal"
+                            placeholder="Tập đoàn FPT, Viettel, Shopee..."
+                        />
+                        <FormControl fullWidth margin="normal">
+                            <InputLabel id="status-label">Trạng Thái Ứng Tuyển</InputLabel>
+                            <Select
+                                labelId="status-label"
+                                label="Trạng Thái Ứng Tuyển"
+                                value={formData.status}
+                                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                            >
+                                <MenuItem value="Chờ phản hồi">⏳ Chờ phản hồi</MenuItem>
+                                <MenuItem value="Phỏng vấn">💼 Đang phỏng vấn</MenuItem>
+                                <MenuItem value="Trúng tuyển">🎉 Đã trúng tuyển</MenuItem>
+                                <MenuItem value="Từ chối">❌ Đã bị từ chối</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <TextField
+                            label="Ghi Chú Tiến Độ"
+                            fullWidth
+                            multiline
+                            rows={3}
+                            value={formData.note}
+                            onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                            margin="normal"
+                            placeholder="Ví dụ: Vòng 1 phỏng vấn kỹ thuật ngày 25/09, chuẩn bị kiến thức Spring Boot..."
+                        />
+                    </DialogContent>
+                    <DialogActions sx={{ px: 3, pb: 2.5 }}>
+                        <Button onClick={() => setEditDialogOpen(false)} color="inherit" sx={{ textTransform: 'none' }}>
+                            Hủy bỏ
+                        </Button>
+                        <Button
+                            onClick={handleUpdate}
+                            variant="contained"
+                            sx={{
+                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                borderRadius: 2,
+                            }}
+                        >
+                            Lưu thông tin
+                        </Button>
+                    </DialogActions>
+                </Dialog>
 
-            {/* Dialog xác nhận xóa CV */}
-            <Dialog open={deleteDialogOpen} onClose={handleDeleteDialogClose}>
-                <DialogTitle>Xác nhận xóa</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        Bạn có chắc chắn muốn xóa CV theo dõi này không?
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleDeleteDialogClose} color="primary">
-                        Hủy
-                    </Button>
-                    <Button onClick={confirmDelete} color="error">
-                        Xóa
-                    </Button>
-                </DialogActions>
-            </Dialog>
+                {/* Delete Dialog */}
+                <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+                    <DialogTitle sx={{ fontWeight: 700 }}>Xác nhận ngừng theo dõi</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            Bạn có chắc chắn muốn xóa hồ sơ này khỏi danh sách theo dõi? Thao tác này không thể hoàn tác.
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions sx={{ px: 3, pb: 2 }}>
+                        <Button onClick={() => setDeleteDialogOpen(false)} color="inherit" sx={{ textTransform: 'none' }}>
+                            Hủy
+                        </Button>
+                        <Button onClick={confirmDelete} color="error" variant="contained" sx={{ textTransform: 'none', borderRadius: 2 }}>
+                            Xác nhận xóa
+                        </Button>
+                    </DialogActions>
+                </Dialog>
 
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={3000}
-                onClose={handleSnackbarClose}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
-        </Container>
+                {/* Feedback Snackbar */}
+                <Snackbar
+                    open={snackbarOpen}
+                    autoHideDuration={3000}
+                    onClose={() => setSnackbarOpen(false)}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                >
+                    <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ borderRadius: 2 }}>
+                        {snackbarMessage}
+                    </Alert>
+                </Snackbar>
+            </Container>
+        </Box>
     );
 };
 

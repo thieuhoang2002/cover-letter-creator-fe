@@ -21,7 +21,7 @@ import {
     Cancel,
     Security
 } from '@mui/icons-material';
-import { changePassword, changePasswordWithoutOld } from '../../apis/profile';
+import { changePassword, changePasswordWithoutOld, checkHasPassword } from '../../apis/profile';
 import { useAuth } from '../../pages/Auth/AuthContext';
 import { fetchUserProfile } from '../../apis/authcontext';
 import { useThemeMode } from '../../context/ThemeContext';
@@ -72,12 +72,21 @@ const ChangePass = () => {
             try {
                 if (token) {
                     const user = await fetchUserProfile(token);
-                    if (user && user.hasPassword === false) {
-                        setIsPasswordEmpty(true);
+                    if (user && user.hasPassword !== undefined) {
+                        setIsPasswordEmpty(user.hasPassword === false);
+                    } else {
+                        const hasPass = await checkHasPassword();
+                        setIsPasswordEmpty(!hasPass);
                     }
                 }
             } catch (err) {
                 console.error('Lỗi khi lấy thông tin người dùng:', err);
+                try {
+                    const hasPass = await checkHasPassword();
+                    setIsPasswordEmpty(!hasPass);
+                } catch (e) {
+                    setIsPasswordEmpty(false);
+                }
             } finally {
                 setCheckingProfile(false);
             }

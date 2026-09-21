@@ -140,3 +140,13 @@ export const changePasswordWithoutOld = async (newPassword) => {
         throw error;
     }
 };
+
+export const checkHasPassword = async () => {
+    try {
+        const response = await axios.get(`${BASE_URL}/has-password`, { headers: getAuthHeader() });
+        return response.data?.hasPassword;
+    } catch (error) {
+        console.error("Lỗi khi kiểm tra trạng thái mật khẩu:", error);
+        return false;
+    }
+};
