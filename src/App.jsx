@@ -25,6 +25,7 @@ import ModernCVDetail from './pages/ModernCVDetail/ModernCVDetail';
 import ModernCVEditor from './pages/ModernCVEditor/ModernCVEditor';
 import EditorCvAI from './pages/CvByAI/EditorCvAI';
 import FollowCV from './pages/FollowCV/FollowCV';
+import { CustomThemeProvider } from './context/ThemeContext';
 
 const gooleClientId = import.meta.env.VITE_CLIENT_ID;
 
@@ -32,9 +33,10 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={gooleClientId}>
       <AuthProvider>
-        <BrowserRouter>
-          <Navbar />
-          <Routes>
+        <CustomThemeProvider>
+          <BrowserRouter>
+            <Navbar />
+            <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -95,6 +97,7 @@ function App() {
             {/* Route Auth */}
           </Routes>
         </BrowserRouter>
+        </CustomThemeProvider>
       </AuthProvider>
     </GoogleOAuthProvider>
   );
