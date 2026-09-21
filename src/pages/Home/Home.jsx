@@ -24,11 +24,12 @@ import {
     Star as StarIcon
 } from '@mui/icons-material';
 import { useThemeMode } from '../../context/ThemeContext';
+import { useAuth } from '../Auth/AuthContext';
 
 const sampleTemplates = [
     {
         id: 1,
-        title: 'Đơn Xin Việc Cơ Quan Nhà Nước (Chung)',
+        title: 'Đơn Đăng Ký Dự Tuyển Viên Chức Nhà Nước (Nghị định 115/2020)',
         category: 'state',
         badge: 'Nhà Nước',
         badgeColor: 'primary',
@@ -37,7 +38,7 @@ const sampleTemplates = [
     },
     {
         id: 4,
-        title: 'CV Viên Chức / Cán Bộ Hành Chính',
+        title: 'Sơ Yếu Lý Lịch Chuẩn Cán Bộ - Công Chức - Viên Chức (Mẫu 2C-BNV)',
         category: 'state',
         badge: 'Nhà Nước',
         badgeColor: 'primary',
@@ -46,44 +47,45 @@ const sampleTemplates = [
     },
     {
         id: 2,
-        title: 'Đơn Xin Việc Ngành Giáo Dục & Đào Tạo',
+        title: 'Đơn Xin Chuyển Công Tác Cơ Quan Hành Chính Nhà Nước',
         category: 'state',
         badge: 'Nhà Nước',
         badgeColor: 'primary',
-        description: 'Dành riêng cho giáo viên, giảng viên, cán bộ nghiên cứu ứng tuyển trường học và cơ sở giáo dục.',
+        description: 'Văn bản chuyển công tác chuẩn mực dành cho cán bộ, công chức, viên chức chuyển đổi đơn vị.',
         link: '/template/2'
     },
     {
-        id: 7,
-        title: 'CV Công Nghệ Thông Tin (Software Engineer)',
+        id: 6,
+        title: 'CV Hiện Đại - Kỹ Sư Công Nghệ Thông Tin (Tech Minimalist)',
         category: 'modern',
         badge: 'Công Nghệ',
         badgeColor: 'secondary',
         description: 'Bố cục 2 cột hiện đại, tối ưu cho lập trình viên với khu vực kỹ năng lập trình và dự án nổi bật.',
-        link: '/modern-cv/1'
+        link: '/modern-cv/6'
     },
     {
-        id: 8,
-        title: 'CV Quản Trị Kinh Doanh & Marketing',
+        id: 7,
+        title: 'CV Hiện Đại - Quản Lý & Kinh Doanh (Corporate Navy)',
         category: 'modern',
         badge: 'Kinh Doanh',
         badgeColor: 'secondary',
         description: 'Thiết kế màu xanh Navy lịch lãm, làm nổi bật chỉ số KPI, doanh số và kỹ năng đàm phán.',
-        link: '/modern-cv/2'
+        link: '/modern-cv/7'
     },
     {
-        id: 9,
-        title: 'CV Thiết Kế Sáng Tạo (UI/UX Designer)',
+        id: 8,
+        title: 'CV Hiện Đại - Thiết Kế & Sáng Tạo (Creative Emerald)',
         category: 'modern',
         badge: 'Sáng Tạo',
         badgeColor: 'secondary',
         description: 'Gam màu Emerald nổi bật, bố trí portfolio trực quan, thể hiện gu thẩm mỹ và tư duy thiết kế.',
-        link: '/modern-cv/3'
+        link: '/modern-cv/8'
     }
 ];
 
 function Home() {
     const { mode } = useThemeMode();
+    const { isAuthenticated } = useAuth();
     const theme = useTheme();
     const isDark = mode === 'dark';
     const [activeTab, setActiveTab] = useState('all');
@@ -571,7 +573,7 @@ function Home() {
                     </Typography>
                     <Button
                         component={Link}
-                        to="/register"
+                        to={isAuthenticated ? "/create-cv-with-ai" : "/register"}
                         variant="contained"
                         size="large"
                         sx={{
@@ -587,7 +589,7 @@ function Home() {
                             }
                         }}
                     >
-                        Bắt Đầu Hoàn Toàn Miễn Phí
+                        {isAuthenticated ? 'Tạo CV với AI Ngay' : 'Bắt Đầu Hoàn Toàn Miễn Phí'}
                     </Button>
                 </Paper>
             </Container>

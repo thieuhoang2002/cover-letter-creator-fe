@@ -50,15 +50,8 @@ function App() {
             <Route path="/template/all" element={<ListTemplate />} />
             <Route path="/modern-cv/all" element={<ListModernCV />} />
 
-            {/* <Route path="/template/:templateId" element={<TemplateDetail />} /> */}
-
-            <Route path="/template/:templateId" element={<PrivateRoute />}>
-              <Route index element={<TemplateDetail />} />
-            </Route>
-
-            <Route path="/modern-cv/:templateId" element={<PrivateRoute />}>
-              <Route index element={<ModernCVDetail />} />
-            </Route>
+            <Route path="/template/:templateId" element={<TemplateDetail />} />
+            <Route path="/modern-cv/:templateId" element={<ModernCVDetail />} />
 
             {/* Route editor - Chỉ cần đăng nhập, không cần role cụ thể */}
             <Route path="/editor" element={<PrivateRoute />}>
