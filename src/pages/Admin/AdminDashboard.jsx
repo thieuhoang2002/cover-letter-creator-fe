@@ -403,7 +403,8 @@ function AdminDashboard() {
                     </Typography>
                 </Stack>
 
-                <TableContainer>
+                {/* Desktop Table View (Giữ nguyên cho Desktop) */}
+                <TableContainer sx={{ display: { xs: 'none', md: 'block' } }}>
                     <Table size="small">
                         <TableHead>
                             <TableRow sx={{ bgcolor: isDark ? "rgba(255,255,255,0.02)" : "#f8fafc" }}>
@@ -445,6 +446,55 @@ function AdminDashboard() {
                         </TableBody>
                     </Table>
                 </TableContainer>
+
+                {/* Mobile & Tablet Card Ranking View */}
+                <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                    <Stack spacing={1.5}>
+                        {topTemplates.map((template, idx) => (
+                            <Box
+                                key={template.id}
+                                sx={{
+                                    p: 1.5,
+                                    borderRadius: 2.5,
+                                    bgcolor: isDark ? "rgba(15, 23, 42, 0.6)" : "#f8fafc",
+                                    border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "#e2e8f0"}`,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    gap: 1.5
+                                }}
+                            >
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, overflow: "hidden" }}>
+                                    <Chip
+                                        label={`#${idx + 1}`}
+                                        size="small"
+                                        sx={{
+                                            fontWeight: 800,
+                                            bgcolor: idx === 0 ? "#fef3c7" : idx === 1 ? "#e0e7ff" : idx === 2 ? "#fed7aa" : "transparent",
+                                            color: idx === 0 ? "#b45309" : idx === 1 ? "#3730a3" : idx === 2 ? "#c2410c" : "inherit",
+                                            flexShrink: 0
+                                        }}
+                                    />
+                                    <Box sx={{ overflow: "hidden" }}>
+                                        <Typography variant="body2" sx={{ fontWeight: 700, lineHeight: 1.2 }} noWrap>
+                                            {template.name}
+                                        </Typography>
+                                        <Chip
+                                            label={template.isModern ? "Hiện Đại" : "Nhà Nước"}
+                                            size="small"
+                                            variant="outlined"
+                                            color={template.isModern ? "primary" : "success"}
+                                            sx={{ borderRadius: 1, fontWeight: 600, fontSize: "0.65rem", height: 20, mt: 0.5 }}
+                                        />
+                                    </Box>
+                                </Box>
+                                <Typography variant="body2" sx={{ fontWeight: 700, color: "#10b981", flexShrink: 0 }}>
+                                    {template.views || 0} lượt
+                                </Typography>
+                            </Box>
+                        ))}
+                    </Stack>
+                </Box>
             </Paper>
         </Box>
     );

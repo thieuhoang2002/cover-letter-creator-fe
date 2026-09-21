@@ -3,7 +3,7 @@ import {
     Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle,
     TextField, Snackbar, Alert, CircularProgress, Select, MenuItem,
     Avatar, Chip, IconButton, Tooltip, InputAdornment, Grid, Card, CardContent,
-    FormControl, InputLabel, useTheme, Divider
+    FormControl, InputLabel, useTheme, Divider, TablePagination, Stack
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import {
@@ -30,6 +30,8 @@ function UserManager() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [roleFilter, setRoleFilter] = useState("all");
+    const [mobilePage, setMobilePage] = useState(0);
+    const [mobileRowsPerPage, setMobileRowsPerPage] = useState(10);
 
     // Modal Add/Edit
     const [openDialog, setOpenDialog] = useState(false);
@@ -440,10 +442,11 @@ function UserManager() {
                 </Grid>
             </Card>
 
-            {/* DataGrid Table */}
+            {/* DataGrid Table - Desktop Only (Giữ nguyên không đổi cho Desktop) */}
             <Card
                 elevation={0}
                 sx={{
+                    display: { xs: "none", md: "block" },
                     borderRadius: 3,
                     border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`,
                     bgcolor: isDark ? "#1e293b" : "#ffffff",
@@ -485,6 +488,172 @@ function UserManager() {
                     />
                 </Box>
             </Card>
+
+            {/* Mobile & Tablet User Cards View */}
+            <Box sx={{ display: { xs: "block", md: "none" } }}>
+                {loading ? (
+                    <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+                        <CircularProgress />
+                    </Box>
+                ) : filteredUsers.length === 0 ? (
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            p: 4,
+                            textAlign: "center",
+                            borderRadius: 3,
+                            bgcolor: isDark ? "#1e293b" : "#ffffff",
+                            border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`
+                        }}
+                    >
+                        <Typography variant="body2" color="text.secondary">
+                            Không tìm thấy người dùng phù hợp với bộ lọc
+                        </Typography>
+                    </Paper>
+                ) : (
+                    <Stack spacing={2}>
+                        {filteredUsers
+                            .slice(mobilePage * mobileRowsPerPage, mobilePage * mobileRowsPerPage + mobileRowsPerPage)
+                            .map((u) => {
+                                const isAdmin = (u.role || "").toLowerCase() === "admin";
+                                return (
+                                    <Paper
+                                        key={u.id}
+                                        elevation={0}
+                                        sx={{
+                                            p: 2,
+                                            borderRadius: 3,
+                                            bgcolor: isDark ? "#1e293b" : "#ffffff",
+                                            border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`,
+                                            boxShadow: "0 4px 14px rgba(0,0,0,0.03)"
+                                        }}
+                                    >
+                                        <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1.5, mb: 1.5 }}>
+                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                                                <Avatar
+                                                    src={u.avatarUrl}
+                                                    alt={u.name}
+                                                    sx={{
+                                                        width: 44,
+                                                        height: 44,
+                                                        bgcolor: isDark ? "primary.dark" : "primary.light",
+                                                        fontWeight: "bold",
+                                                        border: `2px solid ${isDark ? "#334155" : "#e2e8f0"}`
+                                                    }}
+                                                >
+                                                    {u.name ? u.name.charAt(0).toUpperCase() : "U"}
+                                                </Avatar>
+                                                <Box>
+                                                    <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                                                        {u.name || "Chưa có tên"}
+                                                    </Typography>
+                                                    <Typography variant="caption" color="text.secondary">
+                                                        {u.specialization || "Thành viên"}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+
+                                            <Chip
+                                                icon={isAdmin ? <AdminIcon sx={{ fontSize: "14px !important" }} /> : <PersonIcon sx={{ fontSize: "14px !important" }} />}
+                                                label={isAdmin ? "Admin" : "User"}
+                                                size="small"
+                                                sx={{
+                                                    fontWeight: 600,
+                                                    fontSize: "0.7rem",
+                                                    bgcolor: isAdmin
+                                                        ? (isDark ? "rgba(168, 85, 247, 0.2)" : "rgba(124, 58, 237, 0.1)")
+                                                        : (isDark ? "rgba(59, 130, 246, 0.2)" : "rgba(37, 99, 235, 0.1)"),
+                                                    color: isAdmin
+                                                        ? (isDark ? "#c084fc" : "#7c3aed")
+                                                        : (isDark ? "#60a5fa" : "#2563eb"),
+                                                    border: `1px solid ${isAdmin
+                                                        ? (isDark ? "rgba(168, 85, 247, 0.3)" : "rgba(124, 58, 237, 0.2)")
+                                                        : (isDark ? "rgba(59, 130, 246, 0.3)" : "rgba(37, 99, 235, 0.2)")}`
+                                                }}
+                                            />
+                                        </Box>
+
+                                        <Box sx={{ pl: 0.5, mb: 1.5, display: "flex", flexDirection: "column", gap: 0.6 }}>
+                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                                <EmailIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                                                <Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.82rem" }}>
+                                                    {u.email}
+                                                </Typography>
+                                            </Box>
+
+                                            {u.phone && (
+                                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                                    <PhoneIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                                                    <Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.82rem" }}>
+                                                        {u.phone}
+                                                    </Typography>
+                                                </Box>
+                                            )}
+
+                                            {u.address && (
+                                                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.3 }} noWrap>
+                                                    📍 {u.address}
+                                                </Typography>
+                                            )}
+                                        </Box>
+
+                                        <Divider sx={{ my: 1 }} />
+
+                                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pt: 0.5 }}>
+                                            <Typography variant="caption" color="text.secondary">
+                                                ID: #{u.id}
+                                            </Typography>
+                                            <Box sx={{ display: "flex", gap: 1 }}>
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    startIcon={<EditIcon />}
+                                                    onClick={() => handleOpenDialog(u)}
+                                                    sx={{ borderRadius: 2, textTransform: "none", fontSize: "0.75rem", fontWeight: 600 }}
+                                                >
+                                                    Chỉnh sửa
+                                                </Button>
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    color="error"
+                                                    startIcon={<DeleteIcon />}
+                                                    onClick={() => handleConfirmDelete(u)}
+                                                    sx={{ borderRadius: 2, textTransform: "none", fontSize: "0.75rem", fontWeight: 600 }}
+                                                >
+                                                    Xóa
+                                                </Button>
+                                            </Box>
+                                        </Box>
+                                    </Paper>
+                                );
+                            })}
+
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                borderRadius: 3,
+                                bgcolor: isDark ? "#1e293b" : "#ffffff",
+                                border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`
+                            }}
+                        >
+                            <TablePagination
+                                rowsPerPageOptions={[10, 25, 50]}
+                                component="div"
+                                count={filteredUsers.length}
+                                rowsPerPage={mobileRowsPerPage}
+                                page={mobilePage}
+                                onPageChange={(e, newPage) => setMobilePage(newPage)}
+                                onRowsPerPageChange={(e) => {
+                                    setMobileRowsPerPage(parseInt(e.target.value, 10));
+                                    setMobilePage(0);
+                                }}
+                                labelRowsPerPage="Số hàng:"
+                            />
+                        </Paper>
+                    </Stack>
+                )}
+            </Box>
 
             {/* Dialog Thêm / Chỉnh sửa User */}
             <Dialog

@@ -260,91 +260,209 @@ const FollowCV = () => {
                         </Typography>
                     </Paper>
                 ) : (
-                    <TableContainer
-                        component={Paper}
-                        elevation={0}
-                        sx={{
-                            borderRadius: 4,
-                            bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
-                            boxShadow: '0 10px 30px rgba(0,0,0,0.04)',
-                            overflow: 'hidden',
-                        }}
-                    >
-                        <Table>
-                            <TableHead sx={{ bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc' }}>
-                                <TableRow>
-                                    <TableCell sx={{ fontWeight: 700 }}>Tên Hồ Sơ / CV</TableCell>
-                                    <TableCell sx={{ fontWeight: 700 }}>Công Ty Ứng Tuyển</TableCell>
-                                    <TableCell sx={{ fontWeight: 700 }}>Ghi Chú Tiến Độ</TableCell>
-                                    <TableCell sx={{ fontWeight: 700 }}>Trạng Thái</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 700 }}>Thao Tác</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
+                    <Box>
+                        {/* Desktop Table View (Giữ nguyên không đổi cho Desktop) */}
+                        <TableContainer
+                            component={Paper}
+                            elevation={0}
+                            sx={{
+                                display: { xs: 'none', md: 'block' },
+                                borderRadius: 4,
+                                bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
+                                boxShadow: '0 10px 30px rgba(0,0,0,0.04)',
+                                overflow: 'hidden',
+                            }}
+                        >
+                            <Table>
+                                <TableHead sx={{ bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc' }}>
+                                    <TableRow>
+                                        <TableCell sx={{ fontWeight: 700 }}>Tên Hồ Sơ / CV</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Công Ty Ứng Tuyển</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Ghi Chú Tiến Độ</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Trạng Thái</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 700 }}>Thao Tác</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {followedCVs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((cv) => (
+                                        <TableRow
+                                            key={cv.id}
+                                            hover
+                                            sx={{
+                                                '&:last-child td, &:last-child th': { border: 0 },
+                                                transition: 'background-color 0.2s',
+                                            }}
+                                        >
+                                            <TableCell sx={{ fontWeight: 600 }}>{cv.name}</TableCell>
+                                            <TableCell>{cv.company || <Typography variant="caption" color="textSecondary">Chưa nhập</Typography>}</TableCell>
+                                            <TableCell sx={{ maxWidth: 260 }}>{cv.note || <Typography variant="caption" color="textSecondary">Chưa có ghi chú</Typography>}</TableCell>
+                                            <TableCell>{getStatusBadge(cv.status)}</TableCell>
+                                            <TableCell align="right">
+                                                <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                                    {(cv.urlGoogleDrive || cv.fileUrl || cv.url || cv.downloadUrl || cv.r2Url) && (
+                                                        <IconButton
+                                                            component="a"
+                                                            href={cv.urlGoogleDrive || cv.fileUrl || cv.url || cv.downloadUrl || cv.r2Url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            size="small"
+                                                            sx={{ color: '#10b981' }}
+                                                            title="Xem file PDF"
+                                                        >
+                                                            <VisibilityIcon fontSize="small" />
+                                                        </IconButton>
+                                                    )}
+                                                    <IconButton
+                                                        onClick={() => handleEdit(cv)}
+                                                        size="small"
+                                                        sx={{ color: '#3b82f6' }}
+                                                        title="Chỉnh sửa ghi chú & trạng thái"
+                                                    >
+                                                        <EditIcon fontSize="small" />
+                                                    </IconButton>
+                                                    <IconButton
+                                                        onClick={() => handleDelete(cv.id)}
+                                                        size="small"
+                                                        color="error"
+                                                        title="Xóa theo dõi"
+                                                    >
+                                                        <DeleteIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Stack>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+
+                        {/* Mobile & Tablet Card List View */}
+                        <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                            <Stack spacing={2}>
                                 {followedCVs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((cv) => (
-                                    <TableRow
+                                    <Paper
                                         key={cv.id}
-                                        hover
+                                        elevation={0}
                                         sx={{
-                                            '&:last-child td, &:last-child th': { border: 0 },
-                                            transition: 'background-color 0.2s',
+                                            p: 2,
+                                            borderRadius: 3,
+                                            bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
+                                            border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
+                                            boxShadow: '0 4px 14px rgba(0,0,0,0.03)'
                                         }}
                                     >
-                                        <TableCell sx={{ fontWeight: 600 }}>{cv.name}</TableCell>
-                                        <TableCell>{cv.company || <Typography variant="caption" color="textSecondary">Chưa nhập</Typography>}</TableCell>
-                                        <TableCell sx={{ maxWidth: 260 }}>{cv.note || <Typography variant="caption" color="textSecondary">Chưa có ghi chú</Typography>}</TableCell>
-                                        <TableCell>{getStatusBadge(cv.status)}</TableCell>
-                                        <TableCell align="right">
-                                            <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5, gap: 1 }}>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
+                                                {cv.name}
+                                            </Typography>
+                                            <Box sx={{ flexShrink: 0 }}>
+                                                {getStatusBadge(cv.status)}
+                                            </Box>
+                                        </Box>
+
+                                        <Box sx={{ mb: 1 }}>
+                                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 600 }}>
+                                                Công ty ứng tuyển:
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ fontWeight: 500, color: cv.company ? 'text.primary' : 'text.secondary' }}>
+                                                {cv.company || 'Chưa cập nhật tên công ty'}
+                                            </Typography>
+                                        </Box>
+
+                                        {cv.note && (
+                                            <Box sx={{ mb: 1.5, p: 1.2, borderRadius: 2, bgcolor: isDark ? 'rgba(15, 23, 42, 0.5)' : '#f8fafc' }}>
+                                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 600 }}>
+                                                    Ghi chú:
+                                                </Typography>
+                                                <Typography variant="caption" sx={{ color: 'text.primary' }}>
+                                                    {cv.note}
+                                                </Typography>
+                                            </Box>
+                                        )}
+
+                                        <Divider sx={{ my: 1 }} />
+
+                                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'space-between', alignItems: 'center', pt: 0.5 }}>
+                                            <Box sx={{ display: 'flex', gap: 1 }}>
                                                 {(cv.urlGoogleDrive || cv.fileUrl || cv.url || cv.downloadUrl || cv.r2Url) && (
-                                                    <IconButton
+                                                    <Button
                                                         component="a"
                                                         href={cv.urlGoogleDrive || cv.fileUrl || cv.url || cv.downloadUrl || cv.r2Url}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         size="small"
-                                                        sx={{ color: '#10b981' }}
-                                                        title="Xem file PDF"
+                                                        variant="outlined"
+                                                        startIcon={<VisibilityIcon />}
+                                                        sx={{
+                                                            borderRadius: 2,
+                                                            fontSize: '0.75rem',
+                                                            textTransform: 'none',
+                                                            fontWeight: 600,
+                                                            borderColor: '#10b981',
+                                                            color: '#10b981'
+                                                        }}
                                                     >
-                                                        <VisibilityIcon fontSize="small" />
-                                                    </IconButton>
+                                                        Xem PDF
+                                                    </Button>
                                                 )}
-                                                <IconButton
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    startIcon={<EditIcon />}
                                                     onClick={() => handleEdit(cv)}
-                                                    size="small"
-                                                    sx={{ color: '#3b82f6' }}
-                                                    title="Chỉnh sửa ghi chú & trạng thái"
+                                                    sx={{
+                                                        borderRadius: 2,
+                                                        fontSize: '0.75rem',
+                                                        textTransform: 'none',
+                                                        fontWeight: 600,
+                                                        borderColor: '#3b82f6',
+                                                        color: '#3b82f6'
+                                                    }}
                                                 >
-                                                    <EditIcon fontSize="small" />
-                                                </IconButton>
-                                                <IconButton
-                                                    onClick={() => handleDelete(cv.id)}
-                                                    size="small"
-                                                    color="error"
-                                                    title="Xóa theo dõi"
-                                                >
-                                                    <DeleteIcon fontSize="small" />
-                                                </IconButton>
-                                            </Stack>
-                                        </TableCell>
-                                    </TableRow>
+                                                    Cập nhật
+                                                </Button>
+                                            </Box>
+
+                                            <IconButton
+                                                size="small"
+                                                color="error"
+                                                onClick={() => handleDelete(cv.id)}
+                                                sx={{ bgcolor: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)' }}
+                                            >
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                        </Box>
+                                    </Paper>
                                 ))}
-                            </TableBody>
-                        </Table>
-                        <TablePagination
-                            rowsPerPageOptions={[5, 10, 25]}
-                            component="div"
-                            count={followedCVs.length}
-                            rowsPerPage={rowsPerPage}
-                            page={page}
-                            onPageChange={(e, newPage) => setPage(newPage)}
-                            onRowsPerPageChange={(e) => {
-                                setRowsPerPage(parseInt(e.target.value, 10));
-                                setPage(0);
+                            </Stack>
+                        </Box>
+
+                        {/* Pagination (Dùng chung cho cả Desktop và Mobile) */}
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                mt: 2,
+                                borderRadius: 3,
+                                bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
+                                border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
+                                overflow: 'hidden'
                             }}
-                            labelRowsPerPage="Số hàng mỗi trang:"
-                        />
-                    </TableContainer>
+                        >
+                            <TablePagination
+                                rowsPerPageOptions={[5, 10, 25]}
+                                component="div"
+                                count={followedCVs.length}
+                                rowsPerPage={rowsPerPage}
+                                page={page}
+                                onPageChange={(e, newPage) => setPage(newPage)}
+                                onRowsPerPageChange={(e) => {
+                                    setRowsPerPage(parseInt(e.target.value, 10));
+                                    setPage(0);
+                                }}
+                                labelRowsPerPage="Số hàng:"
+                            />
+                        </Paper>
+                    </Box>
                 )}
 
                 {/* Edit Dialog */}

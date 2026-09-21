@@ -3,7 +3,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
     Container, Typography, Button, Paper, CircularProgress, Box,
-    Grid, Divider, Tooltip, Snackbar
+    Grid, Divider, Tooltip, Snackbar, useTheme, useMediaQuery
 } from "@mui/material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
@@ -201,26 +201,48 @@ export default function ModernCVEditor() {
         setSnackbarOpen(true);
     };
 
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const isDark = theme.palette.mode === 'dark';
+
     return (
-        <Container maxWidth="lg" sx={{ mt: 4, padding: '20px' }}>
-            <Paper elevation={3} sx={{ p: 3, borderRadius: '12px', backgroundColor: '#fff' }}>
+        <Container maxWidth="lg" sx={{ mt: { xs: 2, md: 4 }, px: { xs: 1.5, sm: 2, md: 3 }, mb: 4 }}>
+            <Paper
+                elevation={3}
+                sx={{
+                    p: { xs: 2, sm: 2.5, md: 3 },
+                    borderRadius: '12px',
+                    bgcolor: isDark ? '#1e293b' : '#fff',
+                    border: isDark ? '1px solid #334155' : 'none'
+                }}
+            >
                 {/* Header */}
-                <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-                    <Grid item>
-                        <Typography variant="h5" gutterBottom>
+                <Grid container alignItems="center" justifyContent="space-between" spacing={1} sx={{ mb: 2 }}>
+                    <Grid item xs={12} sm="auto">
+                        <Typography
+                            variant="h5"
+                            gutterBottom
+                            sx={{
+                                fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.5rem' },
+                                fontWeight: 700,
+                                mb: 0.5
+                            }}
+                        >
                             Đang chỉnh sửa: {template?.name || "Đang tải..."}
                         </Typography>
                         <Typography variant="subtitle2" color="text.secondary">
                             Loại: {template?.type || 'Không xác định'}
                         </Typography>
                     </Grid>
-                    <Grid item>
+                    <Grid item xs={12} sm="auto" sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
                         <Tooltip title="Quay lại danh sách">
                             <Button
                                 variant="outlined"
                                 color="secondary"
+                                size="small"
                                 startIcon={<ArrowBackIcon />}
                                 onClick={handleBack}
+                                sx={{ borderRadius: 2, textTransform: 'none' }}
                             >
                                 Quay lại
                             </Button>
@@ -228,7 +250,7 @@ export default function ModernCVEditor() {
                     </Grid>
                 </Grid>
 
-                <Divider sx={{ mb: 3 }} />
+                <Divider sx={{ mb: { xs: 2, md: 3 } }} />
 
                 {/* Editor */}
                 {loading ? (
@@ -239,7 +261,7 @@ export default function ModernCVEditor() {
                 ) : (
                     <>
                         {editorLoading && (
-                            <Box display="flex" justifyContent="center" alignItems="center" height={500}>
+                            <Box display="flex" justifyContent="center" alignItems="center" height={isMobile ? 380 : 500}>
                                 <CircularProgress />
                             </Box>
                         )}
@@ -290,7 +312,7 @@ export default function ModernCVEditor() {
                                             callback('movie.mp4', { source2: 'alt.ogg', poster: 'https://www.google.com/logos/google.jpg' });
                                         }
                                     },
-                                    height: 600,
+                                    height: isMobile ? 420 : 600,
                                     image_caption: true,
                                     quickbars_selection_toolbar: 'bold italic | quicklink h2 h3 blockquote quickimage quicktable',
                                     noneditable_class: 'mceNonEditable',
@@ -301,60 +323,103 @@ export default function ModernCVEditor() {
                             />
                         </Box>
 
-                        {/* Nút hành động */}
-                        <Grid container spacing={2} justifyContent="flex-end">
-                            <Grid item>
-                                <Tooltip title="Thêm thông tin cá nhân vào CV">
+                        {/* Nút hành động - Desktop Version (Giữ nguyên không đổi) */}
+                        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                            <Grid container spacing={2} justifyContent="flex-end">
+                                <Grid item>
+                                    <Tooltip title="Thêm thông tin cá nhân vào CV">
+                                        <Button
+                                            variant="outlined"
+                                            color="success"
+                                            onClick={fillUserInfo}
+                                            disabled={loading || editorLoading || !templateUser}
+                                        >
+                                            Thêm thông tin
+                                        </Button>
+                                    </Tooltip>
+                                </Grid>
+                                <Grid item>
+                                    <Tooltip title="Khôi phục nội dung ban đầu">
+                                        <Button
+                                            variant="outlined"
+                                            color="secondary"
+                                            startIcon={<RestoreIcon />}
+                                            onClick={handleResetToDefault}
+                                            disabled={loading || editorLoading}
+                                        >
+                                            Reset về mặc định
+                                        </Button>
+                                    </Tooltip>
+                                </Grid>
+                                <Grid item>
+                                    <Tooltip title="Tải xuống PDF">
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            startIcon={<DownloadIcon />}
+                                            onClick={exportPDF}
+                                            disabled={loading || editorLoading || isExporting}
+                                        >
+                                            {isExporting ? 'Đang xuất PDF...' : 'Tải xuống PDF'}
+                                        </Button>
+                                    </Tooltip>
+                                </Grid>
+                            </Grid>
+                        </Box>
+
+                        {/* Nút hành động - Mobile & Tablet Optimized Version */}
+                        <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                            <Grid container spacing={1.5}>
+                                <Grid item xs={6}>
                                     <Button
+                                        fullWidth
                                         variant="outlined"
                                         color="success"
+                                        size="medium"
                                         onClick={fillUserInfo}
                                         disabled={loading || editorLoading || !templateUser}
+                                        sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, py: 1 }}
                                     >
-                                        Thêm thông tin
+                                        + Điền thông tin
                                     </Button>
-                                </Tooltip>
-                            </Grid>
-                            <Grid item>
-                                <Tooltip title="Khôi phục nội dung ban đầu">
+                                </Grid>
+                                <Grid item xs={6}>
                                     <Button
+                                        fullWidth
                                         variant="outlined"
                                         color="secondary"
+                                        size="medium"
                                         startIcon={<RestoreIcon />}
                                         onClick={handleResetToDefault}
                                         disabled={loading || editorLoading}
+                                        sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, py: 1 }}
                                     >
-                                        Reset về mặc định
+                                        Reset mẫu
                                     </Button>
-                                </Tooltip>
-                            </Grid>
-                            {/* <Grid item>
-                                <Tooltip title="Lưu nội dung nháp">
+                                </Grid>
+                                <Grid item xs={12}>
                                     <Button
-                                        variant="outlined"
-                                        color="primary"
-                                        startIcon={<SaveIcon />}
-                                        onClick={handleSaveDraft}
-                                        disabled={loading || editorLoading}
-                                    >
-                                        Lưu nháp
-                                    </Button>
-                                </Tooltip>
-                            </Grid> */}
-                            <Grid item>
-                                <Tooltip title="Tải xuống PDF">
-                                    <Button
+                                        fullWidth
                                         variant="contained"
                                         color="primary"
+                                        size="large"
                                         startIcon={<DownloadIcon />}
                                         onClick={exportPDF}
                                         disabled={loading || editorLoading || isExporting}
+                                        sx={{
+                                            borderRadius: 2.5,
+                                            py: 1.25,
+                                            fontWeight: 700,
+                                            textTransform: 'none',
+                                            background: 'linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)',
+                                            boxShadow: '0 4px 14px rgba(124, 58, 237, 0.3)'
+                                        }}
                                     >
-                                        {isExporting ? 'Đang xuất PDF...' : 'Tải xuống PDF'}
+                                        {isExporting ? 'Đang xuất PDF...' : 'Tải Xuống PDF'}
                                     </Button>
-                                </Tooltip>
+                                </Grid>
                             </Grid>
-                        </Grid>
+                        </Box>
                     </>
                 )}
             </Paper>

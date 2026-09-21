@@ -261,26 +261,117 @@ const PdfExported = () => {
                         </Button>
                     </Paper>
                 ) : (
-                    <TableContainer
-                        component={Paper}
-                        elevation={0}
-                        sx={{
-                            borderRadius: 4,
-                            bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
-                            boxShadow: '0 10px 30px rgba(0,0,0,0.04)',
-                            overflow: 'hidden',
-                        }}
-                    >
-                        <Table>
-                            <TableHead sx={{ bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc' }}>
-                                <TableRow>
-                                    <TableCell sx={{ fontWeight: 700 }}>Tên Mẫu / CV</TableCell>
-                                    <TableCell sx={{ fontWeight: 700 }}>Phân Loại</TableCell>
-                                    <TableCell sx={{ fontWeight: 700 }}>Ngày Tạo</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 700 }}>Hành Động</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
+                    <Box>
+                        {/* Desktop Table View (Giữ nguyên cho Desktop) */}
+                        <TableContainer
+                            component={Paper}
+                            elevation={0}
+                            sx={{
+                                display: { xs: 'none', md: 'block' },
+                                borderRadius: 4,
+                                bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
+                                boxShadow: '0 10px 30px rgba(0,0,0,0.04)',
+                                overflow: 'hidden',
+                            }}
+                        >
+                            <Table>
+                                <TableHead sx={{ bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc' }}>
+                                    <TableRow>
+                                        <TableCell sx={{ fontWeight: 700 }}>Tên Mẫu / CV</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Phân Loại</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Ngày Tạo</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 700 }}>Hành Động</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {currentList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((pdf) => {
+                                        const name = tabValue === 0
+                                            ? pdf.template?.name || 'Đơn Xin Việc'
+                                            : tabValue === 1
+                                            ? pdf.templateModernCV?.name || 'CV Hiện Đại'
+                                            : pdf.name || 'CV AI';
+
+                                        const type = tabValue === 0
+                                            ? pdf.template?.type || 'Nhà nước'
+                                            : tabValue === 1
+                                            ? pdf.templateModernCV?.type || 'Hiện đại'
+                                            : 'AI Generated';
+
+                                        const pdfUrl = pdf.urlGoogleDrive || pdf.fileUrl || pdf.url || pdf.downloadUrl || pdf.r2Url;
+
+                                        return (
+                                            <TableRow
+                                                key={pdf.id}
+                                                hover
+                                                sx={{
+                                                    '&:last-child td, &:last-child th': { border: 0 },
+                                                    transition: 'background-color 0.2s',
+                                                }}
+                                            >
+                                                <TableCell sx={{ fontWeight: 600 }}>{name}</TableCell>
+                                                <TableCell>
+                                                    <Chip
+                                                        label={type}
+                                                        size="small"
+                                                        variant="outlined"
+                                                        color={tabValue === 0 ? 'secondary' : tabValue === 1 ? 'primary' : 'success'}
+                                                        sx={{ borderRadius: 1.5, fontWeight: 600 }}
+                                                    />
+                                                </TableCell>
+                                                <TableCell>
+                                                    {pdf.createdAt ? new Date(pdf.createdAt).toLocaleString('vi-VN') : 'Mới tạo'}
+                                                </TableCell>
+                                                <TableCell align="right">
+                                                    <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                                        {pdfUrl && (
+                                                            <Tooltip title="Xem & Tải file PDF">
+                                                                <IconButton
+                                                                    component="a"
+                                                                    href={pdfUrl}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    size="small"
+                                                                    sx={{ color: '#10b981' }}
+                                                                >
+                                                                    <VisibilityIcon fontSize="small" />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        )}
+                                                        <Tooltip title="Đưa vào danh sách Theo dõi ứng tuyển">
+                                                            <IconButton
+                                                                onClick={() => handleFollow(pdf, currentType)}
+                                                                size="small"
+                                                                sx={{ color: '#3b82f6' }}
+                                                            >
+                                                                <AddCircleOutlineIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                        <Tooltip title="Xóa file đã lưu">
+                                                            <IconButton
+                                                                onClick={() => handleDelete(pdf.id, currentType)}
+                                                                size="small"
+                                                                color="error"
+                                                                disabled={isDeleting && deletingId === pdf.id}
+                                                            >
+                                                                {isDeleting && deletingId === pdf.id ? (
+                                                                    <CircularProgress size={18} />
+                                                                ) : (
+                                                                    <DeleteIcon fontSize="small" />
+                                                                )}
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </Stack>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+
+                        {/* Mobile & Tablet Card List View */}
+                        <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                            <Stack spacing={2}>
                                 {currentList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((pdf) => {
                                     const name = tabValue === 0
                                         ? pdf.template?.name || 'Đơn Xin Việc'
@@ -297,87 +388,122 @@ const PdfExported = () => {
                                     const pdfUrl = pdf.urlGoogleDrive || pdf.fileUrl || pdf.url || pdf.downloadUrl || pdf.r2Url;
 
                                     return (
-                                        <TableRow
+                                        <Paper
                                             key={pdf.id}
-                                            hover
+                                            elevation={0}
                                             sx={{
-                                                '&:last-child td, &:last-child th': { border: 0 },
-                                                transition: 'background-color 0.2s',
+                                                p: 2,
+                                                borderRadius: 3,
+                                                bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
+                                                border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
+                                                boxShadow: '0 4px 14px rgba(0,0,0,0.03)'
                                             }}
                                         >
-                                            <TableCell sx={{ fontWeight: 600 }}>{name}</TableCell>
-                                            <TableCell>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1, gap: 1 }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, overflow: 'hidden' }}>
+                                                    <PictureAsPdfIcon sx={{ color: '#ef4444', fontSize: 24, flexShrink: 0 }} />
+                                                    <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
+                                                        {name}
+                                                    </Typography>
+                                                </Box>
                                                 <Chip
                                                     label={type}
                                                     size="small"
                                                     variant="outlined"
                                                     color={tabValue === 0 ? 'secondary' : tabValue === 1 ? 'primary' : 'success'}
-                                                    sx={{ borderRadius: 1.5, fontWeight: 600 }}
+                                                    sx={{ borderRadius: 1.5, fontWeight: 600, fontSize: '0.7rem', flexShrink: 0 }}
                                                 />
-                                            </TableCell>
-                                            <TableCell>
-                                                {pdf.createdAt ? new Date(pdf.createdAt).toLocaleString('vi-VN') : 'Mới tạo'}
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                            </Box>
+
+                                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
+                                                Tạo lúc: {pdf.createdAt ? new Date(pdf.createdAt).toLocaleString('vi-VN') : 'Mới tạo'}
+                                            </Typography>
+
+                                            <Divider sx={{ my: 1 }} />
+
+                                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'space-between', alignItems: 'center', pt: 0.5 }}>
+                                                <Box sx={{ display: 'flex', gap: 1 }}>
                                                     {pdfUrl && (
-                                                        <Tooltip title="Xem & Tải file PDF">
-                                                            <IconButton
-                                                                component="a"
-                                                                href={pdfUrl}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                size="small"
-                                                                sx={{ color: '#10b981' }}
-                                                            >
-                                                                <VisibilityIcon fontSize="small" />
-                                                            </IconButton>
-                                                        </Tooltip>
+                                                        <Button
+                                                            component="a"
+                                                            href={pdfUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            size="small"
+                                                            variant="outlined"
+                                                            startIcon={<VisibilityIcon />}
+                                                            sx={{
+                                                                borderRadius: 2,
+                                                                fontSize: '0.75rem',
+                                                                textTransform: 'none',
+                                                                fontWeight: 600,
+                                                                borderColor: '#10b981',
+                                                                color: '#10b981'
+                                                            }}
+                                                        >
+                                                            Xem PDF
+                                                        </Button>
                                                     )}
-                                                    <Tooltip title="Đưa vào danh sách Theo dõi ứng tuyển">
-                                                        <IconButton
-                                                            onClick={() => handleFollow(pdf, currentType)}
-                                                            size="small"
-                                                            sx={{ color: '#3b82f6' }}
-                                                        >
-                                                            <AddCircleOutlineIcon fontSize="small" />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                    <Tooltip title="Xóa file đã lưu">
-                                                        <IconButton
-                                                            onClick={() => handleDelete(pdf.id, currentType)}
-                                                            size="small"
-                                                            color="error"
-                                                            disabled={isDeleting && deletingId === pdf.id}
-                                                        >
-                                                            {isDeleting && deletingId === pdf.id ? (
-                                                                <CircularProgress size={18} />
-                                                            ) : (
-                                                                <DeleteIcon fontSize="small" />
-                                                            )}
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                </Stack>
-                                            </TableCell>
-                                        </TableRow>
+                                                    <Button
+                                                        size="small"
+                                                        variant="outlined"
+                                                        startIcon={<AddCircleOutlineIcon />}
+                                                        onClick={() => handleFollow(pdf, currentType)}
+                                                        sx={{
+                                                            borderRadius: 2,
+                                                            fontSize: '0.75rem',
+                                                            textTransform: 'none',
+                                                            fontWeight: 600,
+                                                            borderColor: '#3b82f6',
+                                                            color: '#3b82f6'
+                                                        }}
+                                                    >
+                                                        Theo dõi
+                                                    </Button>
+                                                </Box>
+
+                                                <IconButton
+                                                    size="small"
+                                                    color="error"
+                                                    onClick={() => handleDelete(pdf.id, currentType)}
+                                                    disabled={isDeleting && deletingId === pdf.id}
+                                                    sx={{ bgcolor: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)' }}
+                                                >
+                                                    {isDeleting && deletingId === pdf.id ? <CircularProgress size={16} /> : <DeleteIcon fontSize="small" />}
+                                                </IconButton>
+                                            </Box>
+                                        </Paper>
                                     );
                                 })}
-                            </TableBody>
-                        </Table>
-                        <TablePagination
-                            rowsPerPageOptions={[5, 10, 25]}
-                            component="div"
-                            count={currentList.length}
-                            rowsPerPage={rowsPerPage}
-                            page={page}
-                            onPageChange={(e, newPage) => setPage(newPage)}
-                            onRowsPerPageChange={(e) => {
-                                setRowsPerPage(parseInt(e.target.value, 10));
-                                setPage(0);
+                            </Stack>
+                        </Box>
+
+                        {/* Pagination (Dùng chung cho cả Desktop và Mobile) */}
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                mt: 2,
+                                borderRadius: 3,
+                                bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
+                                border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
+                                overflow: 'hidden'
                             }}
-                            labelRowsPerPage="Số hàng mỗi trang:"
-                        />
-                    </TableContainer>
+                        >
+                            <TablePagination
+                                rowsPerPageOptions={[5, 10, 25]}
+                                component="div"
+                                count={currentList.length}
+                                rowsPerPage={rowsPerPage}
+                                page={page}
+                                onPageChange={(e, newPage) => setPage(newPage)}
+                                onRowsPerPageChange={(e) => {
+                                    setRowsPerPage(parseInt(e.target.value, 10));
+                                    setPage(0);
+                                }}
+                                labelRowsPerPage="Số hàng:"
+                            />
+                        </Paper>
+                    </Box>
                 )}
 
                 {/* Delete confirmation dialog */}

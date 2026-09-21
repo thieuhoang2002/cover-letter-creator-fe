@@ -3,7 +3,7 @@ import {
     Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle,
     TextField, Snackbar, Alert, CircularProgress, Select, MenuItem, InputLabel,
     FormControl, useTheme, Card, Grid, InputAdornment, Chip, IconButton, Tooltip,
-    Divider, Tabs, Tab
+    Divider, Tabs, Tab, TablePagination, Stack
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { Editor } from "@tinymce/tinymce-react";
@@ -36,6 +36,8 @@ function ModernCVTemplateManager() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
+    const [mobilePage, setMobilePage] = useState(0);
+    const [mobileRowsPerPage, setMobileRowsPerPage] = useState(10);
 
     // Dialog state
     const [openDialog, setOpenDialog] = useState(false);
@@ -425,10 +427,11 @@ function ModernCVTemplateManager() {
                 </Grid>
             </Card>
 
-            {/* Table */}
+            {/* Table - Desktop Only (Giữ nguyên không đổi cho Desktop) */}
             <Card
                 elevation={0}
                 sx={{
+                    display: { xs: "none", md: "block" },
                     borderRadius: 3,
                     border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`,
                     bgcolor: isDark ? "#1e293b" : "#ffffff",
@@ -471,6 +474,166 @@ function ModernCVTemplateManager() {
                     />
                 </Box>
             </Card>
+
+            {/* Mobile & Tablet Card List View */}
+            <Box sx={{ display: { xs: "block", md: "none" } }}>
+                {loading ? (
+                    <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+                        <CircularProgress />
+                    </Box>
+                ) : filteredTemplates.length === 0 ? (
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            p: 4,
+                            textAlign: "center",
+                            borderRadius: 3,
+                            bgcolor: isDark ? "#1e293b" : "#ffffff",
+                            border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`
+                        }}
+                    >
+                        <Typography variant="body2" color="text.secondary">
+                            Không tìm thấy mẫu CV phù hợp
+                        </Typography>
+                    </Paper>
+                ) : (
+                    <Stack spacing={2}>
+                        {filteredTemplates
+                            .slice(mobilePage * mobileRowsPerPage, mobilePage * mobileRowsPerPage + mobileRowsPerPage)
+                            .map((t) => {
+                                const isActive = (t.status || "").toLowerCase() === "active";
+                                return (
+                                    <Paper
+                                        key={t.id}
+                                        elevation={0}
+                                        sx={{
+                                            p: 2,
+                                            borderRadius: 3,
+                                            bgcolor: isDark ? "#1e293b" : "#ffffff",
+                                            border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`,
+                                            boxShadow: "0 4px 14px rgba(0,0,0,0.03)"
+                                        }}
+                                    >
+                                        <Box sx={{ display: "flex", gap: 1.5, mb: 1.5 }}>
+                                            <Box
+                                                sx={{
+                                                    width: 52,
+                                                    height: 68,
+                                                    borderRadius: 1.5,
+                                                    overflow: "hidden",
+                                                    bgcolor: isDark ? "#334155" : "#f1f5f9",
+                                                    border: `1px solid ${isDark ? "#475569" : "#e2e8f0"}`,
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    flexShrink: 0
+                                                }}
+                                            >
+                                                {t.image ? (
+                                                    <Box
+                                                        component="img"
+                                                        src={t.image}
+                                                        alt={t.name}
+                                                        sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                                        onError={(e) => { e.target.style.display = 'none'; }}
+                                                    />
+                                                ) : (
+                                                    <ArticleIcon sx={{ color: "text.secondary", fontSize: 24 }} />
+                                                )}
+                                            </Box>
+
+                                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.3, mb: 0.5 }}>
+                                                    {t.name || "Chưa có tên"}
+                                                </Typography>
+                                                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
+                                                    <Chip
+                                                        label={t.type || "Hiện đại"}
+                                                        size="small"
+                                                        variant="outlined"
+                                                        sx={{ fontSize: "0.7rem", height: 22, borderRadius: 1 }}
+                                                    />
+                                                    <Chip
+                                                        icon={isActive ? <CheckCircleIcon sx={{ fontSize: "13px !important" }} /> : <CancelIcon sx={{ fontSize: "13px !important" }} />}
+                                                        label={isActive ? "Hoạt động" : "Tạm ẩn"}
+                                                        size="small"
+                                                        sx={{
+                                                            fontSize: "0.68rem",
+                                                            height: 22,
+                                                            fontWeight: 600,
+                                                            bgcolor: isActive
+                                                                ? (isDark ? "rgba(16, 185, 129, 0.2)" : "rgba(16, 185, 129, 0.1)")
+                                                                : (isDark ? "rgba(239, 68, 68, 0.2)" : "rgba(239, 68, 68, 0.1)"),
+                                                            color: isActive
+                                                                ? (isDark ? "#34d399" : "#059669")
+                                                                : (isDark ? "#f87171" : "#dc2626"),
+                                                        }}
+                                                    />
+                                                </Box>
+                                            </Box>
+                                        </Box>
+
+                                        <Divider sx={{ my: 1 }} />
+
+                                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pt: 0.5 }}>
+                                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "text.secondary" }}>
+                                                <VisibilityIcon sx={{ fontSize: 16 }} />
+                                                <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                                                    {t.views || 0} lượt xem
+                                                </Typography>
+                                            </Box>
+
+                                            <Box sx={{ display: "flex", gap: 1 }}>
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    startIcon={<EditIcon />}
+                                                    onClick={() => handleOpenDialog(t)}
+                                                    sx={{ borderRadius: 2, textTransform: "none", fontSize: "0.75rem", fontWeight: 600 }}
+                                                >
+                                                    Chỉnh sửa
+                                                </Button>
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    color="error"
+                                                    startIcon={<DeleteIcon />}
+                                                    onClick={() => handleConfirmDelete(t)}
+                                                    sx={{ borderRadius: 2, textTransform: "none", fontSize: "0.75rem", fontWeight: 600 }}
+                                                >
+                                                    Xóa
+                                                </Button>
+                                            </Box>
+                                        </Box>
+                                    </Paper>
+                                );
+                            })}
+
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                borderRadius: 3,
+                                bgcolor: isDark ? "#1e293b" : "#ffffff",
+                                border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`
+                            }}
+                        >
+                            <TablePagination
+                                rowsPerPageOptions={[10, 25, 50]}
+                                component="div"
+                                count={filteredTemplates.length}
+                                rowsPerPage={mobileRowsPerPage}
+                                page={mobilePage}
+                                onPageChange={(e, newPage) => setMobilePage(newPage)}
+                                onRowsPerPageChange={(e) => {
+                                    setMobileRowsPerPage(parseInt(e.target.value, 10));
+                                    setMobilePage(0);
+                                }}
+                                labelRowsPerPage="Số hàng:"
+                            />
+                        </Paper>
+                    </Stack>
+                )}
+            </Box>
 
             {/* Dialog Add / Edit Template */}
             <Dialog
