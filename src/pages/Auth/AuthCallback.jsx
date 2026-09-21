@@ -7,6 +7,7 @@ import { handleGithubCallback } from '../../apis/authcallbackgithub';
 function AuthCallback() {
     const { login } = useAuth();
     const navigate = useNavigate();
+    const [error, setError] = React.useState(null);
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -18,20 +19,42 @@ function AuthCallback() {
                 login(token);
                 const role = jwtDecode(token).role;
                 navigate(role === 'admin' ? '/admin' : '/');
-            } catch (error) {
-                console.error('Invalid token from redirect:', error);
+            } catch (err) {
+                console.error('Invalid token from redirect:', err);
+                setError('Token xác thực không hợp lệ: ' + err.message);
             }
         } else if (code) {
-            // Gọi hàm xử lý callback đăng nhập GitHub từ file authcallbackgithub.js
             handleGithubCallback(code, login, navigate)
-                .catch(error => {
-                    // Xử lý lỗi nếu cần (ví dụ: thông báo lỗi cho người dùng)
-                    console.error('Error during GitHub callback processing:', error.message);
+                .catch(err => {
+                    console.error('Error during GitHub callback processing:', err.message);
+                    setError(err.message || 'Đăng nhập GitHub thất bại từ backend');
                 });
         }
     }, [login, navigate]);
 
-    return <div>Đang xử lý đăng nhập...</div>;
+    if (error) {
+        return (
+            <div style={{ padding: '60px 20px', textAlign: 'center' }}>
+                <h3 style={{ color: '#d32f2f', marginBottom: '16px' }}>Đăng nhập thất bại</h3>
+                <p style={{ color: '#555', marginBottom: '24px' }}>{error}</p>
+                <button 
+                    onClick={() => navigate('/login')} 
+                    style={{ 
+                        padding: '10px 24px', 
+                        backgroundColor: '#1976d2', 
+                        color: 'white', 
+                        border: 'none', 
+                        borderRadius: '4px', 
+                        cursor: 'pointer',
+                        fontSize: '15px'
+                    }}>
+                    Quay lại trang Đăng nhập
+                </button>
+            </div>
+        );
+    }
+
+    return <div style={{ padding: '60px 20px', textAlign: 'center', fontSize: '16px' }}>Đang xử lý đăng nhập...</div>;
 }
 
 export default AuthCallback;
