@@ -156,7 +156,7 @@ const FollowCV = () => {
                                     <TableCell>
                                         <IconButton
                                             component="a"
-                                            href={cv.urlGoogleDrive}
+                                            href={cv.urlGoogleDrive || cv.fileUrl || cv.url || cv.downloadUrl || cv.r2Url}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             color="primary"

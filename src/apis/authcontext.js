@@ -1,17 +1,9 @@
 // authcontext.js
+import { BACKEND_URL } from './config';
+
 export async function fetchUserProfile(token) {
     try {
-
-        // const response = await fetch('http://localhost:8080/api/users/profile/me', {
-        //     headers: {
-        //         'Authorization': `Bearer ${token}`,
-        //     },
-        // });
-
-        // deploy
-
-        const urlBE = import.meta.env.VITE_BACKEND_URL;
-        const response = await fetch(`${urlBE}/api/users/profile/me`, {
+        const response = await fetch(`${BACKEND_URL}/api/users/profile/me`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
             },

@@ -25,6 +25,7 @@ export default function EditorCvAI() {
     const [content, setContent] = useState(passedContent || "<p>Đang tải nội dung...</p>");
     const [loading, setLoading] = useState(!passedContent);
     const [editorLoading, setEditorLoading] = useState(true);
+    const [isExporting, setIsExporting] = useState(false);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
@@ -59,10 +60,9 @@ export default function EditorCvAI() {
     };
 
     const exportPDF = async () => {
-        if (!editorRef.current) return;
+        if (!editorRef.current || isExporting) return;
 
         const htmlContent = editorRef.current.getContent();
-        console.log("HTML Content:", htmlContent);
         if (!userId || !email) {
             setSnackbarMessage('Vui lòng đăng nhập để tạo PDF!');
             setSnackbarSeverity('error');
@@ -78,22 +78,30 @@ export default function EditorCvAI() {
             htmlContent: htmlContent
         };
 
+        setIsExporting(true);
+
         try {
-            setLoading(true);
-            await generatePdf(requestData);
-            setSnackbarMessage('PDF đã được tạo thành công!');
-            setSnackbarSeverity('success');
-            setSnackbarOpen(true);
+            const result = await generatePdf(requestData);
+            if (result.success) {
+                setSnackbarMessage(result.message || 'PDF đã được tạo và tải về thành công!');
+                setSnackbarSeverity('success');
+                setSnackbarOpen(true);
+                // Giữ isExporting = true để khóa hoàn toàn nút bấm, ngăn chặn double-click
+                setTimeout(() => {
+                    navigate("/pdf-exported");
+                }, 1500);
+            } else {
+                setSnackbarMessage(result.message || 'Lỗi khi tạo PDF, vui lòng thử lại!');
+                setSnackbarSeverity('error');
+                setSnackbarOpen(true);
+                setIsExporting(false);
+            }
         } catch (error) {
             console.error('Lỗi khi tạo PDF:', error);
             setSnackbarMessage('Lỗi khi tạo PDF, vui lòng thử lại!');
             setSnackbarSeverity('error');
             setSnackbarOpen(true);
-        } finally {
-            setLoading(false);
-            setTimeout(() => {
-                navigate("/pdf-exported");
-            }, 2000);
+            setIsExporting(false);
         }
     };
 
@@ -331,16 +339,18 @@ export default function EditorCvAI() {
                                 </Tooltip>
                             </Grid> */}
                             <Grid item>
-                                <Tooltip title="Tải xuống PDF">
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        startIcon={<DownloadIcon />}
-                                        onClick={exportPDF}
-                                        disabled={loading || editorLoading}
-                                    >
-                                        Tải xuống PDF
-                                    </Button>
+                                <Tooltip title={isExporting ? "Đang xử lý..." : "Tải xuống PDF"}>
+                                    <span>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            startIcon={isExporting ? <CircularProgress size={18} color="inherit" /> : <DownloadIcon />}
+                                            onClick={exportPDF}
+                                            disabled={isExporting || loading || editorLoading}
+                                        >
+                                            {isExporting ? "Đang tạo & tải PDF..." : "Tải xuống PDF"}
+                                        </Button>
+                                    </span>
                                 </Tooltip>
                             </Grid>
                         </Grid>

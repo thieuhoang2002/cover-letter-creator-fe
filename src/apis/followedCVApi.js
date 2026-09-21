@@ -1,10 +1,7 @@
 import axios from 'axios';
+import { BACKEND_URL } from './config';
 
-//const BASE_URL = 'http://localhost:8080/api/follow-cv';
-
-// Deploy
-const urlBE = import.meta.env.VITE_BACKEND_URL;
-const BASE_URL = `${urlBE}/api/follow-cv`;
+const BASE_URL = `${BACKEND_URL}/api/follow-cv`;
 
 const getAuthHeader = () => {
     const token = localStorage.getItem('token');

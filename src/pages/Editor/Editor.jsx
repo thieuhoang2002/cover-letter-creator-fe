@@ -30,6 +30,7 @@ export default function EditorComponent() {
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
     const { userId, email, token } = useAuth();
     const [templateUser, setTemplateUser] = useState(null);
+    const [isExporting, setIsExporting] = useState(false);
 
 
     useEffect(() => {
@@ -62,6 +63,7 @@ export default function EditorComponent() {
 
 
     const exportPDF = async () => {
+        if (isExporting || loading) return;
         if (!editorRef.current) return;
 
         const htmlContent = editorRef.current.getContent();
@@ -81,22 +83,30 @@ export default function EditorComponent() {
         };
 
         try {
+            setIsExporting(true);
             setLoading(true);
-            await generatePdf(requestData);
-            setSnackbarMessage('PDF đã được tạo thành công!');
-            setSnackbarSeverity('success');
-            setSnackbarOpen(true);
+            const result = await generatePdf(requestData);
+            if (result.success) {
+                setSnackbarMessage(result.message || 'PDF đã được tạo và tải về thành công!');
+                setSnackbarSeverity('success');
+                setSnackbarOpen(true);
+                setTimeout(() => {
+                    navigate("/pdf-exported");
+                }, 2000);
+            } else {
+                setSnackbarMessage(result.message || 'Lỗi khi tạo PDF, vui lòng thử lại!');
+                setSnackbarSeverity('error');
+                setSnackbarOpen(true);
+                setIsExporting(false);
+            }
         } catch (error) {
             console.error('Lỗi khi tạo PDF:', error);
             setSnackbarMessage('Lỗi khi tạo PDF, vui lòng thử lại!');
             setSnackbarSeverity('error');
             setSnackbarOpen(true);
+            setIsExporting(false);
         } finally {
             setLoading(false);
-            //chuyen den trang home
-            setTimeout(() => {
-                navigate("/pdf-exported");
-            }, 2000);
         }
     };
 
@@ -300,9 +310,9 @@ export default function EditorComponent() {
                                     color="primary"
                                     startIcon={<DownloadIcon />}
                                     onClick={exportPDF}
-                                    disabled={loading || editorLoading}
+                                    disabled={loading || editorLoading || isExporting}
                                 >
-                                    Tải xuống PDF
+                                    {isExporting ? 'Đang xuất PDF...' : 'Tải xuống PDF'}
                                 </Button>
                             </Grid>
                         </Grid>

@@ -1,10 +1,9 @@
 import axios from 'axios';
+import { extractFilename, triggerBlobDownload, parseBlobError } from '../utils/pdfDownloader';
+import { BACKEND_URL } from './config';
 
-//const BASE_URL = 'http://localhost:8080/api/pdf';
-
-//deploy
-const urlBE = import.meta.env.VITE_BACKEND_URL;
-const BASE_URL = `${urlBE}/api/pdf`;
+// Cấu hình Base URL
+const BASE_URL = `${BACKEND_URL}/api/pdf`;
 
 const getAuthHeader = () => {
     const token = localStorage.getItem('token');
@@ -12,9 +11,9 @@ const getAuthHeader = () => {
 };
 
 /**
- * Tạo PDF từ dữ liệu đầu vào
+ * Tạo PDF từ dữ liệu đầu vào và tự động tải binary stream (Blob) về máy người dùng
  * @param {Object} data - Dữ liệu gửi đi: { id, email, htmlContent, templateName, date }
- * @returns {Object} - Kết quả: { success, message, fileId, googleDriveLink }
+ * @returns {Promise<{ success: boolean, message: string, fileName?: string, error?: any }>}
  */
 export const generatePdf = async (data) => {
     try {
@@ -26,36 +25,30 @@ export const generatePdf = async (data) => {
                     "Content-Type": "application/json",
                     ...getAuthHeader(),
                 },
-                responseType: 'text',
+                responseType: 'blob',
             }
         );
 
-        const message = response.data;
-        const fileId = message.split('File ID: ')[1];
-        let googleDriveLink = null;
+        // Lấy tên file từ header Content-Disposition hoặc tạo tên mặc định
+        const disposition = response.headers?.['content-disposition'];
+        const sanitizedName = (data.templateName || 'Cover_Letter').replace(/[^a-zA-Z0-9_\-\u00C0-\u1EF9]/g, '_');
+        const defaultName = `${sanitizedName}_${Date.now()}.pdf`;
+        const fileName = extractFilename(disposition, defaultName);
 
-        if (fileId) {
-            googleDriveLink = `https://drive.google.com/file/d/${fileId}/view`;
-            // Tự động mở link sau 100ms
-            setTimeout(() => {
-                window.open(googleDriveLink, '_blank');
-            }, 100);
-        }
+        // Kích hoạt tải file trực tiếp về thiết bị
+        triggerBlobDownload(response.data, fileName);
 
         return {
             success: true,
-            message: message || 'PDF đã được tạo thành công!',
-            fileId: fileId || null,
-            googleDriveLink: googleDriveLink || null
+            message: 'PDF đã được tạo và tải về máy thành công!',
+            fileName
         };
     } catch (error) {
-        const errorMessage = error.response?.data || 'Lỗi khi tạo PDF, vui lòng thử lại!';
+        const errorMessage = await parseBlobError(error, 'Lỗi khi tạo PDF, vui lòng thử lại!');
         return {
             success: false,
             message: errorMessage,
-            fileId: null,
-            googleDriveLink: null,
-            error: error
+            error
         };
     }
 };
@@ -63,7 +56,7 @@ export const generatePdf = async (data) => {
 /**
  * Load danh sách CoverLetterPdf theo userId
  * @param {string} userId - ID của người dùng
- * @returns {Object} - Kết quả: { success, data, message }
+ * @returns {Promise<{ success: boolean, data: Array, message: string, error?: any }>}
  */
 export const fetchCoverLetters = async (userId) => {
     try {
@@ -82,12 +75,12 @@ export const fetchCoverLetters = async (userId) => {
             message: 'Đã tải danh sách cover letters thành công!'
         };
     } catch (error) {
-        const errorMessage = error.response?.data || 'Lỗi khi tải danh sách cover letters!';
+        const errorMessage = error.response?.data?.message || error.response?.data || 'Lỗi khi tải danh sách cover letters!';
         return {
             success: false,
             data: [],
             message: errorMessage,
-            error: error
+            error
         };
     }
 };
@@ -95,7 +88,7 @@ export const fetchCoverLetters = async (userId) => {
 /**
  * Xóa CoverLetterPdf theo id
  * @param {number} id - ID của CoverLetterPdf cần xóa
- * @returns {Object} - Kết quả: { success, message }
+ * @returns {Promise<{ success: boolean, message: string, error?: any }>}
  */
 export const deleteCoverLetter = async (id) => {
     try {
@@ -110,14 +103,14 @@ export const deleteCoverLetter = async (id) => {
 
         return {
             success: true,
-            message: response.data || 'Đã xóa cover letter thành công!'
+            message: response.data?.message || response.data || 'Đã xóa cover letter thành công!'
         };
     } catch (error) {
-        const errorMessage = error.response?.data || 'Lỗi khi xóa cover letter!';
+        const errorMessage = error.response?.data?.message || error.response?.data || 'Lỗi khi xóa cover letter!';
         return {
             success: false,
             message: errorMessage,
-            error: error
+            error
         };
     }
 };

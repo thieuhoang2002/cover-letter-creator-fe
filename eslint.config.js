@@ -28,6 +28,15 @@ export default [
       ...react.configs.recommended.rules,
       ...react.configs['jsx-runtime'].rules,
       ...reactHooks.configs.recommended.rules,
+      'react/prop-types': 'off',
+      'no-unused-vars': [
+        'warn',
+        {
+          varsIgnorePattern: '^(React|_.*)',
+          argsIgnorePattern: '^_',
+          caughtErrors: 'none',
+        },
+      ],
       'react/jsx-no-target-blank': 'off',
       'react-refresh/only-export-components': [
         'warn',

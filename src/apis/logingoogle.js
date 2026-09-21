@@ -1,6 +1,7 @@
 // loginGoogle.js
 
 import { jwtDecode } from 'jwt-decode';
+import { BACKEND_URL } from './config';
 
 export const loginWithGoogle = async (
     googleToken,
@@ -11,19 +12,7 @@ export const loginWithGoogle = async (
     setError(null);
 
     try {
-        //console.log('Request Headers:', { 'Cookie': document.cookie });
-        //console.log('Google Token:', googleToken);
-
-        // const response = await fetch('http://localhost:8080/api/users/google-login', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ token: googleToken }),
-        // });
-
-        //deploy
-
-        const urlBE = import.meta.env.VITE_BACKEND_URL;
-        const response = await fetch(`${urlBE}/api/users/google-login`, {
+        const response = await fetch(`${BACKEND_URL}/api/users/google-login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token: googleToken }),

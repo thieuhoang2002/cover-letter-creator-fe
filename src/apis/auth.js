@@ -5,8 +5,9 @@ import { jwtDecode } from 'jwt-decode'; // Thêm thư viện để decode JWT
 
 //deploy
 
-const urlBE = import.meta.env.VITE_BACKEND_URL;
-const BASE_URL = `${urlBE}/api/users`;
+import { BACKEND_URL } from './config';
+
+const BASE_URL = `${BACKEND_URL}/api/users`;
 
 export const registerUser = async (userData) => {
     try {

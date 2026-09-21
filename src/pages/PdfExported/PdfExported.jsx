@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { generatePdf, fetchCoverLetters, deleteCoverLetter } from '../../apis/pdf';
+import { useState, useEffect } from 'react';
+import { fetchCoverLetters, deleteCoverLetter } from '../../apis/pdf';
 import { fetchCoverLetters as fetchCoverLettersModernCV, deleteCoverLetter as deleteCoverLetterModernCV } from '../../apis/pdfModernCV';
 import { fetchCoverLetters as fetchCoverLettersAICV, deleteCoverLetter as deleteCoverLetterAICV } from '../../apis/pdfAICV';
 import { addFollowedCV } from '../../apis/followedCVApi';
@@ -126,8 +126,9 @@ const PdfExported = () => {
     };
 
     const handleFollow = async (pdf, type) => {
+        const pdfUrl = pdf.urlGoogleDrive || pdf.fileUrl || pdf.url || pdf.downloadUrl || pdf.r2Url || '';
         const data = {
-            urlGoogleDrive: pdf.urlGoogleDrive,
+            urlGoogleDrive: pdfUrl,
             name: type === 'coverLetter' ? pdf.template.name : type === 'modernCV' ? pdf.templateModernCV.name : 'AI CV',
             note: '',
             company: '',
@@ -229,7 +230,7 @@ const PdfExported = () => {
                                             <Tooltip title="Xem PDF">
                                                 <IconButton
                                                     component="a"
-                                                    href={pdf.urlGoogleDrive}
+                                                    href={pdf.urlGoogleDrive || pdf.fileUrl || pdf.url || pdf.downloadUrl || pdf.r2Url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     color="primary"
@@ -302,7 +303,7 @@ const PdfExported = () => {
                                             <Tooltip title="Xem PDF">
                                                 <IconButton
                                                     component="a"
-                                                    href={pdf.urlGoogleDrive}
+                                                    href={pdf.urlGoogleDrive || pdf.fileUrl || pdf.url || pdf.downloadUrl || pdf.r2Url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     color="primary"
@@ -373,7 +374,7 @@ const PdfExported = () => {
                                             <Tooltip title="Xem PDF">
                                                 <IconButton
                                                     component="a"
-                                                    href={pdf.urlGoogleDrive}
+                                                    href={pdf.urlGoogleDrive || pdf.fileUrl || pdf.url || pdf.downloadUrl || pdf.r2Url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     color="primary"
@@ -429,7 +430,7 @@ const PdfExported = () => {
                 <DialogTitle>Xác nhận xóa</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        Bạn có chắc chắn muốn xóa {deletingType === 'coverLetter' ? 'đơn xin việc' : deletingType === 'modernCV' ? 'CV hiện đại' : 'AI CV'} này không? Bạn sẽ không thể xem file này trong mục "Theo dõi CV" nữa.
+                        Bạn có chắc chắn muốn xóa {deletingType === 'coverLetter' ? 'đơn xin việc' : deletingType === 'modernCV' ? 'CV hiện đại' : 'AI CV'} này không? Bạn sẽ không thể xem file này trong mục &quot;Theo dõi CV&quot; nữa.
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>

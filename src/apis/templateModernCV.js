@@ -1,11 +1,7 @@
 import axios from 'axios';
+import { BACKEND_URL } from './config';
 
-// Định nghĩa URL cơ sở của API backend cho template hiện đại
-//const BASE_URL = 'http://localhost:8080/api/templates-modern'; // Thay đổi nếu backend chạy trên cổng hoặc domain khác
-
-// deploy
-const urlBE = import.meta.env.VITE_BACKEND_URL;
-const BASE_URL = `${urlBE}/api/templates-modern`;
+const BASE_URL = `${BACKEND_URL}/api/templates-modern`;
 
 const getAuthHeader = () => {
     const token = localStorage.getItem('token');

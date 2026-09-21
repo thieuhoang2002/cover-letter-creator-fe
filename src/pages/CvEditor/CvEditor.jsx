@@ -24,6 +24,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const CvEditor = () => {
+    const apiKey = import.meta.env.VITE_API_KEY_TINY || 'no-api-key';
     const [cvData, setCvData] = useState(initialCvData);
     const [editorContent, setEditorContent] = useState(generateCvContent(initialCvData));
 
@@ -151,7 +152,7 @@ const CvEditor = () => {
                     CV Preview
                 </Typography>
                 <Editor
-                    apiKey="your-tinymce-api-key"
+                    apiKey={apiKey}
                     init={{
                         height: '80vh',
                         menubar: true,

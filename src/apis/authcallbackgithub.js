@@ -1,19 +1,10 @@
 // authcallbackgithub.js
 import { jwtDecode } from 'jwt-decode';
+import { BACKEND_URL } from './config';
 
 export async function handleGithubCallback(code, login, navigate) {
     try {
-
-        // const response = await fetch('http://localhost:8080/api/users/github-login', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ code }),
-        // });
-
-        // deploy
-
-        const urlBE = import.meta.env.VITE_BACKEND_URL;
-        const response = await fetch(`${urlBE}/api/users/github-login`, {
+        const response = await fetch(`${BACKEND_URL}/api/users/github-login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ code }),

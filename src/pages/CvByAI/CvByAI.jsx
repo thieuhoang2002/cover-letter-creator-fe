@@ -72,7 +72,7 @@ const CvByAI = () => {
                 const token = localStorage.getItem('token');
                 return token ? { Authorization: `Bearer ${token}` } : {};
             };
-            const urlBE = import.meta.env.VITE_BACKEND_URL;
+            const urlBE = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080').replace(/\/+$/, '');
             const response = await axios.post(
                 `${urlBE}/api/ai/generate-cv`,
                 {
