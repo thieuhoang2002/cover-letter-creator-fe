@@ -1,144 +1,291 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useLocation, useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
-    Container, Card, CardContent, CardMedia, Typography, Button, Box,
-    CircularProgress, Paper, Divider, Grid, Tooltip
+    Container,
+    Typography,
+    Button,
+    Box,
+    CircularProgress,
+    Paper,
+    Divider,
+    Grid,
+    Chip,
+    Alert,
+    Card,
+    useTheme,
+    alpha
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { getModernTemplateById } from '../../apis/templateModernCV';
-import Alert from '@mui/material/Alert';
+import EditNoteIcon from '@mui/icons-material/EditNote';
+import ExploreIcon from '@mui/icons-material/Explore';
+import ArticleIcon from '@mui/icons-material/Article';
+import { getModernTemplateById, getActiveModernTemplates } from '../../apis/templateModernCV';
 
 function ModernCVDetail() {
     const { templateId } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
+    const theme = useTheme();
+    const isDark = theme.palette.mode === 'dark';
 
     const [template, setTemplate] = useState(location.state?.template || null);
     const [loading, setLoading] = useState(!template);
     const [error, setError] = useState(null);
+    const [availableTemplates, setAvailableTemplates] = useState([]);
 
-    // Lấy dữ liệu template nếu không có trong location.state
     useEffect(() => {
-        if (!template) {
-            const fetchTemplate = async () => {
-                try {
-                    setLoading(true);
-                    const data = await getModernTemplateById(templateId);
-                    setTemplate(data);
-                } catch (err) {
-                    console.error('Lỗi khi tải mẫu CV hiện đại:', err);
-                    setError('Không thể tải dữ liệu mẫu CV. Vui lòng thử lại sau.');
-                } finally {
-                    setLoading(false);
-                }
-            };
-            fetchTemplate();
+        // If template was already passed via route state, no need to fetch
+        if (template) {
+            setLoading(false);
+            return;
         }
-    }, [template, templateId]);
+
+        const fetchTemplate = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const data = await getModernTemplateById(templateId);
+                setTemplate(data);
+            } catch (err) {
+                console.warn(`Không tìm thấy mẫu CV #${templateId}, đang tải danh sách gợi ý...`, err);
+                try {
+                    const activeList = await getActiveModernTemplates();
+                    if (Array.isArray(activeList) && activeList.length > 0) {
+                        setAvailableTemplates(activeList.slice(0, 4));
+                    }
+                } catch {
+                    // ignore
+                }
+                setError(`Không tìm thấy mẫu CV với mã định danh #${templateId}. Mẫu có thể đã được cập nhật hoặc cơ sở dữ liệu đã thay đổi.`);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTemplate();
+    }, [templateId]);
 
     const handleEdit = () => {
         navigate('/modern-cv-editor', { state: { template } });
     };
 
-    const handleBack = () => {
-        navigate('/modern-cv/all');
+    const handleSelectAlternative = (altTemplate) => {
+        setTemplate(altTemplate);
+        setError(null);
+        navigate(`/modern-cv/${altTemplate.id}`, { state: { template: altTemplate }, replace: true });
     };
 
     if (loading) {
         return (
-            <Container sx={{ textAlign: 'center', mt: 8 }}>
-                <CircularProgress size={50} />
-                <Typography variant="body1" sx={{ mt: 2 }}>Đang tải dữ liệu...</Typography>
+            <Container sx={{ textAlign: 'center', py: 12 }}>
+                <CircularProgress size={48} thickness={4} />
+                <Typography variant="body1" sx={{ mt: 2.5, fontWeight: 600, color: 'text.secondary' }}>
+                    Đang tải thông tin mẫu CV hiện đại...
+                </Typography>
             </Container>
         );
     }
 
-    if (error) {
+    if (error || !template) {
         return (
-            <Container sx={{ textAlign: 'center', mt: 8 }}>
-                <Alert severity="error" sx={{ maxWidth: '500px', mx: 'auto' }}>
-                    {error}
-                </Alert>
-                <Button variant="outlined" color="primary" onClick={handleBack} sx={{ mt: 2 }}>
-                    Quay lại danh sách
-                </Button>
-            </Container>
+            <Box sx={{ minHeight: '80vh', py: 6, bgcolor: isDark ? 'background.default' : '#f8fafc' }}>
+                <Container maxWidth="md">
+                    <Card
+                        elevation={0}
+                        sx={{
+                            p: { xs: 3, md: 5 },
+                            borderRadius: 4,
+                            border: '1px solid',
+                            borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                            textAlign: 'center',
+                            bgcolor: isDark ? '#1e293b' : '#ffffff'
+                        }}
+                    >
+                        <ArticleIcon sx={{ fontSize: 64, color: '#f59e0b', mb: 2 }} />
+                        <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5 }}>
+                            Không Tìm Thấy Mẫu CV #{templateId}
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: 550, mx: 'auto', mb: 4 }}>
+                            Mẫu CV này hiện không có trong cơ sở dữ liệu (có thể do mã ID đã được cập nhật).
+                            Bạn có thể chọn một trong các mẫu CV hiện đại đang có sẵn dưới đây:
+                        </Typography>
+
+                        {availableTemplates.length > 0 && (
+                            <Box sx={{ mb: 4 }}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, textAlign: 'left' }}>
+                                    ✨ Các mẫu CV hiện đại khả dụng:
+                                </Typography>
+                                <Grid container spacing={2}>
+                                    {availableTemplates.map((item) => (
+                                        <Grid item xs={12} sm={6} key={item.id}>
+                                            <Paper
+                                                elevation={0}
+                                                onClick={() => handleSelectAlternative(item)}
+                                                sx={{
+                                                    p: 2,
+                                                    borderRadius: 3,
+                                                    border: '1px solid',
+                                                    borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0',
+                                                    textAlign: 'left',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s',
+                                                    '&:hover': {
+                                                        borderColor: theme.palette.primary.main,
+                                                        transform: 'translateY(-2px)'
+                                                    }
+                                                }}
+                                            >
+                                                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
+                                                    {item.name}
+                                                </Typography>
+                                                <Chip label={item.type || 'Hiện đại'} size="small" sx={{ fontSize: '0.7rem' }} />
+                                            </Paper>
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            </Box>
+                        )}
+
+                        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                            <Button
+                                component={RouterLink}
+                                to="/modern-cv/all"
+                                variant="contained"
+                                startIcon={<ExploreIcon />}
+                                sx={{ borderRadius: 2.5, px: 3, py: 1, textTransform: 'none', fontWeight: 700 }}
+                            >
+                                Khám Phá Kho Mẫu CV
+                            </Button>
+                            <Button
+                                component={RouterLink}
+                                to="/"
+                                variant="outlined"
+                                startIcon={<ArrowBackIcon />}
+                                sx={{ borderRadius: 2.5, px: 3, py: 1, textTransform: 'none', fontWeight: 600 }}
+                            >
+                                Quay Về Trang Chủ
+                            </Button>
+                        </Box>
+                    </Card>
+                </Container>
+            </Box>
         );
     }
 
     return (
-        <Container maxWidth="md" sx={{ mt: 6, padding: '20px' }}>
-            <Paper elevation={3} sx={{ p: 3, borderRadius: '8px' }}>
-                {/* Header */}
-                <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
-                    <Grid item>
-                        <Typography variant="h4" component="div">
-                            {template.name}
-                        </Typography>
-                        <Typography variant="subtitle2" color="text.secondary">
-                            Loại: {template.type || 'Không xác định'}
-                        </Typography>
-                    </Grid>
-                    <Grid item>
-                        <Tooltip title="Quay lại danh sách">
-                            <Button
-                                variant="outlined"
-                                color="secondary"
-                                startIcon={<ArrowBackIcon />}
-                                onClick={handleBack}
-                            >
-                                Quay lại
-                            </Button>
-                        </Tooltip>
-                    </Grid>
-                </Grid>
+        <Box sx={{ minHeight: '85vh', py: { xs: 4, md: 6 }, bgcolor: isDark ? 'background.default' : '#f8fafc' }}>
+            <Container maxWidth="lg">
+                {/* Top Nav & Breadcrumb */}
+                <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+                    <Button
+                        component={RouterLink}
+                        to="/modern-cv/all"
+                        startIcon={<ArrowBackIcon />}
+                        sx={{ color: 'text.secondary', textTransform: 'none', fontWeight: 600 }}
+                    >
+                        Quay lại Danh Sách CV Hiện Đại
+                    </Button>
 
-                <Divider sx={{ mb: 3 }} />
-
-                {/* Nội dung chi tiết */}
-                <Grid container spacing={3}>
-                    {/* Hình ảnh (nếu có) */}
-                    {/* {template.image && (
-                        <Grid item xs={12} md={4}>
-                            <CardMedia
-                                component="img"
-                                image={template.image}
-                                alt={template.name}
-                                sx={{ borderRadius: '8px', maxHeight: '200px', objectFit: 'cover' }}
-                            />
-                        </Grid>
-                    )} */}
-
-                    {/* Nội dung template */}
-                    <Grid item xs={12} md={template.image ? 12 : 12}>
-                        <Box
-                            sx={{
-                                border: '1px solid #ddd',
-                                p: 2,
-                                borderRadius: '5px',
-                                backgroundColor: '#f9f9f9',
-                                maxHeight: '300px',
-                                overflowY: 'auto',
-                            }}
-                        >
-                            <div dangerouslySetInnerHTML={{ __html: template.content }} />
-                        </Box>
-                    </Grid>
-                </Grid>
-
-                {/* Nút hành động */}
-                <Box sx={{ mt: 3, textAlign: 'right' }}>
                     <Button
                         variant="contained"
-                        color="primary"
-                        onClick={handleEdit}
                         size="large"
+                        startIcon={<EditNoteIcon />}
+                        onClick={handleEdit}
+                        sx={{
+                            borderRadius: 3,
+                            px: 3.5,
+                            py: 1.25,
+                            fontWeight: 700,
+                            textTransform: 'none',
+                            background: 'linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)',
+                            boxShadow: '0 8px 20px -5px rgba(124, 58, 237, 0.4)'
+                        }}
                     >
-                        Chỉnh sửa Mẫu CV
+                        Sử Dụng & Chỉnh Sửa Mẫu Này
                     </Button>
                 </Box>
-            </Paper>
-        </Container>
+
+                {/* Main Content Card */}
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: { xs: 3, md: 4 },
+                        borderRadius: 4,
+                        border: '1px solid',
+                        borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                        bgcolor: isDark ? '#1e293b' : '#ffffff',
+                    }}
+                >
+                    {/* Header Info */}
+                    <Box sx={{ mb: 3 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5, flexWrap: 'wrap' }}>
+                            <Chip
+                                label={template.type || 'CV Hiện Đại'}
+                                color="secondary"
+                                size="small"
+                                sx={{ fontWeight: 700, borderRadius: 1.5 }}
+                            />
+                            <Chip
+                                label="Chuẩn ATS 2 Cột"
+                                variant="outlined"
+                                size="small"
+                                sx={{ fontWeight: 600, borderRadius: 1.5 }}
+                            />
+                        </Box>
+                        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, letterSpacing: '-0.5px' }}>
+                            {template.name}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            Mẫu thiết kế hiện đại, bố cục khoa học, tối ưu trải nghiệm đọc của nhà tuyển dụng.
+                        </Typography>
+                    </Box>
+
+                    <Divider sx={{ mb: 3 }} />
+
+                    {/* Preview Paper Area */}
+                    <Box
+                        sx={{
+                            border: '1px solid',
+                            borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0',
+                            borderRadius: 3,
+                            p: { xs: 2, sm: 4 },
+                            bgcolor: isDark ? '#0f172a' : '#ffffff',
+                            boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)',
+                            maxHeight: '75vh',
+                            overflowY: 'auto',
+                        }}
+                    >
+                        <div dangerouslySetInnerHTML={{ __html: template.content || '<p>Đang chuẩn bị nội dung mẫu...</p>' }} />
+                    </Box>
+
+                    {/* Bottom Action Footer */}
+                    <Box sx={{ mt: 3.5, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                        <Button
+                            component={RouterLink}
+                            to="/modern-cv/all"
+                            variant="outlined"
+                            sx={{ borderRadius: 2.5, textTransform: 'none', fontWeight: 600 }}
+                        >
+                            Xem Mẫu Khác
+                        </Button>
+                        <Button
+                            variant="contained"
+                            startIcon={<EditNoteIcon />}
+                            onClick={handleEdit}
+                            sx={{
+                                borderRadius: 2.5,
+                                px: 3,
+                                textTransform: 'none',
+                                fontWeight: 700,
+                                background: 'linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)',
+                            }}
+                        >
+                            Chỉnh Sửa Ngay
+                        </Button>
+                    </Box>
+                </Paper>
+            </Container>
+        </Box>
     );
 }
 
