@@ -28,7 +28,6 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
-import BoltIcon from '@mui/icons-material/Bolt';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 
 const POPULAR_ROLES = [
@@ -74,7 +73,6 @@ const THEME_OPTIONS = [
 ];
 
 const LOADING_TIPS = [
-    'Đang kết nối siêu chip Groq LPU xử lý song song thần tốc...',
     'Đang phân tích thông tin kinh nghiệm & học vấn từ hồ sơ của bạn...',
     'Đang đối chuẩn bộ lọc ATS và tối ưu hóa từ khóa chuyên ngành...',
     'Đang canh chỉnh bố cục chuẩn khổ giấy A4, ngăn ngừa tràn trang...',
@@ -198,7 +196,7 @@ const CvByAI = () => {
         <Box sx={{ minHeight: '85vh', py: { xs: 4, md: 6 }, bgcolor: isDark ? 'background.default' : '#f8fafc' }}>
             <Container maxWidth="md">
                 {/* Top Navigation / Breadcrumb */}
-                <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box sx={{ mb: 3 }}>
                     <Button
                         component={RouterLink}
                         to="/"
@@ -207,18 +205,6 @@ const CvByAI = () => {
                     >
                         Quay về Trang chủ
                     </Button>
-                    <Chip
-                        icon={<BoltIcon sx={{ color: '#f59e0b !important' }} />}
-                        label="Groq LPU Llama-3.3 70B • Phản hồi 3-5s"
-                        size="small"
-                        sx={{
-                            fontWeight: 600,
-                            bgcolor: isDark ? 'rgba(245, 158, 11, 0.15)' : '#fef3c7',
-                            color: isDark ? '#fbbf24' : '#b45309',
-                            border: '1px solid',
-                            borderColor: isDark ? 'rgba(245, 158, 11, 0.3)' : '#fde68a',
-                        }}
-                    />
                 </Box>
 
                 {/* Main Card */}
