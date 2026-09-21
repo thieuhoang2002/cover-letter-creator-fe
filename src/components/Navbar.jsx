@@ -63,6 +63,7 @@ function Navbar() {
     const [mobileOpen, setMobileOpen] = useState(false);
 
     const isDark = mode === 'dark';
+    const isAdmin = (role || '').toLowerCase() === 'admin';
 
     const handleOpenUserMenu = (event) => {
         setAnchorElUser(event.currentTarget);
@@ -325,17 +326,17 @@ function Navbar() {
                                         </Typography>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
                                             <Chip
-                                                label={role === 'admin' ? 'Quản Trị Viên' : 'Thành viên'}
+                                                label={isAdmin ? 'Quản Trị Viên' : 'Thành viên'}
                                                 size="small"
-                                                color={role === 'admin' ? 'secondary' : 'default'}
+                                                color={isAdmin ? 'secondary' : 'default'}
                                                 sx={{ height: 20, fontSize: '0.7rem', fontWeight: 600 }}
                                             />
                                         </Box>
                                     </Box>
                                     <Divider sx={{ my: 1 }} />
 
-                                    {/* Admin Route (If role === 'admin') */}
-                                    {role === 'admin' && (
+                                    {/* Admin Route (If isAdmin) */}
+                                    {isAdmin && (
                                         <MenuItem
                                             component={Link}
                                             to="/admin"
@@ -483,6 +484,27 @@ function Navbar() {
                             </ListItemButton>
                         </ListItem>
                     ))}
+                    {isAdmin && (
+                        <ListItem disablePadding sx={{ mb: 1 }}>
+                            <ListItemButton
+                                component={Link}
+                                to="/admin"
+                                onClick={handleDrawerToggle}
+                                selected={location.pathname === '/admin'}
+                                sx={{
+                                    borderRadius: 2,
+                                    py: 1.2,
+                                    color: '#9333ea',
+                                    fontWeight: 700
+                                }}
+                            >
+                                <ListItemIcon sx={{ color: '#9333ea', minWidth: 40 }}>
+                                    <AdminIcon />
+                                </ListItemIcon>
+                                <ListItemText primary="Trang Quản Trị" />
+                            </ListItemButton>
+                        </ListItem>
+                    )}
                 </List>
 
                 {!isAuthenticated && (
