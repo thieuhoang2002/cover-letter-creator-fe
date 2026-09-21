@@ -130,7 +130,7 @@ function Home() {
                         >
                             <SparklesIcon sx={{ fontSize: 18, color: '#ec4899' }} />
                             <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                                Trí Tuệ Nhân Tạo Thế Hệ Mới 2026 • Groq Cloud LPU
+                                🎓 Phiên bản 2.0 • Nâng cấp từ Đồ án Môn học 2025 • Tích hợp Groq AI
                             </Typography>
                         </Box>
 
@@ -603,7 +603,7 @@ function Home() {
             >
                 <Container maxWidth="lg">
                     <Typography variant="body2" sx={{ color: isDark ? '#64748b' : '#94a3b8' }}>
-                        © 2026 <strong>CoverCraft AI</strong> — Nền tảng tạo CV & Đơn xin việc thông minh. Phát triển với Spring Boot 3 & React Vite.
+                        © 2026 <strong>Cover Letter Creator</strong> — Phiên bản 2.0 phát triển & nâng cấp toàn diện từ Đồ án Môn học năm 2025. Nền tảng Java Spring Boot 3 & React Vite.
                     </Typography>
                 </Container>
             </Box>

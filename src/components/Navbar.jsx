@@ -112,10 +112,10 @@ function Navbar() {
                         component={Link}
                         to="/"
                         sx={{
-                            mr: 4,
+                            mr: 3,
                             display: { xs: 'none', md: 'flex' },
                             alignItems: 'center',
-                            gap: 1.5,
+                            gap: 1.2,
                             textDecoration: 'none',
                             color: 'inherit'
                         }}
@@ -123,28 +123,44 @@ function Navbar() {
                         <Box
                             component="img"
                             src="/logo.png"
-                            alt="CoverCraft Logo"
+                            alt="Cover Letter Creator Logo"
                             onError={(e) => {
                                 e.target.style.display = 'none';
                             }}
                             sx={{ width: 36, height: 36, objectFit: 'contain' }}
                         />
-                        <Typography
-                            variant="h6"
-                            noWrap
-                            sx={{
-                                fontWeight: 800,
-                                fontSize: '1.25rem',
-                                background: isDark
-                                    ? 'linear-gradient(135deg, #60a5fa 0%, #c084fc 100%)'
-                                    : 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                                letterSpacing: '-0.02em'
-                            }}
-                        >
-                            CoverCraft AI
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography
+                                variant="h6"
+                                noWrap
+                                sx={{
+                                    fontWeight: 800,
+                                    fontSize: '1.2rem',
+                                    background: isDark
+                                        ? 'linear-gradient(135deg, #60a5fa 0%, #c084fc 100%)'
+                                        : 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    letterSpacing: '-0.02em'
+                                }}
+                            >
+                                Cover Letter Creator
+                            </Typography>
+                            <Tooltip title="Phiên bản 2.0 — Nâng cấp toàn diện từ Đồ án Môn học 2025">
+                                <Chip
+                                    label="v2.0 (2025)"
+                                    size="small"
+                                    sx={{
+                                        height: 20,
+                                        fontSize: '0.65rem',
+                                        fontWeight: 700,
+                                        backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(37, 99, 235, 0.08)',
+                                        color: isDark ? '#93c5fd' : '#2563eb',
+                                        border: isDark ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(37, 99, 235, 0.2)'
+                                    }}
+                                />
+                            </Tooltip>
+                        </Box>
                     </Box>
 
                     {/* Mobile Menu Icon */}
@@ -176,14 +192,19 @@ function Navbar() {
                             variant="h6"
                             sx={{
                                 fontWeight: 800,
-                                fontSize: '1.1rem',
+                                fontSize: '1.05rem',
                                 background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent'
                             }}
                         >
-                            CoverCraft
+                            Cover Letter Creator
                         </Typography>
+                        <Chip
+                            label="v2.0"
+                            size="small"
+                            sx={{ height: 18, fontSize: '0.6rem', fontWeight: 700 }}
+                        />
                     </Box>
 
                     {/* Desktop Navigation Links */}
@@ -415,22 +436,26 @@ function Navbar() {
                     }
                 }}
             >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
                     <Typography
                         variant="h6"
                         sx={{
                             fontWeight: 800,
                             background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
                             WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
+                            WebkitTextFillColor: 'transparent',
+                            fontSize: '1.1rem'
                         }}
                     >
-                        CoverCraft AI
+                        Cover Letter Creator
                     </Typography>
                     <IconButton onClick={handleDrawerToggle}>
                         <CloseIcon />
                     </IconButton>
                 </Box>
+                <Typography variant="caption" sx={{ display: 'block', mb: 2, color: isDark ? '#94a3b8' : '#64748b', fontWeight: 600 }}>
+                    Phiên bản 2.0 • Nâng cấp từ Đồ án 2025
+                </Typography>
                 <Divider sx={{ mb: 2 }} />
 
                 <List>
