@@ -62,16 +62,24 @@ function App() {
               <Route index element={<ModernCVEditor />} />
             </Route>
 
-            <Route path="/pdf-exported" element={<PdfExported />} />
+            <Route path="/pdf-exported" element={<PrivateRoute />}>
+              <Route index element={<PdfExported />} />
+            </Route>
 
-            <Route path="/my-love-templates" element={<LoveTemplate />} />
+            <Route path="/my-love-templates" element={<PrivateRoute />}>
+              <Route index element={<LoveTemplate />} />
+            </Route>
 
-            <Route path="/change-password" element={<ChangePass />} />
+            <Route path="/change-password" element={<PrivateRoute />}>
+              <Route index element={<ChangePass />} />
+            </Route>
 
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
 
-            <Route path="/information" element={<Information />} />
+            <Route path="/information" element={<PrivateRoute />}>
+              <Route index element={<Information />} />
+            </Route>
 
             <Route path="/cv-editor-test" element={<CvEditor />} />
 

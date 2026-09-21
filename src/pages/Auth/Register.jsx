@@ -43,6 +43,12 @@ export default function Register() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (formData.password.length < 8) {
+            setError('Mật khẩu phải có ít nhất 8 ký tự.');
+            setSuccess(null);
+            return;
+        }
+
         if (formData.password !== formData.confirmPassword) {
             setError('Mật khẩu xác nhận không khớp.');
             setSuccess(null);
@@ -56,7 +62,11 @@ export default function Register() {
             setError(null);
             setTimeout(() => navigate('/login'), 1500);
         } catch (err) {
-            setError('Đăng ký thất bại. Email có thể đã tồn tại hoặc thông tin không hợp lệ.');
+            if (err.response?.status === 429) {
+                setError(typeof err.response.data === 'string' ? err.response.data : (err.response.data?.message || 'Bạn đã tạo quá nhiều yêu cầu đăng ký. Vui lòng thử lại sau ít phút.'));
+            } else {
+                setError(err.response?.data?.message || err.response?.data || 'Đăng ký thất bại. Email có thể đã tồn tại hoặc thông tin không hợp lệ.');
+            }
             setSuccess(null);
         } finally {
             setLoading(false);

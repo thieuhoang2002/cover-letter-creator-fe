@@ -56,7 +56,11 @@ export default function Login() {
             const role = getRoleFromToken();
             navigate(role === 'admin' ? '/admin' : '/');
         } catch (err) {
-            setError('Đăng nhập thất bại. Vui lòng kiểm tra email hoặc mật khẩu.');
+            if (err.response?.status === 429) {
+                setError(typeof err.response.data === 'string' ? err.response.data : (err.response.data?.message || 'Bạn đã thực hiện quá nhiều yêu cầu đăng nhập. Vui lòng thử lại sau ít phút.'));
+            } else {
+                setError('Đăng nhập thất bại. Vui lòng kiểm tra email hoặc mật khẩu.');
+            }
             setSuccess(null);
         } finally {
             setLoading(false);
