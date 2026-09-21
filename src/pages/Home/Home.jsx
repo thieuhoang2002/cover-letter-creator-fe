@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
     Container,
     Typography,
@@ -9,8 +9,6 @@ import {
     CardContent,
     Paper,
     Chip,
-    Tab,
-    Tabs,
     useTheme
 } from '@mui/material';
 import { Link } from 'react-router-dom';
@@ -25,134 +23,12 @@ import {
 } from '@mui/icons-material';
 import { useThemeMode } from '../../context/ThemeContext';
 import { useAuth } from '../Auth/AuthContext';
-import { getTemplatesActive } from '../../apis/template';
-import { getActiveModernTemplates } from '../../apis/templateModernCV';
-
-const fallbackSampleTemplates = [
-    {
-        id: 13,
-        title: 'Đơn Đăng Ký Dự Tuyển Viên Chức Nhà Nước (Nghị định 115/2020)',
-        category: 'state',
-        badge: 'Nhà Nước',
-        badgeColor: 'primary',
-        description: 'Bố cục trang trọng, đúng quy thức văn bản hành chính Việt Nam, quốc hiệu tiêu ngữ chuẩn mực.',
-        link: '/template/13'
-    },
-    {
-        id: 13,
-        title: 'Sơ Yếu Lý Lịch Chuẩn Cán Bộ - Công Chức - Viên Chức (Mẫu 2C-BNV)',
-        category: 'state',
-        badge: 'Nhà Nước',
-        badgeColor: 'primary',
-        description: 'Định dạng sơ yếu lý lịch cán bộ, trình bày quá trình công tác, đảng viên và thành tích khen thưởng.',
-        link: '/modern-cv/13'
-    },
-    {
-        id: 14,
-        title: 'Đơn Xin Chuyển Công Tác Cơ Quan Hành Chính Nhà Nước',
-        category: 'state',
-        badge: 'Nhà Nước',
-        badgeColor: 'primary',
-        description: 'Văn bản chuyển công tác chuẩn mực dành cho cán bộ, công chức, viên chức chuyển đổi đơn vị.',
-        link: '/template/14'
-    },
-    {
-        id: 15,
-        title: 'CV Hiện Đại - Kỹ Sư Công Nghệ Thông Tin (Tech Minimalist)',
-        category: 'modern',
-        badge: 'Công Nghệ',
-        badgeColor: 'secondary',
-        description: 'Bố cục 2 cột hiện đại, tối ưu cho lập trình viên với khu vực kỹ năng lập trình và dự án nổi bật.',
-        link: '/modern-cv/15'
-    },
-    {
-        id: 16,
-        title: 'CV Hiện Đại - Quản Lý & Kinh Doanh (Corporate Navy)',
-        category: 'modern',
-        badge: 'Kinh Doanh',
-        badgeColor: 'secondary',
-        description: 'Thiết kế màu xanh Navy lịch lãm, làm nổi bật chỉ số KPI, doanh số và kỹ năng đàm phán.',
-        link: '/modern-cv/16'
-    },
-    {
-        id: 17,
-        title: 'CV Hiện Đại - Thiết Kế & Sáng Tạo (Creative Emerald)',
-        category: 'modern',
-        badge: 'Sáng Tạo',
-        badgeColor: 'secondary',
-        description: 'Gam màu Emerald nổi bật, bố trí portfolio trực quan, thể hiện gu thẩm mỹ và tư duy thiết kế.',
-        link: '/modern-cv/17'
-    }
-];
 
 function Home() {
     const { mode } = useThemeMode();
     const { isAuthenticated } = useAuth();
     const theme = useTheme();
     const isDark = mode === 'dark';
-    const [activeTab, setActiveTab] = useState('all');
-    const [showcaseTemplates, setShowcaseTemplates] = useState(fallbackSampleTemplates);
-
-    useEffect(() => {
-        let isMounted = true;
-        const fetchTemplates = async () => {
-            try {
-                const [coverRes, modernRes] = await Promise.allSettled([
-                    getTemplatesActive(),
-                    getActiveModernTemplates()
-                ]);
-
-                const stateList = (coverRes.status === 'fulfilled' && Array.isArray(coverRes.value))
-                    ? coverRes.value
-                    : [];
-                const modernList = (modernRes.status === 'fulfilled' && Array.isArray(modernRes.value))
-                    ? modernRes.value
-                    : [];
-
-                if (stateList.length > 0 || modernList.length > 0) {
-                    const mappedState = stateList.slice(0, 3).map((item) => ({
-                        id: item.id,
-                        title: item.name,
-                        category: 'state',
-                        badge: item.type || 'Nhà Nước',
-                        badgeColor: 'primary',
-                        description: item.description || 'Bố cục trang trọng, đúng quy thức văn bản hành chính Việt Nam, quốc hiệu tiêu ngữ chuẩn mực.',
-                        link: `/template/${item.id}`,
-                        rawData: item
-                    }));
-
-                    const mappedModern = modernList.slice(0, 3).map((item) => ({
-                        id: item.id,
-                        title: item.name,
-                        category: 'modern',
-                        badge: item.type || 'Hiện Đại',
-                        badgeColor: 'secondary',
-                        description: item.description || 'Bố cục 2 cột hiện đại, tối ưu cho nhà tuyển dụng và chuẩn ATS với phong cách chuyên nghiệp.',
-                        link: `/modern-cv/${item.id}`,
-                        rawData: item
-                    }));
-
-                    if (isMounted) {
-                        setShowcaseTemplates([...mappedState, ...mappedModern]);
-                    }
-                }
-            } catch (err) {
-                console.warn('Lỗi khi tải mẫu nổi bật từ API, dùng danh sách dự phòng:', err);
-            }
-        };
-
-        fetchTemplates();
-        return () => { isMounted = false; };
-    }, []);
-
-    const handleTabChange = (event, newValue) => {
-        setActiveTab(newValue);
-    };
-
-    const filteredTemplates = showcaseTemplates.filter((tpl) => {
-        if (activeTab === 'all') return true;
-        return tpl.category === activeTab;
-    });
 
     return (
         <Box sx={{ minHeight: '100vh', backgroundColor: theme.palette.background.default }}>
@@ -501,112 +377,7 @@ function Home() {
                 </Grid>
             </Container>
 
-            {/* 4. TEMPLATE EXPLORER SHOWCASE */}
-            <Container maxWidth="lg" sx={{ mb: 12 }}>
-                <Box sx={{ textAlign: 'center', mb: 5 }}>
-                    <Typography variant="overline" sx={{ letterSpacing: 2, fontWeight: 700, color: '#7c3aed' }}>
-                        KHO MẪU ĐA PHONG CÁCH
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 800, mt: 1, mb: 3, color: isDark ? '#f8fafc' : '#0f172a' }}>
-                        Chọn Mẫu Phù Hợp Cho Ngành Nghề Của Bạn
-                    </Typography>
 
-                    <Tabs
-                        value={activeTab}
-                        onChange={handleTabChange}
-                        centered
-                        sx={{
-                            '& .MuiTabs-indicator': {
-                                backgroundColor: '#2563eb',
-                                height: 3,
-                                borderRadius: 1.5
-                            },
-                            '& .MuiTab-root': {
-                                fontWeight: 700,
-                                fontSize: '0.95rem',
-                                textTransform: 'none',
-                                px: 3
-                            }
-                        }}
-                    >
-                        <Tab label="Tất cả mẫu (11)" value="all" />
-                        <Tab label="Cơ Quan Nhà Nước" value="state" />
-                        <Tab label="Doanh Nghiệp Hiện Đại" value="modern" />
-                    </Tabs>
-                </Box>
-
-                <Grid container spacing={3}>
-                    {filteredTemplates.map((tpl) => (
-                        <Grid item xs={12} sm={6} md={4} key={tpl.id}>
-                            <Card
-                                sx={{
-                                    height: '100%',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    p: 2.5,
-                                    borderRadius: 3,
-                                    transition: 'all 0.3s ease',
-                                    '&:hover': {
-                                        transform: 'translateY(-4px)',
-                                        boxShadow: isDark
-                                            ? '0 12px 30px rgba(0, 0, 0, 0.5)'
-                                            : '0 12px 30px rgba(37, 99, 235, 0.1)'
-                                    }
-                                }}
-                            >
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                    <Chip
-                                        label={tpl.badge}
-                                        color={tpl.badgeColor}
-                                        size="small"
-                                        sx={{ fontWeight: 700, borderRadius: 1.5 }}
-                                    />
-                                    <Typography variant="caption" sx={{ color: isDark ? '#94a3b8' : '#64748b' }}>
-                                        Chuẩn A4
-                                    </Typography>
-                                </Box>
-
-                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, fontSize: '1.05rem', lineHeight: 1.4 }}>
-                                    {tpl.title}
-                                </Typography>
-
-                                <Typography variant="body2" sx={{ color: isDark ? '#94a3b8' : '#64748b', mb: 3, flexGrow: 1, lineHeight: 1.6 }}>
-                                    {tpl.description}
-                                </Typography>
-
-                                <Button
-                                    component={Link}
-                                    to={tpl.link}
-                                    state={{ template: tpl.rawData }}
-                                    variant="outlined"
-                                    fullWidth
-                                    endIcon={<ArrowForwardIcon />}
-                                    sx={{
-                                        borderRadius: 2,
-                                        fontWeight: 600,
-                                        py: 1
-                                    }}
-                                >
-                                    Sử Dụng Mẫu Này
-                                </Button>
-                            </Card>
-                        </Grid>
-                    ))}
-                </Grid>
-
-                <Box sx={{ textAlign: 'center', mt: 5 }}>
-                    <Button
-                        component={Link}
-                        to="/modern-cv/all"
-                        variant="text"
-                        size="large"
-                        endIcon={<ArrowForwardIcon />}
-                        sx={{ fontWeight: 700, fontSize: '1rem', color: '#2563eb' }}
-                    >
-                        Xem toàn bộ 11 mẫu trong thư viện
-                    </Button>
-                </Box>
-            </Container>
 
             {/* 5. CTA BOTTOM BANNER */}
             <Container maxWidth="lg" sx={{ pb: 10 }}>
