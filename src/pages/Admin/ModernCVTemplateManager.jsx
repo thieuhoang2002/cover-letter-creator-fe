@@ -3,7 +3,7 @@ import {
     Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle,
     TextField, Snackbar, Alert, CircularProgress, Select, MenuItem, InputLabel,
     FormControl, useTheme, Card, Grid, InputAdornment, Chip, IconButton, Tooltip,
-    Divider, Tabs, Tab, TablePagination, Stack
+    Divider, Tabs, Tab, TablePagination, Stack, Paper
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { Editor } from "@tinymce/tinymce-react";

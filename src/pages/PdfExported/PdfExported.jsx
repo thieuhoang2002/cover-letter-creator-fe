@@ -10,7 +10,7 @@ import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
     Paper, IconButton, Box, Tooltip, TablePagination,
     Snackbar, Dialog, DialogTitle, DialogContent,
-    DialogContentText, DialogActions, Tabs, Tab, Stack, Chip
+    DialogContentText, DialogActions, Tabs, Tab, Stack, Chip, Divider
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -44,6 +44,11 @@ const PdfExported = () => {
     useEffect(() => {
         if (userId) {
             loadAllData();
+        } else {
+            const timer = setTimeout(() => {
+                setLoading(false);
+            }, 3000);
+            return () => clearTimeout(timer);
         }
     }, [userId]);
 
