@@ -47,9 +47,12 @@
 | 📄 **Cover Letter & Modern CV** | Thư viện 11 mẫu phong phú đã seed sẵn; trình soạn thảo TinyMCE trực quan, hỗ trợ lưu nháp (`localStorage`). |
 | ⚡ **Xuất PDF Binary Trực tiếp** | Nhận luồng nhị phân trực tiếp từ backend, tự động kích hoạt tải file về máy và dọn dẹp bộ nhớ Object URL. |
 | 🛡️ **Khóa Nút Chống Double-Click** | Khóa tương tác nút Tải PDF và hiển thị spinner trạng thái cho đến khi hoàn tất chuyển trang. |
+| 🌓 **Dark / Light Mode Theme** | Tùy chọn giao diện Sáng / Tối phong cách Glassmorphism 2026, lưu trạng thái theme vào `localStorage`. |
+| 📱 **Mobile & Tablet Responsive** | Tự động chuyển đổi các bảng Table/DataGrid sang dạng **Thẻ (Card View)** mượt mà trên thiết bị di động `< 900px`, bảo toàn nguyên vẹn 100% Desktop UI. |
+| 🚀 **Tối Ưu Bundle & Code Splitting** | `React.lazy()` và phân chia vendor chunks riêng biệt (`vendor-react`, `vendor-mui`, `vendor-datagrid`, `vendor-charts`, `vendor-tinymce`), tăng tốc độ tải trang ban đầu. |
 | 📌 **Theo dõi Ứng tuyển (Follow CV)** | Quản lý trạng thái nộp hồ sơ (`Pending`, `Interview`, `Accepted`), ghi chú công ty và liên kết xem lại file trên Cloudflare R2. |
-| 🔐 **Xác thực Đa kênh** | Đăng nhập truyền thống, Google One Tap / OAuth và GitHub OAuth kèm cơ chế tự động logout khi JWT hết hạn. |
-| 📊 **Quản trị Toàn diện (Admin)** | Dashboard thống kê trực quan với Recharts & Chart.js, quản lý danh sách người dùng và CRUD mẫu tài liệu. |
+| 🔐 **Xác thực Đa kênh & RBAC** | Đăng nhập truyền thống, Google One Tap / OAuth và GitHub OAuth, phân quyền chặt chẽ với `PrivateRoute` (Admin vs User). |
+| 📊 **Quản trị Toàn diện (Admin SaaS 2026)** | Drawer Sidebar thu gọn linh hoạt, Dashboard thống kê Chart.js, Bảng xếp hạng Top mẫu, DataGrid quản lý người dùng & templates. |
 
 ---
 
