@@ -108,3 +108,11 @@ Theo dõi chi tiết lộ trình phát triển, các tính năng đã hoàn thi�
   - [ ] Thêm Tab *"Yêu Cầu Nâng Cấp VIP"* trong Admin Portal.
   - [ ] Hiển thị danh sách khách hàng đang chờ duyệt nâng cấp gói.
   - [ ] Nút hành động: *"Phê duyệt (Cấp quyền VIP)"* hoặc *"Từ chối"*.
+
+### ⏳ 2.5. Hàng Đợi Tạo CV Bằng AI (AI Request Queue & Waiting Room)
+- [ ] **Giao diện chờ xếp hàng khi hệ thống đông người dùng**:
+  - [ ] Hiển thị card/modal trạng thái: *"Hệ thống AI đang bận xử lý nhiều yêu cầu cùng lúc. Bạn đang ở vị trí số #X trong hàng đợi..."*.
+  - [ ] Hiển thị thanh tiến trình / thời gian ước tính (ETA ~15-30s).
+- [ ] **Đặc quyền VIP Ưu tiên Hàng Đợi (VIP Priority Queue)**:
+  - [ ] Tài khoản VIP được gắn cờ ưu tiên cao (`priority = HIGH`), tự động vượt lên đầu hàng đợi để được AI xử lý ngay lập tức.
+  - [ ] Banner gợi ý cho tài khoản thường: *"Nâng cấp VIP để bỏ qua hàng đợi và tạo CV tức thì"*.
