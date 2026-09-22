@@ -8,7 +8,7 @@ Tài liệu hướng dẫn thiết lập môi trường phát triển (Local Dev
 
 - **Node.js**: Phiên bản `>= 18.0.0` (Khuyến nghị sử dụng **Node.js 20 LTS** hoặc **Node.js 22 LTS**).
 - **Trình quản lý gói**: `npm` (đi kèm Node.js), `yarn` hoặc `pnpm`.
-- **Backend Service**: Server Spring Boot đang hoạt động tại `http://localhost:8080`.
+- **Backend Service**: Server Spring Boot đang hoạt động tại `http://localhost:8080` hoặc URL Render production.
 
 ---
 
@@ -21,8 +21,6 @@ cd cover-letter-creator-fe
 
 # Cài đặt toàn bộ dependencies theo lockfile
 npm install
-# hoặc nếu dùng pnpm: pnpm install
-# hoặc nếu dùng yarn: yarn install
 ```
 
 ### Bước 2: Thiết lập Biến Môi trường (.env)
@@ -76,8 +74,8 @@ npm run dev
    - Frontend: `5173` (Vite)
    - Backend: `8080` (Spring Boot)
 2. **CORS Configuration**:
-   - Backend Spring Boot cần cấu hình `CorsConfiguration` cho phép origin `http://localhost:5173` với đầy đủ các method (`GET`, `POST`, `PUT`, `DELETE`, `OPTIONS`) và expose header `Content-Disposition` để Frontend đọc tên file PDF khi tải về.
-3. **Cơ chế tải file PDF mới**:
+   - Backend Spring Boot cho phép origin `http://localhost:5173` và `https://cover-letter-creator-fe.vercel.app`.
+3. **Cơ chế tải file PDF**:
    - Các API xuất PDF trả về trực tiếp stream binary (`application/pdf`).
    - Frontend tự động mở hộp thoại lưu file của trình duyệt và tải file PDF về máy người dùng ngay tức thì.
 
@@ -85,27 +83,17 @@ npm run dev
 
 ## 5. Xử lý Sự cố Thường gặp (Troubleshooting)
 
-### Vấn đề 1: Trình soạn thảo TinyMCE hiện thông báo cảnh báo "This domain is not registered"
-- **Nguyên nhân**: Bạn đang sử dụng API key mặc định hoặc chưa đăng ký domain localhost trên dashboard của Tiny Cloud.
-- **Giải pháp**: Đăng ký tài khoản miễn phí tại [tiny.cloud](https://www.tiny.cloud/), thêm domain `localhost` vào danh sách Allowed Domains và dán key vào `VITE_API_KEY_TINY` trong `.env`.
+### Vấn đề 1: Trình soạn thảo TinyMCE hiện cảnh báo "This domain is not registered"
+- **Nguyên nhân**: Đang dùng API key mặc định hoặc chưa thêm domain localhost trên dashboard của Tiny Cloud.
+- **Giải pháp**: Đăng ký tài khoản miễn phí tại [tiny.cloud](https://www.tiny.cloud/), thêm domain `localhost` và domain Vercel vào danh sách Allowed Domains rồi dán key vào `VITE_API_KEY_TINY`.
 
-### Vấn đề 2: Lỗi "Network Error" khi gọi API
-- **Nguyên nhân**: Backend Spring Boot chưa chạy hoặc sai địa chỉ `VITE_BACKEND_URL`.
-- **Giải pháp**: Kiểm tra server backend đã khởi động tại cổng 8080 chưa, thử mở trình duyệt truy cập `http://localhost:8080/api/templates/all` để kiểm tra kết nối.
+### Vấn đề 2: Lỗi "Cannot access before initialization" trên Vercel sau khi build
+- **Nguyên nhân**: Do cấu hình `manualChunks` cố tình ép chia tách `@mui` và `react` thành 2 chunk vendor riêng rẽ, gây ra lỗi vòng phụ thuộc tuần hoàn (Circular Dependency) trong Rollup.
+- **Giải pháp**: Không cấu hình `manualChunks` thủ công trong `vite.config.js`. Hãy để Vite 5 tự động phân tích đồ thị phụ thuộc tự nhiên.
 
 ### Vấn đề 3: Refresh trang bị lỗi 404 khi deploy lên Nginx / Static Hosting
-- **Nguyên nhân**: Đây là ứng dụng SPA (Single Page Application). Khi người dùng F5 tại các đường dẫn như `/admin` hoặc `/editor`, web server không tìm thấy file vật lý tương ứng.
-- **Giải pháp**:
-  - Đối với Nginx: Thêm cấu hình `try_files $uri $uri/ /index.html;` (đã có sẵn trong file `nginx.conf` đi kèm dự án).
-  - Đối với Vercel: Dự án đã có sẵn file `vercel.json` định tuyến chuẩn.
+- **Nguyên nhân**: Ứng dụng SPA (Single Page Application) cần fallback về `index.html`.
+- **Giải pháp**: Dự án đã có sẵn file `vercel.json` cho Vercel và `nginx.conf` cho Docker Nginx.
 
-### Vấn đề 4: Danh sách Template trong cơ sở dữ liệu bị trống
-- **Nguyên nhân**: Lần đầu khởi động dự án hoặc database vừa tạo mới.
-- **Giải pháp**: Chạy file `seed_templates.sql` nằm ở thư mục gốc frontend để nạp sẵn 3 mẫu Cover Letter và 3 mẫu Modern CV:
-  ```powershell
-  C:\xampp\mysql\bin\mysql.exe -u root cover_letter_creator_db < seed_templates.sql
-  ```
-
-### Vấn đề 5: Nút "Tải xuống PDF" bị khóa hoặc xuất trùng nhiều file
-- **Cơ chế hoạt động**: Frontend sử dụng state `isExporting` để chủ động khóa nút (`disabled`) kèm chữ `"Đang xuất PDF..."` cho đến khi quá trình xuất hoàn tất và chuyển sang trang `/pdf-exported`.
-- **Bảo vệ Backend**: Backend có lớp lọc Deduplication Guard trong 10 giây nhằm chống lại tình trạng double-click từ người dùng. Không nên tự ý bỏ cờ `isExporting` để đảm bảo dữ liệu database luôn sạch.
+### Vấn đề 4: Nút "Tải xuống PDF" bị khóa hoặc xuất trùng nhiều file
+- **Cơ chế hoạt động**: Frontend sử dụng state `isExporting` để chủ động khóa nút (`disabled`) kèm chữ `"Đang xuất PDF..."` cho đến khi quá trình xuất hoàn tất. Backend đồng thời áp dụng Deduplication Guard 10s.

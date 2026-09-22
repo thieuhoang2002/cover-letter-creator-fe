@@ -3,7 +3,7 @@
 <div align="center">
 
 ![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![Vite](https://img.shields.io/badge/Vite-5.4.10-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-5.4.14-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![Material UI](https://img.shields.io/badge/MUI-6.4.7-007FFF?style=for-the-badge&logo=mui&logoColor=white)
 ![Deployment](https://img.shields.io/badge/Vercel-Live%20Production-black?style=for-the-badge&logo=vercel)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
@@ -21,21 +21,27 @@
 
 ## 📖 Giới thiệu Dự án
 
-**Cover Letter Creator Frontend** là nền tảng Single Page Application (SPA) xây dựng bằng **React 18** và **Vite**, kết nối với hệ thống Backend **Java Spring Boot 3.4.3**.
+**Cover Letter Creator Frontend** là nền tảng Single Page Application (SPA) xây dựng bằng **React 18** và **Vite 5**, kết nối với hệ thống Backend **Java Spring Boot 3.4.3**.
 
 Ứng dụng vừa được nâng cấp toàn diện:
-- 🚀 **Trí tuệ nhân tạo Groq Cloud**: Nâng cấp lên model **`openai/gpt-oss-120b`** (kết hợp tự động fallback sang `llama-3.3-70b-versatile`), sinh nội dung CV thần tốc và chuẩn mực theo từng vị trí ứng tuyển.
-- 📥 **Tải trực tiếp PDF (Direct Binary Stream)**: Bỏ phụ thuộc vào Google Drive cũ, xuất trực tiếp stream file PDF (`application/pdf`) về máy người dùng và lưu trữ đám mây vĩnh viễn qua **Cloudflare R2**.
+- 🚀 **Trí tuệ nhân tạo Groq Cloud**: Model **`openai/gpt-oss-120b`** (kết hợp tự động fallback sang `llama-3.3-70b-versatile`), hỗ trợ xoay vòng nhiều API key tự động phân bổ tải.
+- 📥 **Tải trực tiếp PDF (Direct Binary Stream)**: Xuất trực tiếp stream file PDF (`application/pdf`) về máy người dùng và lưu trữ đám mây vĩnh viễn qua **Cloudflare R2**.
 - 🛡️ **Bảo vệ Chống Click Trùng (Anti-Spam Export Lock)**: Tích hợp cờ khóa nút bấm `isExporting` và Deduplication Guard 10s ngăn ngừa phát sinh bản ghi trùng lặp khi xuất PDF.
 - 🎨 **Kho 11 Template Mẫu Sẵn Có**: Đã nạp sẵn bộ 6 Cover Letter (3 Nhà Nước + 3 Hiện Đại) và 5 Modern CV (2 Nhà Nước + 3 Hiện Đại) vào cơ sở dữ liệu TiDB Cloud (`seed_templates.sql`).
-- 🔐 **Bảo mật & Định tuyến**: Tích hợp xác thực kép **Google OAuth 2.0** & **GitHub OAuth**, bảo vệ phân quyền với `PrivateRoute` (Admin vs User).
+- 💎 **Gói VIP & Nhận Diện Đẳng Cấp**: Hạn ngạch lưu trữ nâng lên **30 CV PDF** cho VIP; Avatar VIP trên Navbar có viền sáng hoàng gia vàng kim rực rỡ kèm huy hiệu vương miện nhỏ tinh tế.
+- 📱 **Tối Ưu Giao Diện Mobile & Tablet Toàn Diện**:
+  - **Theo dõi ứng tuyển (`FollowCV.jsx`)**: KPI metrics cards co giãn mượt mà; thẻ CV mobile hiển thị huy hiệu trạng thái cùng nhãn phân biệt nguồn (Uploaded 📎 / Hệ thống 🔗), tên CV tự xuống dòng và nút bấm dàn đều kích thước chuẩn touch-friendly.
+  - **Mẫu CV yêu thích (`LoveTemplate.jsx`)**: Thiết kế lại thanh Filter Tabs theo phong cách **Segmented Pill** hiện đại (phong cách Apple / SaaS), loại bỏ đường gạch chân cắt ngang viền.
+  - **Trang chủ (`Home.jsx`)**: Cụm đánh giá khách hàng (5 sao ⭐⭐⭐⭐⭐) và số liệu căn giữa cân đối; các nút CTA tự động kéo dãn full-width trên điện thoại.
+  - **Thanh Header (`Navbar.jsx`)**: Cố định nút "Đăng nhập" không bị rớt thành 2 dòng trên mobile.
+- 🔐 **Bảo mật & Định tuyến**: Tích hợp xác thực kép **Google OAuth 2.0** & **GitHub OAuth**, bảo toàn role VIP/Admin khi đăng nhập mạng xã hội, bảo vệ phân quyền với `PrivateRoute` (Admin vs User).
 
 ---
 
 ## 🌿 Chiến Lược Phân Nhánh Git (Branching Strategy)
 
 - **`main`**: Nhánh Production được bảo vệ, tự động kích hoạt CI/CD deploy lên **Vercel**.
-- **`dev`**: Nhánh phát triển tính năng mới (UI/UX Transformation, Live Split-screen Editor, AI Streaming, Portfolio...). Mọi công việc lập trình được thực hiện trên nhánh này trước khi tích hợp vào `main`.
+- **`dev`**: Nhánh phát triển tính năng mới. Mọi công việc lập trình được thực hiện trên nhánh này trước khi tích hợp vào `main`.
 
 ---
 
@@ -49,10 +55,11 @@
 | 🛡️ **Khóa Nút Chống Double-Click** | Khóa tương tác nút Tải PDF và hiển thị spinner trạng thái cho đến khi hoàn tất chuyển trang. |
 | 🌓 **Dark / Light Mode Theme** | Tùy chọn giao diện Sáng / Tối phong cách Glassmorphism 2026, lưu trạng thái theme vào `localStorage`. |
 | 📱 **Mobile & Tablet Responsive** | Tự động chuyển đổi các bảng Table/DataGrid sang dạng **Thẻ (Card View)** mượt mà trên thiết bị di động `< 900px`, bảo toàn nguyên vẹn 100% Desktop UI. |
-| 🚀 **Tối Ưu Bundle & Code Splitting** | `React.lazy()` và phân chia vendor chunks riêng biệt (`vendor-react`, `vendor-mui`, `vendor-datagrid`, `vendor-charts`, `vendor-tinymce`), tăng tốc độ tải trang ban đầu. |
-| 📌 **Theo dõi Ứng tuyển (Follow CV)** | Quản lý trạng thái nộp hồ sơ (`Pending`, `Interview`, `Accepted`), ghi chú công ty và liên kết xem lại file trên Cloudflare R2. |
+| 🚀 **Tối Ưu Bundle & Vite 5 Engine** | Tải lười `React.lazy()` và phân chia chunk động tự nhiên theo đồ thị phụ thuộc của Vite 5, loại bỏ triệt để lỗi Circular Dependency runtime. |
+| 📌 **Theo dõi Ứng tuyển & Upload CV PDF** | Quản lý trạng thái nộp hồ sơ (`Pending`, `Interview`, `Accepted`), upload CV PDF cá nhân từ máy (3 CV Free, 30 CV VIP), xóa CV tự động xóa file trên Cloudflare R2. |
+| 💎 **Đặc Quyền Thành Viên VIP** | Viền phát sáng vàng kim hoàng gia và huy hiệu vương miện trên Avatar, mở rộng hạn mức lưu trữ 30 CV PDF. |
 | 🔐 **Xác thực Đa kênh & RBAC** | Đăng nhập truyền thống, Google One Tap / OAuth và GitHub OAuth, phân quyền chặt chẽ với `PrivateRoute` (Admin vs User). |
-| 📊 **Quản trị Toàn diện (Admin SaaS 2026)** | Drawer Sidebar thu gọn linh hoạt, Dashboard thống kê Chart.js, Bảng xếp hạng Top mẫu, DataGrid quản lý người dùng & templates. |
+| 📊 **Quản trị Toàn diện (Admin SaaS 2026)** | Drawer Sidebar thu gọn linh hoạt, Dashboard thống kê Chart.js, Bảng xếp hạng Top mẫu, DataGrid quản lý người dùng & duyệt yêu cầu VIP. |
 
 ---
 
@@ -63,8 +70,8 @@ Hệ thống tài liệu chuyên sâu dành cho Senior Architect, Developers và
 | Tài liệu | Nội dung chính |
 | :--- | :--- |
 | 📌 [**PROJECT_SPEC.md**](./PROJECT_SPEC.md) | Đặc tả luồng UI/UX, Sitemap, chi tiết 3 luồng tạo CV/Cover Letter, State Management và Security Guard. |
-| 🛠️ [**TECHSTACK.md**](./TECHSTACK.md) | Phân tích chi tiết công nghệ, phiên bản (React, Vite, MUI v6, TinyMCE, Axios...) và cấu trúc thư mục. |
-| 📋 [**TODO.md**](./TODO.md) | Checklist tính năng hoàn thành, tồn đọng kỹ thuật và lộ trình phát triển nhánh `dev`. |
+| 🛠️ [**TECHSTACK.md**](./TECHSTACK.md) | Phân tích chi tiết công nghệ, phiên bản (React 18, Vite 5, MUI v6, TinyMCE, Axios...) và cấu trúc thư mục. |
+| 📋 [**TODO.md**](./TODO.md) | Checklist tính năng hoàn thành, tồn đọng kỹ thuật và lộ trình phát triển. |
 | 🤝 [**HANDOVER.md**](./HANDOVER.md) | Hướng dẫn bàn giao môi trường, cài đặt npm/yarn/pnpm, cấu hình port 5173 / 8080 và xử lý sự cố. |
 | 🐳 [**DOCKER.md**](./DOCKER.md) | Hướng dẫn Dockerize Multi-stage (Node builder + Nginx Alpine runner), cấu hình SPA routing và docker-compose. |
 
