@@ -20,7 +20,7 @@ import {
     ListItemButton,
     ListItemIcon,
     ListItemText,
-    useTheme
+    Badge
 } from '@mui/material';
 import {
     Menu as MenuIcon,
@@ -65,6 +65,7 @@ function Navbar() {
 
     const isDark = mode === 'dark';
     const isAdmin = (role || '').toLowerCase() === 'admin';
+    const isVip = (role || '').toLowerCase() === 'vip';
 
     const handleOpenUserMenu = (event) => {
         setAnchorElUser(event.currentTarget);

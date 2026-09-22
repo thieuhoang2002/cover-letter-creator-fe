@@ -415,7 +415,7 @@ const FollowCV = () => {
                             Chưa có CV nào trong danh sách theo dõi
                         </Typography>
                         <Typography variant="body2" color="textSecondary" mt={1}>
-                            Bạn có thể thêm CV vào mục theo dõi từ trang "Danh sách CV đã xuất" để quản lý quá trình nộp đơn.
+                            Bạn có thể thêm CV vào mục theo dõi từ trang &quot;Danh sách CV đã xuất&quot; để quản lý quá trình nộp đơn.
                         </Typography>
                     </Paper>
                 ) : (
