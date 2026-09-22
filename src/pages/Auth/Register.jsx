@@ -43,8 +43,14 @@ export default function Register() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (formData.password.length < 8) {
-            setError('Mật khẩu phải có ít nhất 8 ký tự.');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            setError('Email không đúng định dạng.');
+            setSuccess(null);
+            return;
+        }
+        if (formData.password.length < 6) {
+            setError('Mật khẩu phải có ít nhất 6 ký tự.');
             setSuccess(null);
             return;
         }
@@ -72,6 +78,7 @@ export default function Register() {
             setLoading(false);
         }
     };
+
 
     return (
         <Box

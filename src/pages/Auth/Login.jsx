@@ -46,6 +46,11 @@ export default function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            setError('Email không đúng định dạng.');
+            return;
+        }
         setLoading(true);
         try {
             const token = await loginUser(formData);
@@ -66,6 +71,7 @@ export default function Login() {
             setLoading(false);
         }
     };
+
 
     return (
         <Box

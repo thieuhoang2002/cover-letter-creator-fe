@@ -418,7 +418,15 @@ const FollowCV = () => {
                                                 transition: 'background-color 0.2s',
                                             }}
                                         >
-                                            <TableCell sx={{ fontWeight: 600 }}>{cv.name}</TableCell>
+                                            <TableCell sx={{ fontWeight: 600 }}>
+                                                <Stack direction="row" spacing={1} alignItems="center">
+                                                    <span>{cv.name}</span>
+                                                    {cv.source === 'uploaded'
+                                                        ? <Chip label="📎 Upload" size="small" sx={{ fontSize: '0.65rem', height: 20, bgcolor: '#dbeafe', color: '#1d4ed8', fontWeight: 700 }} />
+                                                        : <Chip label="🔗 Link" size="small" sx={{ fontSize: '0.65rem', height: 20, bgcolor: isDark ? '#1e293b' : '#f1f5f9', color: 'text.secondary', fontWeight: 600 }} />
+                                                    }
+                                                </Stack>
+                                            </TableCell>
                                             <TableCell>{cv.company || <Typography variant="caption" color="textSecondary">Chưa nhập</Typography>}</TableCell>
                                             <TableCell sx={{ maxWidth: 260 }}>{cv.note || <Typography variant="caption" color="textSecondary">Chưa có ghi chú</Typography>}</TableCell>
                                             <TableCell>{getStatusBadge(cv.status)}</TableCell>
@@ -477,9 +485,15 @@ const FollowCV = () => {
                                         }}
                                     >
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5, gap: 1 }}>
-                                            <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
-                                                {cv.name}
-                                            </Typography>
+                                            <Box>
+                                                <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
+                                                    {cv.name}
+                                                </Typography>
+                                                {cv.source === 'uploaded'
+                                                    ? <Chip label="📎 Đã upload" size="small" sx={{ mt: 0.5, fontSize: '0.62rem', height: 18, bgcolor: '#dbeafe', color: '#1d4ed8', fontWeight: 700 }} />
+                                                    : <Chip label="🔗 Theo dõi link" size="small" sx={{ mt: 0.5, fontSize: '0.62rem', height: 18, bgcolor: isDark ? '#1e293b' : '#f1f5f9', color: 'text.secondary', fontWeight: 600 }} />
+                                                }
+                                            </Box>
                                             <Box sx={{ flexShrink: 0 }}>
                                                 {getStatusBadge(cv.status)}
                                             </Box>

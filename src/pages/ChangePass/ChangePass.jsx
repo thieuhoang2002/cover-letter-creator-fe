@@ -102,8 +102,8 @@ const ChangePass = () => {
         setMessage(null);
         setError(null);
 
-        if (newPassword.length < 8) {
-            setError('Mật khẩu mới phải có tối thiểu 8 ký tự.');
+        if (newPassword.length < 6) {
+            setError('Mật khẩu mới phải có tối thiểu 6 ký tự.');
             return;
         }
 
