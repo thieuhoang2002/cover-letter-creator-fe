@@ -8,8 +8,12 @@ const PrivateRoute = ({ allowedRoles = [] }) => {
         return <Navigate to="/login" replace />; // Chưa đăng nhập -> Chuyển hướng về login
     }
 
-    if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
-        return <Navigate to="/" replace />; // Không có quyền -> Chuyển hướng về trang chủ
+    if (allowedRoles.length > 0) {
+        const userRole = (role || '').toLowerCase();
+        const hasPermission = allowedRoles.some(r => r.toLowerCase() === userRole);
+        if (!hasPermission) {
+            return <Navigate to="/" replace />; // Không có quyền -> Chuyển hướng về trang chủ
+        }
     }
 
     return <Outlet />; // Nếu hợp lệ, hiển thị component

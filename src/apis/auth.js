@@ -42,7 +42,7 @@ export const getRoleFromToken = () => {
     if (!token) return null;
     try {
         const decoded = jwtDecode(token);
-        return decoded.role;
+        return (decoded.role || '').toLowerCase();
     } catch (error) {
         console.error('Error decoding token:', error.message);
         return null;

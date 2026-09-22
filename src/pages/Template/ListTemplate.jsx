@@ -1,50 +1,80 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { getTemplatesActive } from '../../apis/template';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getTemplatesActive, viewTemplateById } from '../../apis/template';
+import { getCurrentUser, toggleFavoriteTemplate } from '../../apis/profile';
 import {
-    Container, Typography, CircularProgress, Box, Grid, Card, CardMedia,
-    CardContent, CardActions, Button, IconButton, TextField, FormControl,
-    InputLabel, Select, MenuItem, Tooltip, Snackbar
+    Container,
+    Typography,
+    Box,
+    Grid,
+    Card,
+    CardMedia,
+    CardContent,
+    CardActions,
+    Button,
+    IconButton,
+    TextField,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    Tooltip,
+    Snackbar,
+    Alert,
+    Chip,
+    Skeleton,
+    InputAdornment,
+    useTheme,
+    alpha
 } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import { useNavigate } from 'react-router-dom';
-import { getCurrentUser, toggleFavoriteTemplate } from '../../apis/profile';
-import { viewTemplateById } from '../../apis/template';
-import Alert from '@mui/material/Alert';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import EditNoteIcon from '@mui/icons-material/EditNote';
+import ArticleIcon from '@mui/icons-material/Article';
+import ClearIcon from '@mui/icons-material/Clear';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+
+// Fallback high quality document preview images if template has placeholder
+const DEFAULT_PREVIEW = 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=600&auto=format&fit=crop&q=80';
 
 function ListTemplate() {
     const navigate = useNavigate();
+    const theme = useTheme();
+    const isDark = theme.palette.mode === 'dark';
 
     const [templates, setTemplates] = useState([]);
-    const [filteredTemplates, setFilteredTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [favorites, setFavorites] = useState(new Set());
     const [searchTerm, setSearchTerm] = useState('');
-    const [sortOrder, setSortOrder] = useState('desc'); // 'asc' hoặc 'desc'
-    const [industryFilter, setIndustryFilter] = useState('');
+    const [sortOrder, setSortOrder] = useState('popular'); // 'popular', 'desc', 'asc'
+    const [selectedCategory, setSelectedCategory] = useState('ALL');
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-    const [industries, setIndustries] = useState([]); // Danh sách ngành nghề
-
-    // Giả định danh sách ngành nghề (có thể lấy từ API nếu có)
-    //const industries = ['Công nghệ', 'Y tế', 'Giáo dục', 'Kinh doanh', 'Khác'];
 
     useEffect(() => {
         const fetchTemplates = async () => {
             try {
                 const data = await getTemplatesActive();
                 setTemplates(Array.isArray(data) ? data : []);
-                setFilteredTemplates(Array.isArray(data) ? data : []);
-                setLoading(false);
 
-                const userFavorites = await fetchUserFavorites();
-                setFavorites(new Set(userFavorites.map(item => item.id)));
-                setIndustries([...new Set(data.map(template => template.type))]); // Lấy danh sách ngành nghề từ dữ liệu mẫu đơn
+                try {
+                    const user = await getCurrentUser();
+                    if (user && Array.isArray(user.lovedTemplates)) {
+                        setFavorites(new Set(user.lovedTemplates.map((item) => item.id)));
+                    }
+                } catch {
+                    // Visitor not logged in, ignore favorites error
+                }
             } catch (err) {
+                console.error('Lỗi khi tải mẫu đơn:', err);
                 setError('Không thể tải danh sách mẫu đơn. Vui lòng thử lại sau.');
+            } finally {
                 setLoading(false);
             }
         };
@@ -52,214 +82,511 @@ function ListTemplate() {
         fetchTemplates();
     }, []);
 
-    // Lọc và sắp xếp danh sách
-    useEffect(() => {
-        let filtered = [...templates];
+    // Unique categories extracted from templates
+    const categories = useMemo(() => {
+        const types = new Set();
+        templates.forEach((t) => {
+            if (t.type && t.type.trim()) {
+                types.add(t.type.trim());
+            }
+        });
+        return Array.from(types);
+    }, [templates]);
 
-        // Lọc theo tên
-        if (searchTerm) {
-            filtered = filtered.filter(template =>
-                template.name.toLowerCase().includes(searchTerm.toLowerCase())
+    // Filter & Sort
+    const filteredTemplates = useMemo(() => {
+        let result = [...templates];
+
+        if (searchTerm.trim()) {
+            const query = searchTerm.toLowerCase();
+            result = result.filter(
+                (t) =>
+                    (t.name && t.name.toLowerCase().includes(query)) ||
+                    (t.type && t.type.toLowerCase().includes(query))
             );
         }
 
-        // Lọc theo ngành nghề
-        if (industryFilter) {
-            filtered = filtered.filter(template =>
-                template.type === industryFilter // Giả định template có trường industry
-            );
+        if (selectedCategory !== 'ALL') {
+            result = result.filter((t) => t.type === selectedCategory);
         }
 
-        // Sắp xếp theo thời gian (giả định có trường createdAt)
-        filtered.sort((a, b) => {
-            const dateA = new Date(a.updateDate || 0);
-            const dateB = new Date(b.updateDate || 0);
+        result.sort((a, b) => {
+            if (sortOrder === 'popular') {
+                return (b.views || 0) - (a.views || 0);
+            }
+            const dateA = new Date(a.updateDate || a.createdAt || 0);
+            const dateB = new Date(b.updateDate || b.createdAt || 0);
             return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
         });
 
-        setFilteredTemplates(filtered);
-    }, [searchTerm, sortOrder, industryFilter, templates]);
+        return result;
+    }, [templates, searchTerm, selectedCategory, sortOrder]);
 
     const handleToggleFavorite = async (templateId) => {
         try {
             const response = await toggleFavoriteTemplate(templateId);
-            if (response === "Favorite toggled successfully") {
-                setFavorites(prev => {
-                    const newFavorites = new Set(prev);
-                    if (newFavorites.has(templateId)) {
-                        newFavorites.delete(templateId);
-                        setSnackbarMessage('Đã bỏ yêu thích mẫu đơn!');
+            if (response === 'Favorite toggled successfully') {
+                setFavorites((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(templateId)) {
+                        next.delete(templateId);
+                        setSnackbarMessage('Đã xóa mẫu đơn khỏi danh sách yêu thích!');
                     } else {
-                        newFavorites.add(templateId);
-                        setSnackbarMessage('Đã thêm vào danh sách yêu thích!');
+                        next.add(templateId);
+                        setSnackbarMessage('Đã thêm mẫu đơn vào danh sách yêu thích!');
                     }
-                    setSnackbarSeverity('success');
-                    setSnackbarOpen(true);
-                    return newFavorites;
+                    return next;
                 });
-            } else {
-                throw new Error('Failed to toggle favorite');
+                setSnackbarSeverity('success');
+                setSnackbarOpen(true);
             }
-        } catch (error) {
-            setSnackbarMessage('Lỗi khi thay đổi trạng thái yêu thích. Vui lòng đăng nhập!');
-            setSnackbarSeverity('error');
+        } catch {
+            setSnackbarMessage('Vui lòng đăng nhập để lưu mẫu vào danh sách yêu thích!');
+            setSnackbarSeverity('info');
             setSnackbarOpen(true);
-            navigate('/login');
         }
-    };
-
-    const handleSnackbarClose = () => {
-        setSnackbarOpen(false);
     };
 
     const handleViewDetail = async (template) => {
         try {
-            navigate(`/template/${template.id}`, { state: { template } }); // Điều hướng đến trang chi tiết
-            await viewTemplateById(template.id); // Gọi API tăng view
-        } catch (error) {
-            console.error('Lỗi khi tăng lượt xem:', error);
+            viewTemplateById(template.id);
+        } catch (e) {
+            console.error(e);
         }
+        navigate(`/template/${template.id}`, { state: { template } });
     };
-    
 
-    if (loading) {
-        return (
-            <Container sx={{ textAlign: 'center', mt: 4 }}>
-                <CircularProgress />
-            </Container>
-        );
-    }
-
-    if (error) {
-        return (
-            <Container sx={{ textAlign: 'center', mt: 4 }}>
-                <Alert severity="error">{error}</Alert>
-            </Container>
-        );
-    }
+    const handleUseDirectly = (template) => {
+        navigate('/editor', { state: { template } });
+    };
 
     return (
-        <Container sx={{ mt: 4, padding: '20px' }}>
-            <Typography variant="h4" gutterBottom align="center" sx={{ mt: 4 }}>
-                Danh Sách Mẫu Đơn
-            </Typography>
-
-            {/* Bộ lọc tìm kiếm nâng cao */}
-            <Box sx={{ mb: 4, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-                <TextField
-                    label="Tìm kiếm theo tên mẫu đơn"
-                    variant="outlined"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    sx={{ minWidth: 200, flex: 1 }}
-                />
-                <FormControl sx={{ minWidth: 200, flex: 1 }}>
-                    <InputLabel>Sắp xếp theo thời gian</InputLabel>
-                    <Select
-                        value={sortOrder}
-                        onChange={(e) => setSortOrder(e.target.value)}
-                        label="Sắp xếp theo thời gian"
+        <Box sx={{ minHeight: '85vh', py: { xs: 4, md: 6 }, bgcolor: isDark ? 'background.default' : '#f8fafc' }}>
+            <Container maxWidth="lg">
+                {/* Header Banner */}
+                <Box sx={{ textAlign: 'center', mb: 5 }}>
+                    <Box
+                        sx={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            px: 2,
+                            py: 0.75,
+                            borderRadius: 50,
+                            bgcolor: alpha(theme.palette.primary.main, 0.1),
+                            color: theme.palette.primary.main,
+                            fontWeight: 700,
+                            fontSize: '0.875rem',
+                            mb: 2
+                        }}
                     >
-                        <MenuItem value="desc">Mới nhất trước</MenuItem>
-                        <MenuItem value="asc">Cũ nhất trước</MenuItem>
-                    </Select>
-                </FormControl>
-                <FormControl sx={{ minWidth: 200, flex: 1 }}>
-                    <InputLabel>Ngành nghề</InputLabel>
-                    <Select
-                        value={industryFilter}
-                        onChange={(e) => setIndustryFilter(e.target.value)}
-                        label="Ngành nghề"
-                    >
-                        <MenuItem value="">Tất cả</MenuItem>
-                        {industries.map((industry) => (
-                            <MenuItem key={industry} value={industry}>
-                                {industry}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-            </Box>
+                        <AccountBalanceIcon sx={{ fontSize: 18 }} />
+                        BIỂU MẪU ĐƠN XIN VIỆC CHUẨN NGHỊ ĐỊNH & DOANH NGHIỆP
+                    </Box>
 
-            {/* Hiển thị danh sách template dưới dạng Card */}
-            <Grid container spacing={3}>
-                {filteredTemplates.length > 0 ? (
-                    filteredTemplates.map((template) => (
-                        <Grid item xs={12} sm={6} md={4} key={template.id}>
-                            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', boxShadow: 3 }}>
-                                <CardMedia
-                                    component="img"
-                                    height="140"
-                                    image={template.image || 'https://placehold.co/150'}
-                                    alt={template.name}
-                                    sx={{ objectFit: 'cover' }}
-                                />
-                                <CardContent sx={{ flexGrow: 1 }}>
-                                    <Typography variant="h6" gutterBottom>
-                                        {template.name}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Ngành: {template.type || 'Không xác định'}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Lượt xem: {template.views || 0}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Cập nhật: {new Date(template.updateDate).toLocaleDateString()}
-                                    </Typography>
-                                </CardContent>
-                                <CardActions sx={{ justifyContent: 'space-between', p: 2 }}>
-                                <Button
-                                    onClick={() => handleViewDetail(template)}
-                                    variant="contained"
-                                    color="primary"
-                                    size="small"
+                    <Typography
+                        variant="h3"
+                        component="h1"
+                        sx={{
+                            fontWeight: 800,
+                            fontSize: { xs: '1.85rem', sm: '2.4rem', md: '2.8rem' },
+                            background: isDark
+                                ? 'linear-gradient(135deg, #ffffff 0%, #94a3b8 100%)'
+                                : 'linear-gradient(135deg, #0f172a 0%, #1e40af 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            mb: 1.5,
+                            letterSpacing: '-0.5px'
+                        }}
+                    >
+                        Kho Mẫu Đơn Xin Việc & Thư Ứng Tuyển
+                    </Typography>
+
+                    <Typography
+                        variant="body1"
+                        sx={{
+                            color: 'text.secondary',
+                            maxWidth: 700,
+                            mx: 'auto',
+                            fontSize: { xs: '0.95rem', md: '1.05rem' },
+                            lineHeight: 1.6
+                        }}
+                    >
+                        Tuyển tập các mẫu đơn xin việc theo thể thức chuẩn Nhà nước (Nghị định 115/2020, Viên chức, Công chức,
+                        Giáo viên, Bệnh viện) và Cover Letter chuyên nghiệp cho Doanh nghiệp tư nhân.
+                    </Typography>
+                </Box>
+
+                {/* Filter and Search Controls Card */}
+                <Card
+                    elevation={0}
+                    sx={{
+                        p: { xs: 2.5, md: 3 },
+                        mb: 4,
+                        borderRadius: 3.5,
+                        border: '1px solid',
+                        borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                        bgcolor: isDark ? '#1e293b' : '#ffffff',
+                        boxShadow: '0 4px 20px -5px rgba(0,0,0,0.05)'
+                    }}
+                >
+                    <Grid container spacing={2} alignItems="center">
+                        {/* Search Input */}
+                        <Grid item xs={12} md={7}>
+                            <TextField
+                                fullWidth
+                                placeholder="Tìm kiếm mẫu đơn theo tên (VD: Viên chức, Giáo viên, Kỹ sư, Kế toán...)"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <SearchIcon color="action" />
+                                        </InputAdornment>
+                                    ),
+                                    endAdornment: searchTerm && (
+                                        <InputAdornment position="end">
+                                            <IconButton size="small" onClick={() => setSearchTerm('')}>
+                                                <ClearIcon fontSize="small" />
+                                            </IconButton>
+                                        </InputAdornment>
+                                    )
+                                }}
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        borderRadius: 3,
+                                    }
+                                }}
+                            />
+                        </Grid>
+
+                        {/* Sort Order Selector */}
+                        <Grid item xs={12} md={5}>
+                            <FormControl fullWidth>
+                                <InputLabel id="sort-label">Sắp xếp theo</InputLabel>
+                                <Select
+                                    labelId="sort-label"
+                                    value={sortOrder}
+                                    label="Sắp xếp theo"
+                                    onChange={(e) => setSortOrder(e.target.value)}
+                                    sx={{ borderRadius: 3 }}
                                 >
-                                    Xem Chi Tiết
+                                    <MenuItem value="popular">🔥 Được xem nhiều nhất</MenuItem>
+                                    <MenuItem value="desc">✨ Mới cập nhật nhất</MenuItem>
+                                    <MenuItem value="asc">📅 Cũ nhất trước</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                    </Grid>
+
+                    {/* Category Filter Chips */}
+                    <Box sx={{ mt: 2.5, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.secondary', mr: 1 }}>
+                            Phân loại:
+                        </Typography>
+                        <Chip
+                            label="Tất cả biểu mẫu"
+                            clickable
+                            color={selectedCategory === 'ALL' ? 'primary' : 'default'}
+                            variant={selectedCategory === 'ALL' ? 'filled' : 'outlined'}
+                            onClick={() => setSelectedCategory('ALL')}
+                            sx={{ borderRadius: 2, fontWeight: 600 }}
+                        />
+                        {categories.map((cat) => (
+                            <Chip
+                                key={cat}
+                                label={cat}
+                                clickable
+                                color={selectedCategory === cat ? 'primary' : 'default'}
+                                variant={selectedCategory === cat ? 'filled' : 'outlined'}
+                                onClick={() => setSelectedCategory(cat)}
+                                sx={{ borderRadius: 2, fontWeight: 500 }}
+                            />
+                        ))}
+                    </Box>
+                </Card>
+
+                {/* Templates Count Badge */}
+                <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                        Hiển thị <strong>{filteredTemplates.length}</strong> mẫu đơn xin việc phù hợp
+                    </Typography>
+                </Box>
+
+                {/* Error Banner */}
+                {error && (
+                    <Alert severity="error" sx={{ mb: 4, borderRadius: 3 }}>
+                        {error}
+                    </Alert>
+                )}
+
+                {/* Grid of Templates */}
+                <Grid container spacing={3}>
+                    {loading ? (
+                        Array.from(new Array(6)).map((_, idx) => (
+                            <Grid item xs={12} sm={6} md={4} key={idx}>
+                                <Card sx={{ borderRadius: 3.5, overflow: 'hidden', height: '100%' }}>
+                                    <Skeleton variant="rectangular" height={190} />
+                                    <Box sx={{ p: 2.5 }}>
+                                        <Skeleton variant="text" width="60%" height={24} sx={{ mb: 1 }} />
+                                        <Skeleton variant="text" width="90%" height={28} />
+                                        <Skeleton variant="text" width="40%" height={20} sx={{ mt: 1 }} />
+                                        <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                                            <Skeleton variant="rounded" width="50%" height={36} />
+                                            <Skeleton variant="rounded" width="50%" height={36} />
+                                        </Box>
+                                    </Box>
+                                </Card>
+                            </Grid>
+                        ))
+                    ) : filteredTemplates.length > 0 ? (
+                        filteredTemplates.map((template) => {
+                            const isFavorite = favorites.has(template.id);
+                            const imgSrc = template.image && !template.image.includes('placehold')
+                                ? template.image
+                                : DEFAULT_PREVIEW;
+
+                            return (
+                                <Grid item xs={12} sm={6} md={4} key={template.id}>
+                                    <Card
+                                        elevation={0}
+                                        sx={{
+                                            height: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            borderRadius: 3.5,
+                                            border: '1px solid',
+                                            borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                                            bgcolor: isDark ? '#1e293b' : '#ffffff',
+                                            transition: 'all 0.25s ease-in-out',
+                                            overflow: 'hidden',
+                                            position: 'relative',
+                                            '&:hover': {
+                                                transform: 'translateY(-5px)',
+                                                boxShadow: isDark
+                                                    ? '0 16px 30px -10px rgba(0,0,0,0.6)'
+                                                    : '0 16px 30px -10px rgba(15, 23, 42, 0.12)',
+                                                borderColor: theme.palette.primary.main,
+                                            }
+                                        }}
+                                    >
+                                        {/* Image Box with Floating Badges */}
+                                        <Box sx={{ position: 'relative', height: 180, bgcolor: isDark ? '#0f172a' : '#f1f5f9', overflow: 'hidden' }}>
+                                            <CardMedia
+                                                component="img"
+                                                height="180"
+                                                image={imgSrc}
+                                                alt={template.name}
+                                                sx={{
+                                                    objectFit: 'cover',
+                                                    transition: 'transform 0.4s ease',
+                                                    '&:hover': {
+                                                        transform: 'scale(1.05)'
+                                                    }
+                                                }}
+                                            />
+
+                                            {/* Category Tag Overlay */}
+                                            <Chip
+                                                label={template.type || 'Hành chính'}
+                                                size="small"
+                                                sx={{
+                                                    position: 'absolute',
+                                                    top: 12,
+                                                    left: 12,
+                                                    fontWeight: 700,
+                                                    fontSize: '0.72rem',
+                                                    bgcolor: 'rgba(15, 23, 42, 0.8)',
+                                                    color: '#ffffff',
+                                                    backdropFilter: 'blur(8px)',
+                                                    border: '1px solid rgba(255,255,255,0.2)'
+                                                }}
+                                            />
+
+                                            {/* Favorite Action Button */}
+                                            <Tooltip title={isFavorite ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}>
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleToggleFavorite(template.id);
+                                                    }}
+                                                    sx={{
+                                                        position: 'absolute',
+                                                        top: 10,
+                                                        right: 10,
+                                                        bgcolor: 'rgba(255, 255, 255, 0.9)',
+                                                        backdropFilter: 'blur(4px)',
+                                                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                                        '&:hover': {
+                                                            bgcolor: '#ffffff',
+                                                            transform: 'scale(1.1)'
+                                                        }
+                                                    }}
+                                                >
+                                                    {isFavorite ? (
+                                                        <FavoriteIcon sx={{ color: '#ef4444', fontSize: 20 }} />
+                                                    ) : (
+                                                        <FavoriteBorderIcon sx={{ color: '#64748b', fontSize: 20 }} />
+                                                    )}
+                                                </IconButton>
+                                            </Tooltip>
+
+                                            {/* Views Counter Badge */}
+                                            <Box
+                                                sx={{
+                                                    position: 'absolute',
+                                                    bottom: 8,
+                                                    right: 10,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 0.5,
+                                                    px: 1,
+                                                    py: 0.25,
+                                                    borderRadius: 1.5,
+                                                    bgcolor: 'rgba(15, 23, 42, 0.75)',
+                                                    color: '#ffffff',
+                                                    fontSize: '0.72rem',
+                                                    fontWeight: 600,
+                                                    backdropFilter: 'blur(4px)'
+                                                }}
+                                            >
+                                                <VisibilityIcon sx={{ fontSize: 13 }} />
+                                                {template.views || 0} lượt xem
+                                            </Box>
+                                        </Box>
+
+                                        {/* Card Body */}
+                                        <CardContent sx={{ flexGrow: 1, p: 2.5 }}>
+                                            <Typography
+                                                variant="h6"
+                                                component="h2"
+                                                sx={{
+                                                    fontWeight: 700,
+                                                    fontSize: '1.05rem',
+                                                    lineHeight: 1.4,
+                                                    mb: 1.5,
+                                                    height: 48,
+                                                    display: '-webkit-box',
+                                                    WebkitLineClamp: 2,
+                                                    WebkitBoxOrient: 'vertical',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis'
+                                                }}
+                                            >
+                                                {template.name}
+                                            </Typography>
+
+                                            {/* Metadata */}
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, color: 'text.secondary', fontSize: '0.8rem' }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                    <CalendarMonthIcon sx={{ fontSize: 15 }} />
+                                                    {new Date(template.updateDate || template.createdAt || Date.now()).toLocaleDateString('vi-VN')}
+                                                </Box>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                    <ArticleIcon sx={{ fontSize: 15 }} />
+                                                    A4 Chuẩn
+                                                </Box>
+                                            </Box>
+                                        </CardContent>
+
+                                        {/* Actions */}
+                                        <CardActions sx={{ p: 2, pt: 0, gap: 1 }}>
+                                            <Button
+                                                fullWidth
+                                                variant="outlined"
+                                                size="small"
+                                                onClick={() => handleViewDetail(template)}
+                                                sx={{
+                                                    borderRadius: 2.5,
+                                                    textTransform: 'none',
+                                                    fontWeight: 600,
+                                                    fontSize: '0.85rem',
+                                                    py: 0.8
+                                                }}
+                                            >
+                                                Xem Chi Tiết
+                                            </Button>
+
+                                            <Button
+                                                fullWidth
+                                                variant="contained"
+                                                size="small"
+                                                endIcon={<ArrowForwardIcon />}
+                                                onClick={() => handleUseDirectly(template)}
+                                                sx={{
+                                                    borderRadius: 2.5,
+                                                    textTransform: 'none',
+                                                    fontWeight: 700,
+                                                    fontSize: '0.85rem',
+                                                    py: 0.8,
+                                                    background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)',
+                                                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
+                                                    '&:hover': {
+                                                        boxShadow: '0 6px 16px rgba(37, 99, 235, 0.45)',
+                                                    }
+                                                }}
+                                            >
+                                                Dùng Mẫu Này
+                                            </Button>
+                                        </CardActions>
+                                    </Card>
+                                </Grid>
+                            );
+                        })
+                    ) : (
+                        <Grid item xs={12}>
+                            <Card
+                                elevation={0}
+                                sx={{
+                                    p: 6,
+                                    textAlign: 'center',
+                                    borderRadius: 4,
+                                    border: '1px dashed',
+                                    borderColor: 'divider',
+                                    bgcolor: 'transparent'
+                                }}
+                            >
+                                <ArticleIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2, opacity: 0.5 }} />
+                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                                    Không tìm thấy mẫu đơn nào phù hợp
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
+                                    Hãy thử tìm kiếm với từ khóa khác hoặc xóa bộ lọc ngành nghề.
+                                </Typography>
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => {
+                                        setSearchTerm('');
+                                        setSelectedCategory('ALL');
+                                    }}
+                                    sx={{ borderRadius: 2.5, textTransform: 'none' }}
+                                >
+                                    Xem tất cả mẫu đơn
                                 </Button>
-                                    <Tooltip title={favorites.has(template.id) ? "Bỏ yêu thích" : "Thêm vào yêu thích"}>
-                                        <IconButton onClick={() => handleToggleFavorite(template.id)}>
-                                            {favorites.has(template.id) ? (
-                                                <FavoriteIcon color="error" />
-                                            ) : (
-                                                <FavoriteBorderIcon />
-                                            )}
-                                        </IconButton>
-                                    </Tooltip>
-                                </CardActions>
                             </Card>
                         </Grid>
-                    ))
-                ) : (
-                    <Typography variant="body1" align="center" sx={{ width: '100%', mt: 3 }}>
-                        Không tìm thấy mẫu đơn nào phù hợp.
-                    </Typography>
-                )}
-            </Grid>
+                    )}
+                </Grid>
 
-            {/* Snackbar thông báo */}
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={3000}
-                onClose={handleSnackbarClose}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
-        </Container>
+                {/* Snackbar */}
+                <Snackbar
+                    open={snackbarOpen}
+                    autoHideDuration={3000}
+                    onClose={() => setSnackbarOpen(false)}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                >
+                    <Alert
+                        onClose={() => setSnackbarOpen(false)}
+                        severity={snackbarSeverity}
+                        sx={{ width: '100%', borderRadius: 2.5, boxShadow: 3 }}
+                    >
+                        {snackbarMessage}
+                    </Alert>
+                </Snackbar>
+            </Container>
+        </Box>
     );
-}
-
-async function fetchUserFavorites() {
-    try {
-        const user = await getCurrentUser();
-        return Array.isArray(user.lovedTemplates) ? user.lovedTemplates : [];
-    } catch (error) {
-        console.error('Error fetching favorites:', error);
-        return [];
-    }
 }
 
 export default ListTemplate;

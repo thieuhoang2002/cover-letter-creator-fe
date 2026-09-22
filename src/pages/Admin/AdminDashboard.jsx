@@ -6,8 +6,15 @@ import {
     CardContent,
     Grid,
     Paper,
-    Divider,
     CircularProgress,
+    Stack,
+    Chip,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
 } from "@mui/material";
 import { Bar, Pie } from "react-chartjs-2";
 import {
@@ -32,6 +39,9 @@ import {
 import PeopleIcon from "@mui/icons-material/People";
 import DescriptionIcon from "@mui/icons-material/Description";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import { useThemeMode } from "../../context/ThemeContext";
 
 // Đăng ký các thành phần của Chart.js
 ChartJS.register(
@@ -45,6 +55,9 @@ ChartJS.register(
 );
 
 function AdminDashboard() {
+    const { mode } = useThemeMode();
+    const isDark = mode === "dark";
+
     const [userCount, setUserCount] = useState(0);
     const [classicTemplateCount, setClassicTemplateCount] = useState(0);
     const [modernTemplateCount, setModernTemplateCount] = useState(0);
@@ -58,37 +71,36 @@ function AdminDashboard() {
             try {
                 setLoading(true);
 
-                // Lấy số lượng người dùng
-                const users = await getAllUsers();
-                setUserCount(users.length);
+                const [users, classicTemplates, modernTemplates, topClassic, topModern] = await Promise.all([
+                    getAllUsers().catch(() => []),
+                    getAllTemplates().catch(() => []),
+                    getAllModernTemplates().catch(() => []),
+                    getTopViewedTemplates().catch(() => []),
+                    getTopViewedModernTemplates().catch(() => []),
+                ]);
 
-                // Lấy số lượng và lượt xem template nhà nước
-                const classicTemplates = await getAllTemplates();
+                setUserCount(users.length);
                 setClassicTemplateCount(classicTemplates.length);
+                setModernTemplateCount(modernTemplates.length);
+
                 const classicViewsSum = classicTemplates.reduce(
-                    (sum, template) => sum + (template.views || 0),
-                    0
+                    (sum, t) => sum + (t.views || 0), 0
                 );
                 setClassicViews(classicViewsSum);
 
-                // Lấy số lượng và lượt xem template hiện đại
-                const modernTemplates = await getAllModernTemplates();
-                setModernTemplateCount(modernTemplates.length);
                 const modernViewsSum = modernTemplates.reduce(
-                    (sum, template) => sum + (template.views || 0),
-                    0
+                    (sum, t) => sum + (t.views || 0), 0
                 );
                 setModernViews(modernViewsSum);
 
-                // Lấy top template được xem nhiều nhất
-                const topClassic = await getTopViewedTemplates();
-                const topModern = await getTopViewedModernTemplates();
-                const combinedTop = [...topClassic, ...topModern]
+                const markedClassic = topClassic.map(t => ({ ...t, isModern: false }));
+                const markedModern = topModern.map(t => ({ ...t, isModern: true }));
+                const combinedTop = [...markedClassic, ...markedModern]
                     .sort((a, b) => (b.views || 0) - (a.views || 0))
                     .slice(0, 5);
                 setTopTemplates(combinedTop);
             } catch (err) {
-                console.error("Lỗi khi lấy dữ liệu:", err);
+                console.error("Lỗi khi tải dữ liệu dashboard:", err);
             } finally {
                 setLoading(false);
             }
@@ -97,200 +109,393 @@ function AdminDashboard() {
         fetchData();
     }, []);
 
-    // Dữ liệu cho biểu đồ cột (số lượng người dùng và template)
+    const textColor = isDark ? "#cbd5e1" : "#475569";
+    const gridColor = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)";
+
+    // Dữ liệu biểu đồ cột
     const barData = {
-        labels: ["CV Nhà nước", "CV Hiện đại"],
+        labels: ["CV Nhà Nước", "CV Hiện Đại"],
         datasets: [
             {
-                label: "Số lượng",
+                label: "Số lượng mẫu",
                 data: [classicTemplateCount, modernTemplateCount],
-                backgroundColor: ["#4caf50", "#ff9800"],
-                borderColor: ["#388e3c", "#f57c00"],
-                borderWidth: 1,
+                backgroundColor: ["#10b981", "#3b82f6"],
+                borderRadius: 8,
             },
         ],
     };
 
-    // Dữ liệu cho biểu đồ tròn (phân bố lượt xem)
+    // Dữ liệu biểu đồ tròn
     const pieData = {
-        labels: ["CV Nhà nước", "CV Hiện đại"],
+        labels: ["Lượt xem Nhà Nước", "Lượt xem Hiện Đại"],
         datasets: [
             {
                 data: [classicViews, modernViews],
-                backgroundColor: ["#4caf50", "#ff9800"],
-                borderColor: ["#388e3c", "#f57c00"],
-                borderWidth: 1,
+                backgroundColor: ["#10b981", "#8b5cf6"],
+                hoverOffset: 4,
             },
         ],
     };
 
-    // Dữ liệu cho biểu đồ cột ngang (top template)
+    // Dữ liệu biểu đồ ngang Top Templates
     const topTemplatesData = {
         labels: topTemplates.map((t) => t.name),
         datasets: [
             {
                 label: "Lượt xem",
                 data: topTemplates.map((t) => t.views || 0),
-                backgroundColor: "rgba(33, 150, 243, 0.6)",
-                borderColor: "#1976d2",
-                borderWidth: 1,
+                backgroundColor: "rgba(147, 51, 234, 0.7)",
+                borderRadius: 6,
             },
         ],
     };
 
+    if (loading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
+                <CircularProgress sx={{ color: "#9333ea" }} />
+            </Box>
+        );
+    }
+
     return (
-        <Box sx={{ p: 4, background: "linear-gradient(135deg, #f6f9fc 0%, #e3f2fd 100%)", minHeight: "100vh" }}>
-            <Typography
-                variant="h4"
-                gutterBottom
-                sx={{ fontWeight: "bold", color: "#1976d2", mb: 4 }}
-            >
-                Trang Quản Trị
-            </Typography>
-
-            {loading ? (
-                <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
-                    <CircularProgress size={50} />
-                </Box>
-            ) : (
-                <>
-                    {/* Thống kê tổng quan */}
-                    <Grid container spacing={3}>
-                        <Grid item xs={12} sm={4}>
-                            <Card
-                                sx={{
-                                    background: "linear-gradient(to right, #2196f3, #64b5f6)",
-                                    color: "white",
-                                    borderRadius: 3,
-                                    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                                    transition: "transform 0.3s",
-                                    "&:hover": { transform: "scale(1.05)" },
-                                }}
-                            >
-                                <CardContent sx={{ display: "flex", alignItems: "center" }}>
-                                    <PeopleIcon sx={{ fontSize: 40, mr: 2 }} />
-                                    <Box>
-                                        <Typography variant="h6">Tổng số người dùng</Typography>
-                                        <Typography variant="h4">{userCount}</Typography>
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                            <Card
-                                sx={{
-                                    background: "linear-gradient(to right, #4caf50, #81c784)",
-                                    color: "white",
-                                    borderRadius: 3,
-                                    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                                    transition: "transform 0.3s",
-                                    "&:hover": { transform: "scale(1.05)" },
-                                }}
-                            >
-                                <CardContent sx={{ display: "flex", alignItems: "center" }}>
-                                    <DescriptionIcon sx={{ fontSize: 40, mr: 2 }} />
-                                    <Box>
-                                        <Typography variant="h6">Tổng số template</Typography>
-                                        <Typography variant="h4">
-                                            {classicTemplateCount + modernTemplateCount}
-                                        </Typography>
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                            <Card
-                                sx={{
-                                    background: "linear-gradient(to right, #ff9800, #ffb74d)",
-                                    color: "white",
-                                    borderRadius: 3,
-                                    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                                    transition: "transform 0.3s",
-                                    "&:hover": { transform: "scale(1.05)" },
-                                }}
-                            >
-                                <CardContent sx={{ display: "flex", alignItems: "center" }}>
-                                    <VisibilityIcon sx={{ fontSize: 40, mr: 2 }} />
-                                    <Box>
-                                        <Typography variant="h6">Tổng lượt xem</Typography>
-                                        <Typography variant="h4">{classicViews + modernViews}</Typography>
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                    </Grid>
-
-                    {/* Biểu đồ thống kê */}
-                    <Grid container spacing={3} sx={{ mt: 4 }}>
-                        <Grid item xs={12} md={6}>
-                            <Paper sx={{ p: 3, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}>
-                                <Typography variant="h6" gutterBottom sx={{ color: "#1976d2" }}>
-                                    Thống kê số lượng
+        <Box>
+            {/* KPI Cards Grid */}
+            <Grid container spacing={2.5} mb={4}>
+                {/* Users Card */}
+                <Grid item xs={12} sm={6} md={3}>
+                    <Card
+                        elevation={0}
+                        sx={{
+                            p: 2.5,
+                            borderRadius: 3.5,
+                            bgcolor: isDark ? "rgba(30, 41, 59, 0.8)" : "#ffffff",
+                            border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}`,
+                            boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+                            position: "relative",
+                            overflow: "hidden",
+                        }}
+                    >
+                        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                            <Box>
+                                <Typography variant="caption" color="textSecondary" fontWeight={600} textTransform="uppercase">
+                                    Tổng người dùng
                                 </Typography>
-                                <Box sx={{ height: 300 }}>
-                                    <Bar
-                                        data={barData}
-                                        options={{
-                                            responsive: true,
-                                            maintainAspectRatio: false,
-                                            plugins: {
-                                                legend: { display: false },
-                                                title: { display: true, text: "Số lượng người dùng và template" },
-                                            },
-                                        }}
-                                    />
-                                </Box>
-                            </Paper>
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <Paper sx={{ p: 3, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}>
-                                <Typography variant="h6" gutterBottom sx={{ color: "#1976d2" }}>
-                                    Phân bố lượt xem
+                                <Typography variant="h4" fontWeight={800} color={isDark ? "#f8fafc" : "#0f172a"} mt={0.5}>
+                                    {userCount}
                                 </Typography>
-                                <Box sx={{ height: 300 }}>
-                                    <Pie
-                                        data={pieData}
-                                        options={{
-                                            responsive: true,
-                                            maintainAspectRatio: false,
-                                            plugins: {
-                                                legend: { position: "top" },
-                                                title: { display: true, text: "Lượt xem CV Nhà nước vs Hiện đại" },
-                                            },
-                                        }}
-                                    />
-                                </Box>
-                            </Paper>
-                        </Grid>
-                    </Grid>
-
-                    {/* Top Templates */}
-                    <Box sx={{ mt: 5 }}>
-                        <Typography variant="h6" gutterBottom sx={{ color: "#1976d2", fontWeight: "bold" }}>
-                            Top 5 Template được xem nhiều nhất
-                        </Typography>
-                        <Paper sx={{ p: 3, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}>
-                            <Box sx={{ height: 300 }}>
-                                <Bar
-                                    data={topTemplatesData}
-                                    options={{
-                                        indexAxis: "y",
-                                        responsive: true,
-                                        maintainAspectRatio: false,
-                                        plugins: {
-                                            legend: { display: false },
-                                            title: { display: true, text: "Top 5 Template theo lượt xem" },
-                                        },
-                                        scales: {
-                                            x: { title: { display: true, text: "Lượt xem" } },
-                                        },
-                                    }}
-                                />
                             </Box>
-                        </Paper>
-                    </Box>
-                </>
-            )}
+                            <Box
+                                sx={{
+                                    width: 44,
+                                    height: 44,
+                                    borderRadius: 2.5,
+                                    background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    color: "#fff",
+                                }}
+                            >
+                                <PeopleIcon />
+                            </Box>
+                        </Stack>
+                    </Card>
+                </Grid>
+
+                {/* Classic Templates */}
+                <Grid item xs={12} sm={6} md={3}>
+                    <Card
+                        elevation={0}
+                        sx={{
+                            p: 2.5,
+                            borderRadius: 3.5,
+                            bgcolor: isDark ? "rgba(30, 41, 59, 0.8)" : "#ffffff",
+                            border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}`,
+                            boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+                        }}
+                    >
+                        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                            <Box>
+                                <Typography variant="caption" color="textSecondary" fontWeight={600} textTransform="uppercase">
+                                    Đơn CV Nhà Nước
+                                </Typography>
+                                <Typography variant="h4" fontWeight={800} color="#10b981" mt={0.5}>
+                                    {classicTemplateCount}
+                                </Typography>
+                            </Box>
+                            <Box
+                                sx={{
+                                    width: 44,
+                                    height: 44,
+                                    borderRadius: 2.5,
+                                    background: "linear-gradient(135deg, #10b981 0%, #047857 100%)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    color: "#fff",
+                                }}
+                            >
+                                <DescriptionIcon />
+                            </Box>
+                        </Stack>
+                    </Card>
+                </Grid>
+
+                {/* Modern Templates */}
+                <Grid item xs={12} sm={6} md={3}>
+                    <Card
+                        elevation={0}
+                        sx={{
+                            p: 2.5,
+                            borderRadius: 3.5,
+                            bgcolor: isDark ? "rgba(30, 41, 59, 0.8)" : "#ffffff",
+                            border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}`,
+                            boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+                        }}
+                    >
+                        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                            <Box>
+                                <Typography variant="caption" color="textSecondary" fontWeight={600} textTransform="uppercase">
+                                    Mẫu CV Hiện Đại
+                                </Typography>
+                                <Typography variant="h4" fontWeight={800} color="#8b5cf6" mt={0.5}>
+                                    {modernTemplateCount}
+                                </Typography>
+                            </Box>
+                            <Box
+                                sx={{
+                                    width: 44,
+                                    height: 44,
+                                    borderRadius: 2.5,
+                                    background: "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    color: "#fff",
+                                }}
+                            >
+                                <AutoAwesomeIcon />
+                            </Box>
+                        </Stack>
+                    </Card>
+                </Grid>
+
+                {/* Total Views */}
+                <Grid item xs={12} sm={6} md={3}>
+                    <Card
+                        elevation={0}
+                        sx={{
+                            p: 2.5,
+                            borderRadius: 3.5,
+                            bgcolor: isDark ? "rgba(30, 41, 59, 0.8)" : "#ffffff",
+                            border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}`,
+                            boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+                        }}
+                    >
+                        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                            <Box>
+                                <Typography variant="caption" color="textSecondary" fontWeight={600} textTransform="uppercase">
+                                    Tổng lượt xem
+                                </Typography>
+                                <Typography variant="h4" fontWeight={800} color="#f59e0b" mt={0.5}>
+                                    {classicViews + modernViews}
+                                </Typography>
+                            </Box>
+                            <Box
+                                sx={{
+                                    width: 44,
+                                    height: 44,
+                                    borderRadius: 2.5,
+                                    background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    color: "#fff",
+                                }}
+                            >
+                                <VisibilityIcon />
+                            </Box>
+                        </Stack>
+                    </Card>
+                </Grid>
+            </Grid>
+
+            {/* Charts Section */}
+            <Grid container spacing={3} mb={4}>
+                <Grid item xs={12} md={7}>
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            p: 3,
+                            borderRadius: 3.5,
+                            bgcolor: isDark ? "rgba(30, 41, 59, 0.8)" : "#ffffff",
+                            border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}`,
+                        }}
+                    >
+                        <Typography variant="subtitle1" fontWeight={700} color={isDark ? "#f8fafc" : "#0f172a"} mb={2}>
+                            Thống Kê Số Lượng Mẫu CV
+                        </Typography>
+                        <Box sx={{ height: 260 }}>
+                            <Bar
+                                data={barData}
+                                options={{
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { display: false } },
+                                    scales: {
+                                        y: { grid: { color: gridColor }, ticks: { color: textColor } },
+                                        x: { grid: { display: false }, ticks: { color: textColor } },
+                                    },
+                                }}
+                            />
+                        </Box>
+                    </Paper>
+                </Grid>
+
+                <Grid item xs={12} md={5}>
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            p: 3,
+                            borderRadius: 3.5,
+                            bgcolor: isDark ? "rgba(30, 41, 59, 0.8)" : "#ffffff",
+                            border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}`,
+                        }}
+                    >
+                        <Typography variant="subtitle1" fontWeight={700} color={isDark ? "#f8fafc" : "#0f172a"} mb={2}>
+                            Tỷ Trọng Lượt Xem Mẫu CV
+                        </Typography>
+                        <Box sx={{ height: 260 }}>
+                            <Pie
+                                data={pieData}
+                                options={{
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            position: "bottom",
+                                            labels: { color: textColor, padding: 15, font: { size: 12 } },
+                                        },
+                                    },
+                                }}
+                            />
+                        </Box>
+                    </Paper>
+                </Grid>
+            </Grid>
+
+            {/* Top 5 Templates Table */}
+            <Paper
+                elevation={0}
+                sx={{
+                    borderRadius: 3.5,
+                    bgcolor: isDark ? "rgba(30, 41, 59, 0.8)" : "#ffffff",
+                    border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}`,
+                    overflow: "hidden",
+                    p: 3,
+                }}
+            >
+                <Stack direction="row" spacing={1.5} alignItems="center" mb={2}>
+                    <TrendingUpIcon color="primary" />
+                    <Typography variant="subtitle1" fontWeight={700} color={isDark ? "#f8fafc" : "#0f172a"}>
+                        Top 5 Mẫu CV Được Quan Tâm & Sử Dụng Nhiều Nhất
+                    </Typography>
+                </Stack>
+
+                {/* Desktop Table View (Giữ nguyên cho Desktop) */}
+                <TableContainer sx={{ display: { xs: 'none', md: 'block' } }}>
+                    <Table size="small">
+                        <TableHead>
+                            <TableRow sx={{ bgcolor: isDark ? "rgba(255,255,255,0.02)" : "#f8fafc" }}>
+                                <TableCell sx={{ fontWeight: 700, width: 80 }}>Xếp Hạng</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>Tên Mẫu CV</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>Phân Loại</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 700 }}>Lượt Xem</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {topTemplates.map((template, idx) => (
+                                <TableRow key={template.id} hover>
+                                    <TableCell>
+                                        <Chip
+                                            label={`#${idx + 1}`}
+                                            size="small"
+                                            sx={{
+                                                fontWeight: 800,
+                                                bgcolor: idx === 0 ? "#fef3c7" : idx === 1 ? "#e0e7ff" : idx === 2 ? "#fed7aa" : "transparent",
+                                                color: idx === 0 ? "#b45309" : idx === 1 ? "#3730a3" : idx === 2 ? "#c2410c" : "inherit",
+                                            }}
+                                        />
+                                    </TableCell>
+                                    <TableCell sx={{ fontWeight: 600 }}>{template.name}</TableCell>
+                                    <TableCell>
+                                        <Chip
+                                            label={template.isModern ? "Hiện Đại" : "Nhà Nước"}
+                                            size="small"
+                                            variant="outlined"
+                                            color={template.isModern ? "primary" : "success"}
+                                            sx={{ borderRadius: 1.5, fontWeight: 600 }}
+                                        />
+                                    </TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700, color: "#10b981" }}>
+                                        {template.views || 0} lượt
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+
+                {/* Mobile & Tablet Card Ranking View */}
+                <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                    <Stack spacing={1.5}>
+                        {topTemplates.map((template, idx) => (
+                            <Box
+                                key={template.id}
+                                sx={{
+                                    p: 1.5,
+                                    borderRadius: 2.5,
+                                    bgcolor: isDark ? "rgba(15, 23, 42, 0.6)" : "#f8fafc",
+                                    border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "#e2e8f0"}`,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    gap: 1.5
+                                }}
+                            >
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, overflow: "hidden" }}>
+                                    <Chip
+                                        label={`#${idx + 1}`}
+                                        size="small"
+                                        sx={{
+                                            fontWeight: 800,
+                                            bgcolor: idx === 0 ? "#fef3c7" : idx === 1 ? "#e0e7ff" : idx === 2 ? "#fed7aa" : "transparent",
+                                            color: idx === 0 ? "#b45309" : idx === 1 ? "#3730a3" : idx === 2 ? "#c2410c" : "inherit",
+                                            flexShrink: 0
+                                        }}
+                                    />
+                                    <Box sx={{ overflow: "hidden" }}>
+                                        <Typography variant="body2" sx={{ fontWeight: 700, lineHeight: 1.2 }} noWrap>
+                                            {template.name}
+                                        </Typography>
+                                        <Chip
+                                            label={template.isModern ? "Hiện Đại" : "Nhà Nước"}
+                                            size="small"
+                                            variant="outlined"
+                                            color={template.isModern ? "primary" : "success"}
+                                            sx={{ borderRadius: 1, fontWeight: 600, fontSize: "0.65rem", height: 20, mt: 0.5 }}
+                                        />
+                                    </Box>
+                                </Box>
+                                <Typography variant="body2" sx={{ fontWeight: 700, color: "#10b981", flexShrink: 0 }}>
+                                    {template.views || 0} lượt
+                                </Typography>
+                            </Box>
+                        ))}
+                    </Stack>
+                </Box>
+            </Paper>
         </Box>
     );
 }

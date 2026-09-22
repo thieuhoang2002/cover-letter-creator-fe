@@ -140,3 +140,25 @@ export const changePasswordWithoutOld = async (newPassword) => {
         throw error;
     }
 };
+
+export const checkHasPassword = async () => {
+    try {
+        const response = await axios.get(`${BASE_URL}/has-password`, { headers: getAuthHeader() });
+        return response.data?.hasPassword;
+    } catch (error) {
+        console.error("Lỗi khi kiểm tra trạng thái mật khẩu:", error);
+        return false;
+    }
+};
+
+export const uploadAvatar = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await axios.post(`${BASE_URL}/me/avatar`, formData, {
+        headers: {
+            ...getAuthHeader(),
+            "Content-Type": "multipart/form-data",
+        },
+    });
+    return response.data;
+};

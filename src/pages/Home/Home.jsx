@@ -1,239 +1,470 @@
 import React from 'react';
 import {
-  Container,
-  Typography,
-  Button,
-  Box,
-  Grid,
-  Card,
-  CardContent,
-  Paper,
-  Avatar,
-  Divider,
-  useTheme,
-  useMediaQuery
+    Container,
+    Typography,
+    Button,
+    Box,
+    Grid,
+    Card,
+    CardContent,
+    Paper,
+    Chip,
+    useTheme
 } from '@mui/material';
 import { Link } from 'react-router-dom';
-import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
-import DescriptionIcon from '@mui/icons-material/Description';
-import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
-import StarIcon from '@mui/icons-material/Star';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import {
+    AutoAwesome as SparklesIcon,
+    ArrowForward as ArrowForwardIcon,
+    CloudDownload as CloudDownloadIcon,
+    CheckCircle as CheckCircleIcon,
+    AccountBalance as GovernmentIcon,
+    WorkOutline as BusinessIcon,
+    Star as StarIcon
+} from '@mui/icons-material';
+import { useThemeMode } from '../../context/ThemeContext';
+import { useAuth } from '../Auth/AuthContext';
 
 function Home() {
-  const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+    const { mode } = useThemeMode();
+    const { isAuthenticated } = useAuth();
+    const theme = useTheme();
+    const isDark = mode === 'dark';
 
-  return (
-    <Box sx={{
-      background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%)',
-      minHeight: '100vh',
-      paddingTop: '80px',
-      paddingBottom: '40px'
-    }}>
-      <Container maxWidth="lg">
-        {/* Hero Section */}
-        <Paper elevation={0} sx={{
-          borderRadius: 4,
-          overflow: 'hidden',
-          background: 'linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)',
-          mb: 6,
-          position: 'relative'
-        }}>
-          <Box sx={{
-            padding: { xs: 4, md: 6 },
-            color: 'white',
-            textAlign: 'left',
-            position: 'relative',
-            zIndex: 2
-          }}>
-            <Grid container spacing={4} alignItems="center">
-              <Grid item xs={12} md={7}>
-                <Typography variant="overline" sx={{ letterSpacing: 2, opacity: 0.8 }}>
-                  TẠO ĐƠN XIN VIỆC CHUYÊN NGHIỆP
-                </Typography>
-                <Typography variant="h3" fontWeight="bold" gutterBottom sx={{
-                  fontSize: { xs: '2rem', md: '2.5rem' },
-                  mt: 1
-                }}>
-                  Hỗ Trợ Tạo Đơn Xin Việc <Box component="span" sx={{ color: '#ffd54f' }}>Chuyên Nghiệp</Box>
-                </Typography>
-                <Typography variant="h6" sx={{ opacity: 0.9, mb: 3, fontWeight: 'normal' }}>
-                  Dễ dàng tạo đơn xin việc chuyên nghiệp chỉ trong vài bước đơn giản, giúp bạn tăng cơ hội được phỏng vấn.
-                </Typography>
-                <Box sx={{ mt: 4, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    component={Link}
-                    to="/template/all"
-                    endIcon={<ArrowForwardIcon />}
+    return (
+        <Box sx={{ minHeight: '100vh', backgroundColor: theme.palette.background.default }}>
+            {/* 1. HERO SECTION */}
+            <Box
+                sx={{
+                    position: 'relative',
+                    overflow: 'hidden',
+                    pt: { xs: 6, md: 12 },
+                    pb: { xs: 8, md: 14 },
+                    background: isDark
+                        ? 'radial-gradient(ellipse at 50% -20%, rgba(59, 130, 246, 0.25) 0%, rgba(9, 13, 22, 0) 70%)'
+                        : 'radial-gradient(ellipse at 50% -20%, rgba(37, 99, 235, 0.12) 0%, rgba(248, 250, 252, 0) 70%)'
+                }}
+            >
+                <Container maxWidth="lg">
+                    <Box sx={{ textAlign: 'center', maxWidth: 840, mx: 'auto' }}>
+                        {/* Version Badge */}
+                        <Box
+                            sx={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 1,
+                                px: 2,
+                                py: 0.8,
+                                borderRadius: '9999px',
+                                mb: 3,
+                                backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(37, 99, 235, 0.08)',
+                                border: isDark ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(37, 99, 235, 0.2)',
+                                color: isDark ? '#93c5fd' : '#1d4ed8'
+                            }}
+                        >
+                            <SparklesIcon sx={{ fontSize: 18, color: '#ec4899' }} />
+                            <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                                🎓 Phiên bản 2.0 • Nâng cấp từ Đồ án Môn học 2025 • Tích hợp Groq AI
+                            </Typography>
+                        </Box>
+
+                        {/* Main Title */}
+                        <Typography
+                            variant="h1"
+                            sx={{
+                                fontSize: { xs: '2.4rem', sm: '3.2rem', md: '4rem' },
+                                fontWeight: 900,
+                                lineHeight: 1.15,
+                                mb: 2.5,
+                                color: isDark ? '#f8fafc' : '#0f172a'
+                            }}
+                        >
+                            Tạo CV & Đơn Xin Việc Đỉnh Cao với{' '}
+                            <Box
+                                component="span"
+                                sx={{
+                                    background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #ec4899 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent'
+                                }}
+                            >
+                                Trí Tuệ Nhân Tạo
+                            </Box>
+                        </Typography>
+
+                        {/* Subtitle */}
+                        <Typography
+                            variant="h6"
+                            sx={{
+                                fontSize: { xs: '1rem', sm: '1.15rem' },
+                                color: isDark ? '#94a3b8' : '#64748b',
+                                fontWeight: 400,
+                                lineHeight: 1.6,
+                                mb: 4.5,
+                                px: { xs: 2, md: 4 }
+                            }}
+                        >
+                            Giải pháp toàn diện giúp bạn biến kinh nghiệm thô sơ thành hồ sơ xin việc chuyên nghiệp chỉ sau vài giây. Hỗ trợ chuẩn xác từ <strong>Cơ Quan Nhà Nước</strong> đến <strong>Tập Đoàn Quốc Tế</strong>.
+                        </Typography>
+
+                        {/* CTA Buttons */}
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            gap: 2,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            maxWidth: { xs: 360, sm: 'none' },
+                            mx: 'auto'
+                        }}>
+                            <Button
+                                component={Link}
+                                to="/create-cv-with-ai"
+                                variant="contained"
+                                size="large"
+                                startIcon={<SparklesIcon />}
+                                sx={{
+                                    width: { xs: '100%', sm: 'auto' },
+                                    px: 3.5,
+                                    py: 1.6,
+                                    fontSize: '1rem',
+                                    fontWeight: 700,
+                                    background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                                    color: '#ffffff',
+                                    borderRadius: '12px',
+                                    boxShadow: '0 8px 25px rgba(37, 99, 235, 0.35)',
+                                    '&:hover': {
+                                        background: 'linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%)',
+                                        boxShadow: '0 12px 30px rgba(37, 99, 235, 0.45)'
+                                    }
+                                }}
+                            >
+                                Tạo CV với AI Thần Kỳ
+                            </Button>
+
+                            <Button
+                                component={Link}
+                                to="/template/all"
+                                variant="outlined"
+                                size="large"
+                                endIcon={<ArrowForwardIcon />}
+                                sx={{
+                                    width: { xs: '100%', sm: 'auto' },
+                                    px: 3,
+                                    py: 1.6,
+                                    fontSize: '1rem',
+                                    fontWeight: 600,
+                                    borderRadius: '12px',
+                                    borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)',
+                                    color: isDark ? '#f8fafc' : '#0f172a',
+                                    '&:hover': {
+                                        borderColor: '#2563eb',
+                                        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)'
+                                    }
+                                }}
+                            >
+                                Khám Phá 11 Mẫu
+                            </Button>
+                        </Box>
+
+                        {/* Social Proof */}
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            mt: { xs: 3.5, sm: 4 },
+                            gap: { xs: 0.8, sm: 1.5 },
+                            textAlign: 'center'
+                        }}>
+                            <Box sx={{ display: 'flex', color: '#f59e0b', justifyContent: 'center' }}>
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <StarIcon key={star} sx={{ fontSize: { xs: 20, sm: 18 } }} />
+                                ))}
+                            </Box>
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    color: isDark ? '#94a3b8' : '#64748b',
+                                    fontWeight: 500,
+                                    fontSize: { xs: '0.85rem', sm: '0.875rem' },
+                                    maxWidth: { xs: 320, sm: 'none' },
+                                    lineHeight: 1.5
+                                }}
+                            >
+                                10,000+ người tìm việc tin dùng • Xuất PDF chuẩn A4 không watermark
+                            </Typography>
+                        </Box>
+                    </Box>
+                </Container>
+            </Box>
+
+            {/* 2. STATS BAR */}
+            <Container maxWidth="lg" sx={{ mb: 10 }}>
+                <Paper
+                    elevation={0}
                     sx={{
-                      bgcolor: 'white',
-                      color: '#2193b0',
-                      fontWeight: 'bold',
-                      py: 1.5,
-                      px: 3,
-                      '&:hover': {
-                        bgcolor: 'rgba(255,255,255,0.9)',
-                      }
+                        p: { xs: 3, md: 4 },
+                        borderRadius: 4,
+                        border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.06)',
+                        backgroundColor: isDark ? '#111827' : '#ffffff',
+                        boxShadow: isDark ? '0 4px 20px rgba(0,0,0,0.3)' : '0 4px 20px rgba(0,0,0,0.03)'
                     }}
-                  >
-                    Bắt Đầu Ngay
-                  </Button>
+                >
+                    <Grid container spacing={3} textAlign="center">
+                        <Grid item xs={6} md={3}>
+                            <Typography variant="h3" sx={{ fontWeight: 800, color: '#2563eb', mb: 0.5 }}>
+                                2.0s
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: isDark ? '#94a3b8' : '#64748b', fontWeight: 600 }}>
+                                Tốc độ AI sinh CV tức thì
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={6} md={3}>
+                            <Typography variant="h3" sx={{ fontWeight: 800, color: '#7c3aed', mb: 0.5 }}>
+                                11+
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: isDark ? '#94a3b8' : '#64748b', fontWeight: 600 }}>
+                                Mẫu chuẩn Nhà Nước & Hiện Đại
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={6} md={3}>
+                            <Typography variant="h3" sx={{ fontWeight: 800, color: '#059669', mb: 0.5 }}>
+                                100%
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: isDark ? '#94a3b8' : '#64748b', fontWeight: 600 }}>
+                                Tải PDF A4 trực tiếp miễn phí
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={6} md={3}>
+                            <Typography variant="h3" sx={{ fontWeight: 800, color: '#ec4899', mb: 0.5 }}>
+                                24/7
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: isDark ? '#94a3b8' : '#64748b', fontWeight: 600 }}>
+                                Lưu trữ đám mây Cloudflare R2
+                            </Typography>
+                        </Grid>
+                    </Grid>
+                </Paper>
+            </Container>
+
+            {/* 3. BENTO GRID FEATURES */}
+            <Container maxWidth="lg" sx={{ mb: 12 }}>
+                <Box sx={{ textAlign: 'center', mb: 6 }}>
+                    <Typography variant="overline" sx={{ letterSpacing: 2, fontWeight: 700, color: '#2563eb' }}>
+                        TÍNH NĂNG ĐỘT PHÁ
+                    </Typography>
+                    <Typography variant="h3" sx={{ fontWeight: 800, mt: 1, color: isDark ? '#f8fafc' : '#0f172a' }}>
+                        Mọi Công Cụ Bạn Cần Để Có Chiếc CV Hoàn Hảo
+                    </Typography>
                 </Box>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', mt: 4 }}>
-                  <Box sx={{ display: 'flex', mr: 1 }}>
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <StarIcon key={star} sx={{ color: '#ffd54f', fontSize: 20 }} />
-                    ))}
-                  </Box>
-                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    Được tin dùng bởi hơn 10.000+ người dùng
-                  </Typography>
-                </Box>
-              </Grid>
+                <Grid container spacing={3}>
+                    {/* Card 1: AI Superpowers */}
+                    <Grid item xs={12} md={7}>
+                        <Card
+                            sx={{
+                                height: '100%',
+                                p: 3,
+                                background: isDark
+                                    ? 'linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%)'
+                                    : 'linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(124, 58, 237, 0.02) 100%)',
+                                borderColor: isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(37, 99, 235, 0.15)'
+                            }}
+                        >
+                            <CardContent>
+                                <Box
+                                    sx={{
+                                        width: 50,
+                                        height: 50,
+                                        borderRadius: 3,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                                        color: '#fff',
+                                        mb: 2.5
+                                    }}
+                                >
+                                    <SparklesIcon />
+                                </Box>
+                                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1.5 }}>
+                                    Sinh Nội Dung Bằng Trí Tuệ Nhân Tạo Groq LPU
+                                </Typography>
+                                <Typography variant="body1" sx={{ color: isDark ? '#94a3b8' : '#64748b', lineHeight: 1.7, mb: 3 }}>
+                                    Áp dụng mô hình ngôn ngữ lớn <code>openai/gpt-oss-120b</code> xử lý siêu tốc. Bạn chỉ cần nhập vị trí ứng tuyển, AI sẽ tự động phân tích và viết nên bản tóm tắt mục tiêu, kinh nghiệm và kỹ năng xuất sắc.
+                                </Typography>
+                                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                                    <Chip icon={<CheckCircleIcon />} label="Không bị timeout" size="small" variant="outlined" />
+                                    <Chip icon={<CheckCircleIcon />} label="Chuẩn ngữ pháp tiếng Việt" size="small" variant="outlined" />
+                                    <Chip icon={<CheckCircleIcon />} label="Tự động fallback dự phòng" size="small" variant="outlined" />
+                                </Box>
+                            </CardContent>
+                        </Card>
+                    </Grid>
 
-              <Grid item xs={12} md={5} sx={{ display: { xs: 'none', md: 'block' } }}>
-                <Box
-                  component="img"
-                  src="/ChatGPT_image.png"
-                  alt="Document preview"
-                  sx={{
-                    width: '100%',
-                    borderRadius: 2,
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
-                    transform: 'perspective(1000px) rotateY(-10deg)',
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </Box>
-        </Paper>
+                    {/* Card 2: State Standard */}
+                    <Grid item xs={12} md={5}>
+                        <Card sx={{ height: '100%', p: 3 }}>
+                            <CardContent>
+                                <Box
+                                    sx={{
+                                        width: 50,
+                                        height: 50,
+                                        borderRadius: 3,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+                                        color: '#fff',
+                                        mb: 2.5
+                                    }}
+                                >
+                                    <GovernmentIcon />
+                                </Box>
+                                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1.5 }}>
+                                    Đúng Chuẩn Cơ Quan Nhà Nước
+                                </Typography>
+                                <Typography variant="body1" sx={{ color: isDark ? '#94a3b8' : '#64748b', lineHeight: 1.7 }}>
+                                    Mẫu đơn thiết kế đúng văn phong pháp lý, quốc hiệu tiêu ngữ trang nghiêm, hỗ trợ ứng tuyển viên chức, giáo viên, y bác sĩ và cán bộ nhà nước.
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
 
-        {/* Features Section */}
-        <Typography variant="h4" sx={{
-          fontWeight: 'bold',
-          textAlign: 'center',
-          mb: 1
-        }}>
-          Quy Trình Đơn Giản
-        </Typography>
-        <Typography variant="body1" color="textSecondary" sx={{
-          textAlign: 'center',
-          maxWidth: '700px',
-          mx: 'auto',
-          mb: 5
-        }}>
-          Chỉ với ba bước đơn giản, bạn sẽ có một đơn xin việc chuyên nghiệp
-        </Typography>
+                    {/* Card 3: Modern Business */}
+                    <Grid item xs={12} md={5}>
+                        <Card sx={{ height: '100%', p: 3 }}>
+                            <CardContent>
+                                <Box
+                                    sx={{
+                                        width: 50,
+                                        height: 50,
+                                        borderRadius: 3,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
+                                        color: '#fff',
+                                        mb: 2.5
+                                    }}
+                                >
+                                    <BusinessIcon />
+                                </Box>
+                                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1.5 }}>
+                                    Hiện Đại Cho Khối Doanh Nghiệp
+                                </Typography>
+                                <Typography variant="body1" sx={{ color: isDark ? '#94a3b8' : '#64748b', lineHeight: 1.7 }}>
+                                    Dành riêng cho IT, Marketing, Tài chính. Thiết kế 2 cột trực quan, thanh đo kỹ năng sinh động giúp gây ấn tượng mạnh mẽ với nhà tuyển dụng trong 6 giây đầu tiên.
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
 
-        <Grid container spacing={4} sx={{ mb: 8 }}>
-          {[
-            {
-              icon: <WorkOutlineIcon fontSize="large" sx={{ fontSize: 40 }} />,
-              title: "Chọn Mẫu Đơn",
-              description: "Lựa chọn từ nhiều mẫu đơn chuyên nghiệp phù hợp với từng ngành nghề.",
-              color: "#3f51b5"
-            },
-            {
-              icon: <DescriptionIcon fontSize="large" sx={{ fontSize: 40 }} />,
-              title: "Tùy Chỉnh Nội Dung",
-              description: "Dễ dàng chỉnh sửa thông tin cá nhân, nội dung đơn theo nhu cầu.",
-              color: "#009688"
-            },
-            {
-              icon: <CloudDownloadIcon fontSize="large" sx={{ fontSize: 40 }} />,
-              title: "Tải Xuống & Sử Dụng",
-              description: "Xuất đơn xin việc dưới dạng PDF chuyên nghiệp và sẵn sàng gửi đi.",
-              color: "#ff5722"
-            }
-          ].map((feature, index) => (
-            <Grid item xs={12} md={4} key={index}>
-              <Card sx={{
-                borderRadius: 4,
-                height: '100%',
-                transition: 'transform 0.3s, box-shadow 0.3s',
-                '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
-                }
-              }}>
-                <CardContent sx={{
-                  padding: 4,
-                  textAlign: 'center',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center'
-                }}>
-                  <Avatar sx={{
-                    bgcolor: `${feature.color}15`,
-                    color: feature.color,
-                    width: 80,
-                    height: 80,
-                    mb: 2
-                  }}>
-                    {feature.icon}
-                  </Avatar>
-                  <Typography variant="h5" fontWeight="bold" gutterBottom>
-                    {feature.title}
-                  </Typography>
-                  <Typography color="textSecondary" variant="body1">
-                    {feature.description}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+                    {/* Card 4: Direct Binary PDF Stream */}
+                    <Grid item xs={12} md={7}>
+                        <Card
+                            sx={{
+                                height: '100%',
+                                p: 3,
+                                background: isDark
+                                    ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.02) 100%)'
+                                    : 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.01) 100%)'
+                            }}
+                        >
+                            <CardContent>
+                                <Box
+                                    sx={{
+                                        width: 50,
+                                        height: 50,
+                                        borderRadius: 3,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        background: 'linear-gradient(135deg, #0284c7 0%, #06b6d4 100%)',
+                                        color: '#fff',
+                                        mb: 2.5
+                                    }}
+                                >
+                                    <CloudDownloadIcon />
+                                </Box>
+                                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1.5 }}>
+                                    Xuất PDF Trực Tiếp & Lưu Trữ Đám Mây Cloudflare R2
+                                </Typography>
+                                <Typography variant="body1" sx={{ color: isDark ? '#94a3b8' : '#64748b', lineHeight: 1.7, mb: 3 }}>
+                                    Không cần qua trung gian Google Drive phức tạp. File PDF được biên dịch bằng bộ render <strong>iText html2pdf</strong> chuẩn font tiếng Việt, gửi qua Binary Stream về máy người dùng và tự động sao lưu trên Cloudflare R2.
+                                </Typography>
+                                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                                    <Chip icon={<CheckCircleIcon />} label="Khổ giấy A4 tuyệt đối" size="small" variant="outlined" />
+                                    <Chip icon={<CheckCircleIcon />} label="Chống spam xuất trùng" size="small" variant="outlined" />
+                                    <Chip icon={<CheckCircleIcon />} label="Tải tức thì 1-click" size="small" variant="outlined" />
+                                </Box>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                </Grid>
+            </Container>
 
-        {/* Call to Action */}
-        <Paper sx={{
-          borderRadius: 4,
-          overflow: 'hidden',
-          mt: 6,
-          background: 'linear-gradient(135deg, #5c6bc0 0%, #3949ab 100%)',
-          textAlign: 'center',
-          py: 6,
-          px: 3
-        }}>
-          <Typography variant="h4" fontWeight="bold" sx={{ color: 'white', mb: 2 }}>
-            Sẵn sàng tạo đơn xin việc của bạn?
-          </Typography>
-          <Typography variant="body1" sx={{ color: 'white', opacity: 0.9, mb: 4, maxWidth: '700px', mx: 'auto' }}>
-            Hãy bắt đầu ngay hôm nay và tăng cơ hội thành công cho hồ sơ xin việc của bạn
-          </Typography>
-          <Button
-            variant="contained"
-            color="secondary"
-            size="large"
-            component={Link}
-            to="/template/all"
-            sx={{
-              fontWeight: 'bold',
-              py: 1.5,
-              px: 4,
-              bgcolor: 'white',
-              color: '#3949ab',
-              '&:hover': {
-                bgcolor: 'rgba(255,255,255,0.9)',
-              }
-            }}
-          >
-            Tạo Đơn Ngay
-          </Button>
-        </Paper>
 
-        {/* Footer */}
-        <Box sx={{ textAlign: 'center', mt: 8, color: 'text.secondary' }}>
-          <Typography variant="body2">
-            © 2025 Hỗ Trợ Tạo Đơn Xin Việc. Tất cả các quyền được bảo lưu.
-          </Typography>
+
+            {/* 5. CTA BOTTOM BANNER */}
+            <Container maxWidth="lg" sx={{ pb: 10 }}>
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: { xs: 4, md: 6 },
+                        borderRadius: 4,
+                        textAlign: 'center',
+                        color: '#ffffff',
+                        background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #7c3aed 100%)',
+                        boxShadow: '0 20px 40px rgba(37, 99, 235, 0.25)'
+                    }}
+                >
+                    <Typography variant="h3" sx={{ fontWeight: 800, mb: 2, fontSize: { xs: '1.8rem', md: '2.5rem' } }}>
+                        Sẵn Sàng Chinh Phục Công Việc Mơ Ước?
+                    </Typography>
+                    <Typography variant="body1" sx={{ maxWidth: 640, mx: 'auto', opacity: 0.9, mb: 4, fontSize: '1.05rem' }}>
+                        Tạo tài khoản miễn phí ngay hôm nay để trải nghiệm tạo CV bằng AI, không watermark và tải xuống file PDF không giới hạn.
+                    </Typography>
+                    <Button
+                        component={Link}
+                        to={isAuthenticated ? "/create-cv-with-ai" : "/register"}
+                        variant="contained"
+                        size="large"
+                        sx={{
+                            backgroundColor: '#ffffff',
+                            color: '#1e3a8a',
+                            fontWeight: 800,
+                            px: 4,
+                            py: 1.6,
+                            borderRadius: '12px',
+                            fontSize: '1rem',
+                            '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 0.9)'
+                            }
+                        }}
+                    >
+                        {isAuthenticated ? 'Tạo CV với AI Ngay' : 'Bắt Đầu Hoàn Toàn Miễn Phí'}
+                    </Button>
+                </Paper>
+            </Container>
+
+            {/* 6. FOOTER */}
+            <Box
+                sx={{
+                    py: 4,
+                    borderTop: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.06)',
+                    backgroundColor: isDark ? '#090d16' : '#f8fafc',
+                    textAlign: 'center'
+                }}
+            >
+                <Container maxWidth="lg">
+                    <Typography variant="body2" sx={{ color: isDark ? '#64748b' : '#94a3b8' }}>
+                        © 2026 <strong>Cover Letter Creator</strong> — Phiên bản 2.0 phát triển & nâng cấp toàn diện từ Đồ án Môn học năm 2025. Nền tảng Java Spring Boot 3 & React Vite.
+                    </Typography>
+                </Container>
+            </Box>
         </Box>
-      </Container>
-    </Box>
-  );
+    );
 }
 
 export default Home;

@@ -72,8 +72,12 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    const updateAvatarUrl = (url) => {
+        setAvatarUrl(url);
+    };
+
     return (
-        <AuthContext.Provider value={{token, isAuthenticated, role, avatarUrl, userId, email, login, logout }}>
+        <AuthContext.Provider value={{token, isAuthenticated, role, avatarUrl, userId, email, login, logout, updateAvatarUrl }}>
             {children}
         </AuthContext.Provider>
     );
