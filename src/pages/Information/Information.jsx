@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Box,
   TextField,
@@ -17,6 +17,7 @@ import {
   Chip,
   Grid,
   Divider,
+  Tooltip,
 } from "@mui/material";
 import {
   Add,
@@ -29,14 +30,18 @@ import {
   Favorite,
   Save,
   CheckCircle,
+  CameraAlt,
 } from "@mui/icons-material";
 import Alert from "@mui/material/Alert";
-import { getCurrentUser, updateCurrentUserProfile } from "../../apis/profile";
+import { getCurrentUser, updateCurrentUserProfile, uploadAvatar } from "../../apis/profile";
 import { useThemeMode } from "../../context/ThemeContext";
+import { useAuth } from "../Auth/AuthContext";
+
 
 const Information = () => {
   const { mode } = useThemeMode();
   const isDark = mode === "dark";
+  const { updateAvatarUrl } = useAuth();
 
   const [activeTab, setActiveTab] = useState(0);
   const [formData, setFormData] = useState({
@@ -56,11 +61,15 @@ const Information = () => {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const fileInputRef = useRef(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success",
   });
+
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -146,6 +155,41 @@ const Information = () => {
     }
   };
 
+  const handleAvatarFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      setSnackbar({ open: true, message: "Chỉ chấp nhận định dạng .jpg, .png, .webp", severity: "error" });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setSnackbar({ open: true, message: "Ảnh không được vượt quá 2MB", severity: "error" });
+      return;
+    }
+    setAvatarPreview(URL.createObjectURL(file));
+    handleAvatarUpload(file);
+  };
+
+  const handleAvatarUpload = async (file) => {
+    setAvatarUploading(true);
+    try {
+      const result = await uploadAvatar(file);
+      const newUrl = result.avatarUrl;
+      setFormData((prev) => ({ ...prev, avatarUrl: newUrl }));
+      updateAvatarUrl(newUrl);
+      setAvatarPreview(null);
+      setSnackbar({ open: true, message: "Cập nhật ảnh đại diện thành công!", severity: "success" });
+    } catch (error) {
+      console.error("Lỗi upload avatar:", error);
+      setSnackbar({ open: true, message: error?.response?.data?.message || "Lỗi khi tải ảnh lên", severity: "error" });
+      setAvatarPreview(null);
+    } finally {
+      setAvatarUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="70vh">
@@ -187,21 +231,56 @@ const Information = () => {
             justifyContent="space-between"
           >
             <Stack direction="row" spacing={2.5} alignItems="center">
-              <Avatar
-                src={formData.avatarUrl}
-                alt={formData.name}
-                sx={{
-                  width: 76,
-                  height: 76,
-                  border: "3px solid #10b981",
-                  boxShadow: "0 4px 12px rgba(16, 185, 129, 0.25)",
-                  fontSize: "1.75rem",
-                  fontWeight: 700,
-                  bgcolor: "#10b981",
-                }}
-              >
-                {formData.name ? formData.name.charAt(0).toUpperCase() : "U"}
-              </Avatar>
+              {/* Avatar with upload overlay */}
+              <Box sx={{ position: "relative", display: "inline-flex" }}>
+                <Avatar
+                  src={avatarPreview || formData.avatarUrl}
+                  alt={formData.name}
+                  sx={{
+                    width: 76,
+                    height: 76,
+                    border: "3px solid #10b981",
+                    boxShadow: "0 4px 12px rgba(16, 185, 129, 0.25)",
+                    fontSize: "1.75rem",
+                    fontWeight: 700,
+                    bgcolor: "#10b981",
+                  }}
+                >
+                  {formData.name ? formData.name.charAt(0).toUpperCase() : "U"}
+                </Avatar>
+                <Tooltip title="Thay ảnh đại diện">
+                  <IconButton
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={avatarUploading}
+                    size="small"
+                    sx={{
+                      position: "absolute",
+                      bottom: -4,
+                      right: -4,
+                      bgcolor: "#10b981",
+                      color: "white",
+                      width: 26,
+                      height: 26,
+                      border: "2px solid white",
+                      "&:hover": { bgcolor: "#059669" },
+                    }}
+                  >
+                    {avatarUploading ? (
+                      <CircularProgress size={12} sx={{ color: "white" }} />
+                    ) : (
+                      <CameraAlt sx={{ fontSize: 14 }} />
+                    )}
+                  </IconButton>
+                </Tooltip>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  hidden
+                  onChange={handleAvatarFileChange}
+                />
+              </Box>
+
               <Box>
                 <Typography variant="h5" fontWeight={700} color={isDark ? "#f8fafc" : "#0f172a"}>
                   {formData.name || "Chưa đặt họ tên"}

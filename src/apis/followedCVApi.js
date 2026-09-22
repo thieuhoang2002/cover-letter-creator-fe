@@ -137,3 +137,70 @@ export const deleteFollowedCV = async (id) => {
         };
     }
 };
+
+/**
+ * Upload file PDF CV từ máy tính
+ * @param {File} file - File PDF
+ * @param {string} name - Tên CV
+ * @param {string} company - Công ty
+ * @param {string} note - Ghi chú
+ */
+export const uploadCvPdf = async (file, name = '', company = '', note = '') => {
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        if (name) formData.append('name', name);
+        if (company) formData.append('company', company);
+        if (note) formData.append('note', note);
+
+        const response = await axios.post(`${BASE_URL}/upload`, formData, {
+            headers: {
+                ...getAuthHeader(),
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return { success: true, message: response.data.message, data: response.data.data };
+    } catch (error) {
+        const errData = error.response?.data;
+        return {
+            success: false,
+            message: errData?.message || 'Lỗi khi tải lên CV!',
+            quotaExceeded: errData?.data?.quotaExceeded || false,
+            error,
+        };
+    }
+};
+
+/** Kiểm tra quota upload CV */
+export const getUploadQuota = async () => {
+    try {
+        const response = await axios.get(`${BASE_URL}/quota`, { headers: getAuthHeader() });
+        return response.data;
+    } catch {
+        return { isVip: false, used: 0, max: 3, remaining: 3 };
+    }
+};
+
+/** Gửi yêu cầu nâng cấp VIP */
+export const submitVipRequest = async (plan, note) => {
+    try {
+        const response = await axios.post(
+            `${BACKEND_URL}/api/vip/request`,
+            { plan, note },
+            { headers: { ...getAuthHeader(), 'Content-Type': 'application/json' } }
+        );
+        return { success: true, message: response.data.message, data: response.data.data };
+    } catch (error) {
+        return { success: false, message: error.response?.data?.message || 'Lỗi khi gửi yêu cầu!' };
+    }
+};
+
+/** Xem trạng thái yêu cầu VIP của user */
+export const getMyVipStatus = async () => {
+    try {
+        const response = await axios.get(`${BACKEND_URL}/api/vip/my-status`, { headers: getAuthHeader() });
+        return response.data.data || [];
+    } catch {
+        return [];
+    }
+};

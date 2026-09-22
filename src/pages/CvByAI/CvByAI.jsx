@@ -95,6 +95,8 @@ const CvByAI = () => {
     const [loadingSeconds, setLoadingSeconds] = useState(0);
     const [tipIndex, setTipIndex] = useState(0);
     const [error, setError] = useState('');
+    const [queueStatus, setQueueStatus] = useState(null);
+
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -111,6 +113,7 @@ const CvByAI = () => {
     useEffect(() => {
         let interval;
         let tipInterval;
+        let queueInterval;
         if (loading) {
             setLoadingSeconds(0);
             setTipIndex(0);
@@ -120,15 +123,28 @@ const CvByAI = () => {
             tipInterval = setInterval(() => {
                 setTipIndex((prev) => (prev + 1) % LOADING_TIPS.length);
             }, 2500);
+            // Poll queue status every 5 seconds
+            const pollQueue = async () => {
+                try {
+                    const urlBE = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080').replace(/\/+$/, '');
+                    const res = await fetch(`${urlBE}/api/ai/queue-status`, {
+                        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                    });
+                    if (res.ok) setQueueStatus(await res.json());
+                } catch { /* ignore */ }
+            };
+            pollQueue();
+            queueInterval = setInterval(pollQueue, 5000);
         } else {
-            clearInterval(interval);
-            clearInterval(tipInterval);
+            setQueueStatus(null);
         }
         return () => {
             clearInterval(interval);
             clearInterval(tipInterval);
+            clearInterval(queueInterval);
         };
     }, [loading]);
+
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -498,6 +514,22 @@ const CvByAI = () => {
                                     </Typography>
                                 </Box>
 
+                                {/* Queue status info */}
+                                {queueStatus && queueStatus.waiting > 0 && (
+                                    <Box sx={{ mb: 1.5, p: 1.5, borderRadius: 2, bgcolor: alpha('#f59e0b', 0.1), border: '1px solid', borderColor: alpha('#f59e0b', 0.3) }}>
+                                        <Typography variant="body2" sx={{ color: '#d97706', fontWeight: 600 }}>
+                                            ⏳ Hàng đợi AI: {queueStatus.waiting} yêu cầu đang chờ · Ước tính ~{Math.max(15, queueStatus.waiting * 15)}-{Math.max(30, queueStatus.waiting * 30)}s
+                                        </Typography>
+                                    </Box>
+                                )}
+                                {queueStatus && queueStatus.waiting === 0 && (
+                                    <Box sx={{ mb: 1.5 }}>
+                                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                            ✅ Đang xử lý ngay · Không có ai trong hàng đợi
+                                        </Typography>
+                                    </Box>
+                                )}
+
                                 <LinearProgress
                                     sx={{
                                         height: 8,
@@ -519,6 +551,7 @@ const CvByAI = () => {
                                 </Box>
                             </Paper>
                         )}
+
 
                         {/* Submit Action Button */}
                         <Button

@@ -11,14 +11,17 @@ import {
     ChevronLeft,
     ChevronRight,
     AdminPanelSettings as AdminIcon,
-    ArrowBack
+    ArrowBack,
+    WorkspacePremium as VipIcon
 } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 import TemplateManager from "./TemplateManager";
 import UserManager from "./UserManager";
 import AdminDashboard from "./AdminDashboard";
 import ModernCVTemplateManager from "./ModernCVTemplateManager";
+import AdminVipRequests from "./AdminVipRequests";
 import { useThemeMode } from "../../context/ThemeContext";
+
 
 const fullDrawerWidth = 260;
 const collapsedDrawerWidth = 72;
@@ -34,7 +37,9 @@ function AdminHomePage() {
         { text: "Quản Lý Người Dùng", shortText: "Người dùng", icon: <PeopleIcon />, page: "users" },
         { text: "Mẫu Đơn Nhà Nước", shortText: "Nhà nước", icon: <DescriptionIcon />, page: "templates" },
         { text: "Mẫu CV Hiện Đại", shortText: "Hiện đại", icon: <ArticleIcon />, page: "moderncvs" },
+        { text: "Yêu Cầu Nâng Cấp VIP", shortText: "VIP", icon: <VipIcon />, page: "vip-requests" },
     ];
+
 
     const handleCollapseToggle = () => {
         setIsCollapsed(!isCollapsed);
@@ -244,6 +249,7 @@ function AdminHomePage() {
                         {selectedPage === "users" && "Quản lý danh sách tài khoản, vai trò phân quyền và cập nhật hồ sơ người dùng."}
                         {selectedPage === "templates" && "Quản lý các mẫu Đơn Xin Việc Chuẩn Nhà Nước (Thêm mới, chỉnh sửa nội dung, xóa)."}
                         {selectedPage === "moderncvs" && "Quản lý danh mục Mẫu CV Hiện Đại & Tiêu Chuẩn Doanh Nghiệp Tư Nhân."}
+                        {selectedPage === "vip-requests" && "Xem xét và phê duyệt các yêu cầu nâng cấp VIP từ người dùng."}
                     </Typography>
                 </Box>
 
@@ -252,6 +258,7 @@ function AdminHomePage() {
                 {selectedPage === "users" && <UserManager />}
                 {selectedPage === "templates" && <TemplateManager />}
                 {selectedPage === "moderncvs" && <ModernCVTemplateManager />}
+                {selectedPage === "vip-requests" && <AdminVipRequests />}
             </Box>
         </Box>
     );

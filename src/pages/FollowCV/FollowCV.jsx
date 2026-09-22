@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../pages/Auth/AuthContext';
 import {
     Container, Typography, CircularProgress,
@@ -6,7 +6,7 @@ import {
     Paper, IconButton, Box, TablePagination,
     Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions,
     TextField, Button, DialogContentText, Chip, MenuItem, Select, FormControl, InputLabel,
-    Grid, Card, CardContent, Stack, Divider
+    Grid, Card, CardContent, Stack, Divider, LinearProgress, Tooltip
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
@@ -16,8 +16,11 @@ import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import WorkIcon from '@mui/icons-material/Work';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
-import { fetchFollowedCVs, updateFollowedCV, deleteFollowedCV } from '../../apis/followedCVApi';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import { fetchFollowedCVs, updateFollowedCV, deleteFollowedCV, uploadCvPdf, getUploadQuota, submitVipRequest } from '../../apis/followedCVApi';
 import { useThemeMode } from '../../context/ThemeContext';
+
 
 const STATUS_CONFIG = {
     pending: { label: 'Chờ phản hồi', color: 'warning', icon: <HourglassEmptyIcon fontSize="small" /> },
@@ -63,6 +66,18 @@ const FollowCV = () => {
     const [deletingCVId, setDeletingCVId] = useState(null);
     const [formData, setFormData] = useState({ note: '', company: '', status: 'Chờ phản hồi' });
 
+    // Upload CV states
+    const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+    const [vipModalOpen, setVipModalOpen] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [uploadFile, setUploadFile] = useState(null);
+    const [uploadForm, setUploadForm] = useState({ name: '', company: '', note: '' });
+    const [quota, setQuota] = useState({ isVip: false, used: 0, max: 3, remaining: 3 });
+    const [vipPlan, setVipPlan] = useState('pro');
+    const [vipNote, setVipNote] = useState('');
+    const [vipSubmitting, setVipSubmitting] = useState(false);
+    const uploadFileInputRef = useRef(null);
+
     useEffect(() => {
         if (token) {
             loadFollowedCVs();
@@ -78,6 +93,73 @@ const FollowCV = () => {
             setFollowedCVs([]);
         }
         setLoading(false);
+    };
+
+    const loadQuota = async () => {
+        const q = await getUploadQuota();
+        setQuota(q);
+    };
+
+    useEffect(() => {
+        if (token) loadQuota();
+    }, [token, followedCVs]);
+
+    const handleOpenUploadDialog = () => {
+        setUploadFile(null);
+        setUploadForm({ name: '', company: '', note: '' });
+        setUploadDialogOpen(true);
+    };
+
+    const handleUploadFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.type !== 'application/pdf') {
+            setSnackbarMessage('Chỉ chấp nhận file PDF!');
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+            return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+            setSnackbarMessage('File PDF không được vượt quá 10MB!');
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+            return;
+        }
+        setUploadFile(file);
+        if (!uploadForm.name) {
+            setUploadForm(prev => ({ ...prev, name: file.name.replace('.pdf', '') }));
+        }
+    };
+
+    const handleDoUpload = async () => {
+        if (!uploadFile) return;
+        setUploading(true);
+        const result = await uploadCvPdf(uploadFile, uploadForm.name, uploadForm.company, uploadForm.note);
+        setUploading(false);
+        if (result.success) {
+            setUploadDialogOpen(false);
+            setSnackbarMessage('Tải lên CV thành công!');
+            setSnackbarSeverity('success');
+            setSnackbarOpen(true);
+            loadFollowedCVs();
+        } else if (result.quotaExceeded) {
+            setUploadDialogOpen(false);
+            setVipModalOpen(true);
+        } else {
+            setSnackbarMessage(result.message);
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+        }
+    };
+
+    const handleSubmitVipRequest = async () => {
+        setVipSubmitting(true);
+        const result = await submitVipRequest(vipPlan, vipNote);
+        setVipSubmitting(false);
+        setVipModalOpen(false);
+        setSnackbarMessage(result.message);
+        setSnackbarSeverity(result.success ? 'success' : 'error');
+        setSnackbarOpen(true);
     };
 
     const handleEdit = (cv) => {
@@ -155,10 +237,53 @@ const FollowCV = () => {
                     <Typography variant="h4" fontWeight={800} color={isDark ? '#f8fafc' : '#0f172a'} gutterBottom>
                         Theo Dõi Tiến Trình Ứng Tuyển
                     </Typography>
-                    <Typography variant="body1" color="textSecondary">
+                    <Typography variant="body1" color="textSecondary" mb={2}>
                         Quản lý trạng thái phỏng vấn, công ty đã nộp và ghi chú hồ sơ xin việc của bạn.
                     </Typography>
+                    {/* Upload CV button + quota */}
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center" alignItems="center" mb={1}>
+                        <Button
+                            variant="contained"
+                            startIcon={<UploadFileIcon />}
+                            onClick={handleOpenUploadDialog}
+                            sx={{
+                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                color: 'white',
+                                fontWeight: 700,
+                                borderRadius: 2.5,
+                                px: 3,
+                                '&:hover': { background: 'linear-gradient(135deg, #059669 0%, #047857 100%)' },
+                            }}
+                        >
+                            Tải lên CV từ thiết bị
+                        </Button>
+                        {quota.isVip ? (
+                            <Chip icon={<WorkspacePremiumIcon />} label="VIP — Không giới hạn" color="warning" sx={{ fontWeight: 700 }} />
+                        ) : (
+                            <Tooltip title={`Đã dùng ${quota.used}/${quota.max} file CV`}>
+                                <Box sx={{ minWidth: 180, textAlign: 'left' }}>
+                                    <Typography variant="caption" color="textSecondary" fontWeight={600}>
+                                        Quota: {quota.used}/{quota.max} CV đã upload
+                                    </Typography>
+                                    <LinearProgress
+                                        variant="determinate"
+                                        value={Math.min(100, (quota.used / quota.max) * 100)}
+                                        sx={{
+                                            height: 6, borderRadius: 3,
+                                            bgcolor: isDark ? '#334155' : '#e2e8f0',
+                                            '& .MuiLinearProgress-bar': {
+                                                background: quota.remaining === 0
+                                                    ? 'linear-gradient(90deg, #ef4444, #dc2626)'
+                                                    : 'linear-gradient(90deg, #10b981, #059669)',
+                                            },
+                                        }}
+                                    />
+                                </Box>
+                            </Tooltip>
+                        )}
+                    </Stack>
                 </Box>
+
 
                 {/* KPI Metrics */}
                 <Grid container spacing={2.5} mb={4}>
@@ -552,7 +677,160 @@ const FollowCV = () => {
                         {snackbarMessage}
                     </Alert>
                 </Snackbar>
+                {/* ===== UPLOAD CV DIALOG ===== */}
+                <Dialog open={uploadDialogOpen} onClose={() => setUploadDialogOpen(false)} maxWidth="sm" fullWidth>
+                    <DialogTitle sx={{ fontWeight: 700 }}>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                            <UploadFileIcon color="success" />
+                            <span>Tải lên CV từ thiết bị</span>
+                        </Stack>
+                    </DialogTitle>
+                    <DialogContent>
+                        <Stack spacing={2} mt={1}>
+                            {/* File picker */}
+                            <Box
+                                onClick={() => uploadFileInputRef.current?.click()}
+                                sx={{
+                                    border: '2px dashed',
+                                    borderColor: uploadFile ? '#10b981' : (isDark ? '#475569' : '#cbd5e1'),
+                                    borderRadius: 3,
+                                    p: 3,
+                                    textAlign: 'center',
+                                    cursor: 'pointer',
+                                    bgcolor: isDark ? 'rgba(16,185,129,0.05)' : 'rgba(16,185,129,0.03)',
+                                    transition: 'border-color 0.2s',
+                                    '&:hover': { borderColor: '#10b981' },
+                                }}
+                            >
+                                <UploadFileIcon sx={{ fontSize: 40, color: uploadFile ? '#10b981' : 'text.secondary' }} />
+                                <Typography variant="body2" color={uploadFile ? '#10b981' : 'textSecondary'} mt={1} fontWeight={600}>
+                                    {uploadFile ? uploadFile.name : 'Nhấn để chọn file PDF (tối đa 10MB)'}
+                                </Typography>
+                                {uploadFile && (
+                                    <Typography variant="caption" color="textSecondary">
+                                        {(uploadFile.size / 1024 / 1024).toFixed(2)} MB
+                                    </Typography>
+                                )}
+                            </Box>
+                            <input ref={uploadFileInputRef} type="file" accept="application/pdf" hidden onChange={handleUploadFileChange} />
+
+                            <TextField
+                                label="Tên CV / Vị trí ứng tuyển"
+                                size="small"
+                                fullWidth
+                                value={uploadForm.name}
+                                onChange={e => setUploadForm(p => ({ ...p, name: e.target.value }))}
+                            />
+                            <TextField
+                                label="Công ty"
+                                size="small"
+                                fullWidth
+                                value={uploadForm.company}
+                                onChange={e => setUploadForm(p => ({ ...p, company: e.target.value }))}
+                            />
+                            <TextField
+                                label="Ghi chú"
+                                size="small"
+                                fullWidth
+                                multiline
+                                rows={2}
+                                value={uploadForm.note}
+                                onChange={e => setUploadForm(p => ({ ...p, note: e.target.value }))}
+                            />
+
+                            {!quota.isVip && (
+                                <Box sx={{ bgcolor: isDark ? '#1e293b' : '#f1f5f9', borderRadius: 2, p: 1.5 }}>
+                                    <Typography variant="caption" color="textSecondary">
+                                        📦 Quota: <strong>{quota.used}/{quota.max}</strong> CV đã upload. Còn lại: <strong>{quota.remaining}</strong>
+                                    </Typography>
+                                </Box>
+                            )}
+                        </Stack>
+                    </DialogContent>
+                    <DialogActions sx={{ p: 2, gap: 1 }}>
+                        <Button onClick={() => setUploadDialogOpen(false)} color="inherit" sx={{ textTransform: 'none' }}>Hủy</Button>
+                        <Button
+                            onClick={handleDoUpload}
+                            variant="contained"
+                            disabled={!uploadFile || uploading}
+                            sx={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white', textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
+                        >
+                            {uploading ? <CircularProgress size={20} sx={{ color: 'white' }} /> : 'Tải lên'}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* ===== VIP UPGRADE MODAL ===== */}
+                <Dialog open={vipModalOpen} onClose={() => setVipModalOpen(false)} maxWidth="sm" fullWidth>
+                    <DialogTitle sx={{ fontWeight: 800, textAlign: 'center' }}>
+                        <WorkspacePremiumIcon sx={{ color: '#f59e0b', mr: 1, verticalAlign: 'middle' }} />
+                        Nâng cấp lên VIP
+                    </DialogTitle>
+                    <DialogContent>
+                        <Typography variant="body2" color="textSecondary" textAlign="center" mb={3}>
+                            Bạn đã dùng hết <strong>{quota.used}/{quota.max}</strong> lượt upload CV miễn phí.
+                            Nâng cấp để upload không giới hạn!
+                        </Typography>
+
+                        {/* Plans */}
+                        <Grid container spacing={2} mb={3}>
+                            {[
+                                { id: 'pro', name: 'Pro VIP', price: '99.000₫/tháng', features: ['Upload không giới hạn', 'Ưu tiên hàng đợi AI', 'Hỗ trợ ưu tiên'], color: '#10b981' },
+                                { id: 'enterprise', name: 'Enterprise', price: 'Liên hệ', features: ['Tất cả tính năng Pro', 'API Access', 'SLA 99.9%', 'Hỗ trợ 24/7'], color: '#8b5cf6' },
+                            ].map(plan => (
+                                <Grid item xs={12} sm={6} key={plan.id}>
+                                    <Card
+                                        onClick={() => setVipPlan(plan.id)}
+                                        sx={{
+                                            cursor: 'pointer',
+                                            border: '2px solid',
+                                            borderColor: vipPlan === plan.id ? plan.color : (isDark ? '#334155' : '#e2e8f0'),
+                                            borderRadius: 3,
+                                            p: 2,
+                                            bgcolor: vipPlan === plan.id
+                                                ? (isDark ? `${plan.color}15` : `${plan.color}08`)
+                                                : (isDark ? 'rgba(30,41,59,0.7)' : '#ffffff'),
+                                            transition: 'all 0.2s',
+                                        }}
+                                    >
+                                        <Typography variant="h6" fontWeight={800} color={plan.color}>{plan.name}</Typography>
+                                        <Typography variant="h5" fontWeight={700} mb={1}>{plan.price}</Typography>
+                                        {plan.features.map(f => (
+                                            <Typography key={f} variant="caption" display="block" color="textSecondary">✓ {f}</Typography>
+                                        ))}
+                                    </Card>
+                                </Grid>
+                            ))}
+                        </Grid>
+
+                        <TextField
+                            label="Ghi chú cho Admin (tùy chọn)"
+                            fullWidth
+                            size="small"
+                            multiline
+                            rows={2}
+                            value={vipNote}
+                            onChange={e => setVipNote(e.target.value)}
+                        />
+                        <Typography variant="caption" color="textSecondary" mt={1} display="block">
+                            * Sau khi gửi, Admin sẽ liên hệ và kích hoạt gói VIP cho bạn trong vòng 24h.
+                        </Typography>
+                    </DialogContent>
+                    <DialogActions sx={{ p: 2, gap: 1 }}>
+                        <Button onClick={() => setVipModalOpen(false)} color="inherit" sx={{ textTransform: 'none' }}>Đóng</Button>
+                        <Button
+                            onClick={handleSubmitVipRequest}
+                            variant="contained"
+                            disabled={vipSubmitting}
+                            sx={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: 'white', textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
+                        >
+                            {vipSubmitting ? <CircularProgress size={20} sx={{ color: 'white' }} /> : `Gửi yêu cầu ${vipPlan === 'pro' ? 'Pro VIP' : 'Enterprise'}`}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
             </Container>
+
         </Box>
     );
 };
