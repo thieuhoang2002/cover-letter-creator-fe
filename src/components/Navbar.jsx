@@ -37,7 +37,8 @@ import {
     AutoAwesome as SparklesIcon,
     Home as HomeIcon,
     Description as DescriptionIcon,
-    Article as ArticleIcon
+    Article as ArticleIcon,
+    WorkspacePremium as VipCrownIcon
 } from '@mui/icons-material';
 import { useAuth } from '../pages/Auth/AuthContext';
 import { useThemeMode } from '../context/ThemeContext';
@@ -96,7 +97,6 @@ function Navbar() {
             position="sticky"
             elevation={0}
             sx={{
-                top: 0,
                 zIndex: (th) => th.zIndex.drawer + 1,
                 backgroundColor: isDark ? 'rgba(17, 24, 39, 0.85)' : 'rgba(255, 255, 255, 0.85)',
                 backdropFilter: 'blur(16px)',
@@ -181,35 +181,42 @@ function Navbar() {
                         component={Link}
                         to="/"
                         sx={{
-                            display: { xs: 'flex', md: 'none' },
                             flexGrow: 1,
+                            display: { xs: 'flex', md: 'none' },
                             alignItems: 'center',
                             gap: 1,
                             textDecoration: 'none',
                             color: 'inherit'
                         }}
                     >
+                        <Box
+                            component="img"
+                            src="/logo.png"
+                            alt="Cover Letter Creator Logo"
+                            onError={(e) => {
+                                e.target.style.display = 'none';
+                            }}
+                            sx={{ width: 30, height: 30, objectFit: 'contain' }}
+                        />
                         <Typography
                             variant="h6"
+                            noWrap
                             sx={{
                                 fontWeight: 800,
                                 fontSize: '1.05rem',
-                                background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                                background: isDark
+                                    ? 'linear-gradient(135deg, #60a5fa 0%, #c084fc 100%)'
+                                    : 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent'
                             }}
                         >
-                            Cover Letter Creator
+                            CLC
                         </Typography>
-                        <Chip
-                            label="v2.0"
-                            size="small"
-                            sx={{ height: 18, fontSize: '0.6rem', fontWeight: 700 }}
-                        />
                     </Box>
 
                     {/* Desktop Navigation Links */}
-                    <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: 0.5 }}>
+                    <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: 1 }}>
                         {navigationPages.map((page) => {
                             const isActive = location.pathname === page.path;
                             return (
@@ -281,23 +288,60 @@ function Navbar() {
                         {/* Authenticated / Guest Actions */}
                         {isAuthenticated ? (
                             <>
-                                <Tooltip title="Cài đặt tài khoản">
+                                <Tooltip title={isVip ? "Tài khoản VIP — Cài đặt" : "Cài đặt tài khoản"}>
                                     <IconButton
                                         onClick={handleOpenUserMenu}
                                         sx={{
                                             p: 0.5,
-                                            border: isDark ? '2px solid rgba(96, 165, 250, 0.4)' : '2px solid rgba(37, 99, 235, 0.3)',
-                                            transition: 'transform 0.2s ease',
-                                            '&:hover': { transform: 'scale(1.05)' }
+                                            border: isVip
+                                                ? '2.5px solid #f59e0b'
+                                                : (isDark ? '2px solid rgba(96, 165, 250, 0.4)' : '2px solid rgba(37, 99, 235, 0.3)'),
+                                            boxShadow: isVip ? '0 0 12px rgba(245, 158, 11, 0.55)' : 'none',
+                                            transition: 'all 0.25s ease',
+                                            '&:hover': {
+                                                transform: 'scale(1.08)',
+                                                boxShadow: isVip ? '0 0 16px rgba(245, 158, 11, 0.8)' : 'none'
+                                            }
                                         }}
                                     >
-                                        <Avatar
-                                            alt="User Avatar"
-                                            src={avatarUrl || ''}
-                                            sx={{ width: 36, height: 36, bgcolor: '#2563eb', fontSize: '0.9rem', fontWeight: 'bold' }}
+                                        <Badge
+                                            overlap="circular"
+                                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                            badgeContent={
+                                                isVip ? (
+                                                    <Box
+                                                        sx={{
+                                                            bgcolor: '#f59e0b',
+                                                            color: '#fff',
+                                                            borderRadius: '50%',
+                                                            width: 17,
+                                                            height: 17,
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            boxShadow: '0 0 5px rgba(245, 158, 11, 0.8)',
+                                                            border: '1.5px solid #ffffff'
+                                                        }}
+                                                    >
+                                                        <VipCrownIcon sx={{ fontSize: 11 }} />
+                                                    </Box>
+                                                ) : null
+                                            }
                                         >
-                                            {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                                        </Avatar>
+                                            <Avatar
+                                                alt="User Avatar"
+                                                src={avatarUrl || ''}
+                                                sx={{
+                                                    width: 36,
+                                                    height: 36,
+                                                    bgcolor: isVip ? '#f59e0b' : '#2563eb',
+                                                    fontSize: '0.9rem',
+                                                    fontWeight: 'bold'
+                                                }}
+                                            >
+                                                {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                                            </Avatar>
+                                        </Badge>
                                     </IconButton>
                                 </Tooltip>
                                 <Menu
@@ -325,12 +369,35 @@ function Navbar() {
                                             {user?.name || 'Tài khoản người dùng'}
                                         </Typography>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-                                            <Chip
-                                                label={isAdmin ? 'Quản Trị Viên' : 'Thành viên'}
-                                                size="small"
-                                                color={isAdmin ? 'secondary' : 'default'}
-                                                sx={{ height: 20, fontSize: '0.7rem', fontWeight: 600 }}
-                                            />
+                                            {isAdmin ? (
+                                                <Chip
+                                                    label="Quản Trị Viên"
+                                                    size="small"
+                                                    color="secondary"
+                                                    sx={{ height: 20, fontSize: '0.7rem', fontWeight: 700 }}
+                                                />
+                                            ) : isVip ? (
+                                                <Chip
+                                                    icon={<VipCrownIcon sx={{ '&&': { color: '#ffffff', fontSize: 13 } }} />}
+                                                    label="Thành Viên VIP"
+                                                    size="small"
+                                                    sx={{
+                                                        height: 22,
+                                                        fontSize: '0.7rem',
+                                                        fontWeight: 800,
+                                                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                                        color: '#ffffff',
+                                                        boxShadow: '0 2px 6px rgba(245, 158, 11, 0.35)'
+                                                    }}
+                                                />
+                                            ) : (
+                                                <Chip
+                                                    label="Thành viên"
+                                                    size="small"
+                                                    color="default"
+                                                    sx={{ height: 20, fontSize: '0.7rem', fontWeight: 600 }}
+                                                />
+                                            )}
                                         </Box>
                                     </Box>
                                     <Divider sx={{ my: 1 }} />
@@ -396,7 +463,11 @@ function Navbar() {
                                     variant="text"
                                     sx={{
                                         color: isDark ? '#f1f5f9' : '#0f172a',
-                                        fontWeight: 600
+                                        fontWeight: 600,
+                                        whiteSpace: 'nowrap',
+                                        minWidth: 'auto',
+                                        px: { xs: 1.2, sm: 2 },
+                                        fontSize: { xs: '0.85rem', sm: '0.9rem' }
                                     }}
                                 >
                                     Đăng nhập

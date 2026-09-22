@@ -258,7 +258,41 @@ const FollowCV = () => {
                             Tải lên CV từ thiết bị
                         </Button>
                         {quota.isVip ? (
-                            <Chip icon={<WorkspacePremiumIcon />} label="VIP — Không giới hạn" color="warning" sx={{ fontWeight: 700 }} />
+                            <Tooltip title={`Tài khoản VIP — Đã dùng ${quota.used}/${quota.max === -1 ? '∞' : quota.max} CV PDF`}>
+                                <Box sx={{ minWidth: 200, textAlign: 'left' }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                                        <Chip
+                                            icon={<WorkspacePremiumIcon sx={{ '&&': { color: '#ffffff', fontSize: 13 } }} />}
+                                            label="VIP Quota"
+                                            size="small"
+                                            sx={{
+                                                fontWeight: 800,
+                                                height: 20,
+                                                fontSize: '0.65rem',
+                                                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                                color: '#fff'
+                                            }}
+                                        />
+                                        <Typography variant="caption" color="textSecondary" fontWeight={700}>
+                                            {quota.used}/{quota.max === -1 ? 'Không giới hạn' : `${quota.max} CV`}
+                                        </Typography>
+                                    </Box>
+                                    {quota.max > 0 && (
+                                        <LinearProgress
+                                            variant="determinate"
+                                            value={Math.min(100, (quota.used / quota.max) * 100)}
+                                            sx={{
+                                                height: 6,
+                                                borderRadius: 3,
+                                                bgcolor: isDark ? '#334155' : '#e2e8f0',
+                                                '& .MuiLinearProgress-bar': {
+                                                    background: 'linear-gradient(90deg, #f59e0b, #d97706)',
+                                                },
+                                            }}
+                                        />
+                                    )}
+                                </Box>
+                            </Tooltip>
                         ) : (
                             <Tooltip title={`Đã dùng ${quota.used}/${quota.max} file CV`}>
                                 <Box sx={{ minWidth: 180, textAlign: 'left' }}>
@@ -286,22 +320,22 @@ const FollowCV = () => {
 
 
                 {/* KPI Metrics */}
-                <Grid container spacing={2.5} mb={4}>
+                <Grid container spacing={{ xs: 1.5, sm: 2.5 }} mb={4}>
                     <Grid item xs={6} sm={3}>
                         <Card
                             elevation={0}
                             sx={{
-                                p: 2.5,
+                                p: { xs: 1.8, sm: 2.5 },
                                 borderRadius: 3.5,
                                 bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
                                 boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
                                 borderLeft: '4px solid #10b981',
                             }}
                         >
-                            <Typography variant="caption" color="textSecondary" fontWeight={600} textTransform="uppercase">
+                            <Typography variant="caption" color="textSecondary" fontWeight={600} textTransform="uppercase" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                                 Tổng số hồ sơ
                             </Typography>
-                            <Typography variant="h4" fontWeight={800} color={isDark ? '#f8fafc' : '#0f172a'} mt={0.5}>
+                            <Typography variant="h4" fontWeight={800} color={isDark ? '#f8fafc' : '#0f172a'} mt={0.5} sx={{ fontSize: { xs: '1.4rem', sm: '2.125rem' } }}>
                                 {stats.total}
                             </Typography>
                         </Card>
@@ -310,17 +344,17 @@ const FollowCV = () => {
                         <Card
                             elevation={0}
                             sx={{
-                                p: 2.5,
+                                p: { xs: 1.8, sm: 2.5 },
                                 borderRadius: 3.5,
                                 bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
                                 boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
                                 borderLeft: '4px solid #f59e0b',
                             }}
                         >
-                            <Typography variant="caption" color="textSecondary" fontWeight={600} textTransform="uppercase">
+                            <Typography variant="caption" color="textSecondary" fontWeight={600} textTransform="uppercase" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                                 Chờ phản hồi
                             </Typography>
-                            <Typography variant="h4" fontWeight={800} color="#f59e0b" mt={0.5}>
+                            <Typography variant="h4" fontWeight={800} color="#f59e0b" mt={0.5} sx={{ fontSize: { xs: '1.4rem', sm: '2.125rem' } }}>
                                 {stats.pending}
                             </Typography>
                         </Card>
@@ -329,17 +363,17 @@ const FollowCV = () => {
                         <Card
                             elevation={0}
                             sx={{
-                                p: 2.5,
+                                p: { xs: 1.8, sm: 2.5 },
                                 borderRadius: 3.5,
                                 bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
                                 boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
                                 borderLeft: '4px solid #3b82f6',
                             }}
                         >
-                            <Typography variant="caption" color="textSecondary" fontWeight={600} textTransform="uppercase">
+                            <Typography variant="caption" color="textSecondary" fontWeight={600} textTransform="uppercase" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                                 Đang phỏng vấn
                             </Typography>
-                            <Typography variant="h4" fontWeight={800} color="#3b82f6" mt={0.5}>
+                            <Typography variant="h4" fontWeight={800} color="#3b82f6" mt={0.5} sx={{ fontSize: { xs: '1.4rem', sm: '2.125rem' } }}>
                                 {stats.interview}
                             </Typography>
                         </Card>
@@ -348,17 +382,17 @@ const FollowCV = () => {
                         <Card
                             elevation={0}
                             sx={{
-                                p: 2.5,
+                                p: { xs: 1.8, sm: 2.5 },
                                 borderRadius: 3.5,
                                 bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
                                 boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
                                 borderLeft: '4px solid #10b981',
                             }}
                         >
-                            <Typography variant="caption" color="textSecondary" fontWeight={600} textTransform="uppercase">
+                            <Typography variant="caption" color="textSecondary" fontWeight={600} textTransform="uppercase" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                                 Đã trúng tuyển
                             </Typography>
-                            <Typography variant="h4" fontWeight={800} color="#10b981" mt={0.5}>
+                            <Typography variant="h4" fontWeight={800} color="#10b981" mt={0.5} sx={{ fontSize: { xs: '1.4rem', sm: '2.125rem' } }}>
                                 {stats.accepted}
                             </Typography>
                         </Card>
@@ -484,20 +518,30 @@ const FollowCV = () => {
                                             boxShadow: '0 4px 14px rgba(0,0,0,0.03)'
                                         }}
                                     >
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5, gap: 1 }}>
-                                            <Box>
-                                                <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
-                                                    {cv.name}
-                                                </Typography>
-                                                {cv.source === 'uploaded'
-                                                    ? <Chip label="📎 Đã upload" size="small" sx={{ mt: 0.5, fontSize: '0.62rem', height: 18, bgcolor: '#dbeafe', color: '#1d4ed8', fontWeight: 700 }} />
-                                                    : <Chip label="🔗 Theo dõi link" size="small" sx={{ mt: 0.5, fontSize: '0.62rem', height: 18, bgcolor: isDark ? '#1e293b' : '#f1f5f9', color: 'text.secondary', fontWeight: 600 }} />
-                                                }
-                                            </Box>
+                                        {/* Top Row: Status badge & Source chip */}
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.2, gap: 1 }}>
                                             <Box sx={{ flexShrink: 0 }}>
                                                 {getStatusBadge(cv.status)}
                                             </Box>
+                                            {cv.source === 'uploaded'
+                                                ? <Chip label="📎 Đã upload" size="small" sx={{ fontSize: '0.65rem', height: 22, bgcolor: '#dbeafe', color: '#1d4ed8', fontWeight: 700 }} />
+                                                : <Chip label="🔗 Theo dõi link" size="small" sx={{ fontSize: '0.65rem', height: 22, bgcolor: isDark ? '#1e293b' : '#f1f5f9', color: 'text.secondary', fontWeight: 600 }} />
+                                            }
                                         </Box>
+
+                                        {/* CV Name with wrapping */}
+                                        <Typography
+                                            variant="subtitle1"
+                                            sx={{
+                                                fontWeight: 700,
+                                                lineHeight: 1.35,
+                                                mb: 1.2,
+                                                wordBreak: 'break-word',
+                                                color: isDark ? '#f8fafc' : '#0f172a'
+                                            }}
+                                        >
+                                            {cv.name}
+                                        </Typography>
 
                                         <Box sx={{ mb: 1 }}>
                                             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 600 }}>
@@ -513,60 +557,69 @@ const FollowCV = () => {
                                                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 600 }}>
                                                     Ghi chú:
                                                 </Typography>
-                                                <Typography variant="caption" sx={{ color: 'text.primary' }}>
+                                                <Typography variant="caption" sx={{ color: 'text.primary', wordBreak: 'break-word' }}>
                                                     {cv.note}
                                                 </Typography>
                                             </Box>
                                         )}
 
-                                        <Divider sx={{ my: 1 }} />
+                                        <Divider sx={{ my: 1.2 }} />
 
-                                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'space-between', alignItems: 'center', pt: 0.5 }}>
-                                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                                {(cv.urlGoogleDrive || cv.fileUrl || cv.url || cv.downloadUrl || cv.r2Url) && (
-                                                    <Button
-                                                        component="a"
-                                                        href={cv.urlGoogleDrive || cv.fileUrl || cv.url || cv.downloadUrl || cv.r2Url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        size="small"
-                                                        variant="outlined"
-                                                        startIcon={<VisibilityIcon />}
-                                                        sx={{
-                                                            borderRadius: 2,
-                                                            fontSize: '0.75rem',
-                                                            textTransform: 'none',
-                                                            fontWeight: 600,
-                                                            borderColor: '#10b981',
-                                                            color: '#10b981'
-                                                        }}
-                                                    >
-                                                        Xem PDF
-                                                    </Button>
-                                                )}
+                                        {/* Action buttons row */}
+                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', pt: 0.5 }}>
+                                            {(cv.urlGoogleDrive || cv.fileUrl || cv.url || cv.downloadUrl || cv.r2Url) && (
                                                 <Button
+                                                    component="a"
+                                                    href={cv.urlGoogleDrive || cv.fileUrl || cv.url || cv.downloadUrl || cv.r2Url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
                                                     size="small"
                                                     variant="outlined"
-                                                    startIcon={<EditIcon />}
-                                                    onClick={() => handleEdit(cv)}
+                                                    startIcon={<VisibilityIcon fontSize="small" />}
                                                     sx={{
+                                                        flex: 1,
                                                         borderRadius: 2,
                                                         fontSize: '0.75rem',
+                                                        py: 0.7,
                                                         textTransform: 'none',
                                                         fontWeight: 600,
-                                                        borderColor: '#3b82f6',
-                                                        color: '#3b82f6'
+                                                        borderColor: '#10b981',
+                                                        color: '#10b981',
+                                                        whiteSpace: 'nowrap'
                                                     }}
                                                 >
-                                                    Cập nhật
+                                                    Xem PDF
                                                 </Button>
-                                            </Box>
+                                            )}
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                startIcon={<EditIcon fontSize="small" />}
+                                                onClick={() => handleEdit(cv)}
+                                                sx={{
+                                                    flex: 1,
+                                                    borderRadius: 2,
+                                                    fontSize: '0.75rem',
+                                                    py: 0.7,
+                                                    textTransform: 'none',
+                                                    fontWeight: 600,
+                                                    borderColor: '#3b82f6',
+                                                    color: '#3b82f6',
+                                                    whiteSpace: 'nowrap'
+                                                }}
+                                            >
+                                                Cập nhật
+                                            </Button>
 
                                             <IconButton
                                                 size="small"
                                                 color="error"
                                                 onClick={() => handleDelete(cv.id)}
-                                                sx={{ bgcolor: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)' }}
+                                                sx={{
+                                                    borderRadius: 2,
+                                                    p: 0.8,
+                                                    bgcolor: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.06)'
+                                                }}
                                             >
                                                 <DeleteIcon fontSize="small" />
                                             </IconButton>
@@ -783,14 +836,14 @@ const FollowCV = () => {
                     <DialogContent>
                         <Typography variant="body2" color="textSecondary" textAlign="center" mb={3}>
                             Bạn đã dùng hết <strong>{quota.used}/{quota.max}</strong> lượt upload CV miễn phí.
-                            Nâng cấp để upload không giới hạn!
+                            Nâng cấp để tăng hạn mức lưu trữ lên 30 CV PDF (gấp 10 lần)!
                         </Typography>
 
                         {/* Plans */}
                         <Grid container spacing={2} mb={3}>
                             {[
-                                { id: 'pro', name: 'Pro VIP', price: '99.000₫/tháng', features: ['Upload không giới hạn', 'Ưu tiên hàng đợi AI', 'Hỗ trợ ưu tiên'], color: '#10b981' },
-                                { id: 'enterprise', name: 'Enterprise', price: 'Liên hệ', features: ['Tất cả tính năng Pro', 'API Access', 'SLA 99.9%', 'Hỗ trợ 24/7'], color: '#8b5cf6' },
+                                { id: 'pro', name: 'Pro VIP', price: '99.000₫/tháng', features: ['Tải lên tối đa 30 CV PDF (gấp 10 lần)', 'Ưu tiên hàng đợi AI', 'Hỗ trợ ưu tiên qua Email/Zalo'], color: '#10b981' },
+                                { id: 'enterprise', name: 'Enterprise', price: 'Liên hệ', features: ['Không giới hạn lưu trữ CV PDF', 'Tất cả tính năng Pro VIP', 'API Access & SLA 99.9%', 'Hỗ trợ kỹ thuật 24/7'], color: '#8b5cf6' },
                             ].map(plan => (
                                 <Grid item xs={12} sm={6} key={plan.id}>
                                     <Card
@@ -810,7 +863,7 @@ const FollowCV = () => {
                                         <Typography variant="h6" fontWeight={800} color={plan.color}>{plan.name}</Typography>
                                         <Typography variant="h5" fontWeight={700} mb={1}>{plan.price}</Typography>
                                         {plan.features.map(f => (
-                                            <Typography key={f} variant="caption" display="block" color="textSecondary">✓ {f}</Typography>
+                                             <Typography key={f} variant="caption" display="block" color="textSecondary">✓ {f}</Typography>
                                         ))}
                                     </Card>
                                 </Grid>

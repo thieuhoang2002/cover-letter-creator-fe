@@ -107,7 +107,15 @@ function Home() {
                         </Typography>
 
                         {/* CTA Buttons */}
-                        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            gap: 2,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            maxWidth: { xs: 360, sm: 'none' },
+                            mx: 'auto'
+                        }}>
                             <Button
                                 component={Link}
                                 to="/create-cv-with-ai"
@@ -115,6 +123,7 @@ function Home() {
                                 size="large"
                                 startIcon={<SparklesIcon />}
                                 sx={{
+                                    width: { xs: '100%', sm: 'auto' },
                                     px: 3.5,
                                     py: 1.6,
                                     fontSize: '1rem',
@@ -139,6 +148,7 @@ function Home() {
                                 size="large"
                                 endIcon={<ArrowForwardIcon />}
                                 sx={{
+                                    width: { xs: '100%', sm: 'auto' },
                                     px: 3,
                                     py: 1.6,
                                     fontSize: '1rem',
@@ -157,13 +167,30 @@ function Home() {
                         </Box>
 
                         {/* Social Proof */}
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 4, gap: 1 }}>
-                            <Box sx={{ display: 'flex', color: '#f59e0b' }}>
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            mt: { xs: 3.5, sm: 4 },
+                            gap: { xs: 0.8, sm: 1.5 },
+                            textAlign: 'center'
+                        }}>
+                            <Box sx={{ display: 'flex', color: '#f59e0b', justifyContent: 'center' }}>
                                 {[1, 2, 3, 4, 5].map((star) => (
-                                    <StarIcon key={star} sx={{ fontSize: 18 }} />
+                                    <StarIcon key={star} sx={{ fontSize: { xs: 20, sm: 18 } }} />
                                 ))}
                             </Box>
-                            <Typography variant="body2" sx={{ color: isDark ? '#94a3b8' : '#64748b', fontWeight: 500 }}>
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    color: isDark ? '#94a3b8' : '#64748b',
+                                    fontWeight: 500,
+                                    fontSize: { xs: '0.85rem', sm: '0.875rem' },
+                                    maxWidth: { xs: 320, sm: 'none' },
+                                    lineHeight: 1.5
+                                }}
+                            >
                                 10,000+ người tìm việc tin dùng • Xuất PDF chuẩn A4 không watermark
                             </Typography>
                         </Box>

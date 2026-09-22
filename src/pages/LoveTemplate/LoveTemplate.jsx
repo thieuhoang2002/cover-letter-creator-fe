@@ -99,37 +99,60 @@ function LoveTemplate() {
                     </Typography>
                 </Box>
 
-                {/* Filter Tabs */}
-                <Paper
-                    elevation={0}
+                {/* Filter Tabs — Modern Segmented Pill Design */}
+                <Box
                     sx={{
-                        borderRadius: 3.5,
-                        mb: 4,
-                        bgcolor: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
-                        overflow: 'hidden',
-                        maxWidth: 600,
-                        mx: 'auto'
+                        display: 'flex',
+                        justifyContent: 'center',
+                        mb: 4
                     }}
                 >
-                    <Tabs
-                        value={filterTab}
-                        onChange={(e, val) => setFilterTab(val)}
-                        variant="fullWidth"
+                    <Box
                         sx={{
-                            '& .MuiTab-root': {
-                                fontWeight: 600,
-                                textTransform: 'none',
-                                fontSize: '0.925rem',
-                                py: 1.8,
-                            }
+                            p: 0.6,
+                            borderRadius: '999px',
+                            bgcolor: isDark ? 'rgba(30, 41, 59, 0.75)' : '#f1f5f9',
+                            border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
+                            boxShadow: '0 2px 12px rgba(0, 0, 0, 0.03)',
+                            width: '100%',
+                            maxWidth: 560
                         }}
                     >
-                        <Tab label={`Tất Cả (${stateLetters.length + stateModern.length})`} />
-                        <Tab label={`Nhà Nước (${stateLetters.length})`} />
-                        <Tab label={`Hiện Đại (${stateModern.length})`} />
-                    </Tabs>
-                </Paper>
+                        <Tabs
+                            value={filterTab}
+                            onChange={(e, val) => setFilterTab(val)}
+                            variant="fullWidth"
+                            sx={{
+                                minHeight: 44,
+                                '& .MuiTabs-indicator': {
+                                    display: 'none'
+                                },
+                                '& .MuiTab-root': {
+                                    fontWeight: 600,
+                                    textTransform: 'none',
+                                    fontSize: { xs: '0.825rem', sm: '0.925rem' },
+                                    py: 1,
+                                    minHeight: 42,
+                                    borderRadius: '999px',
+                                    transition: 'all 0.25s ease',
+                                    color: isDark ? '#94a3b8' : '#64748b',
+                                    '&.Mui-selected': {
+                                        bgcolor: isDark ? '#2563eb' : '#ffffff',
+                                        color: isDark ? '#ffffff' : '#2563eb',
+                                        fontWeight: 700,
+                                        boxShadow: isDark
+                                            ? '0 4px 14px rgba(37, 99, 235, 0.4)'
+                                            : '0 2px 10px rgba(0, 0, 0, 0.08)'
+                                    }
+                                }
+                            }}
+                        >
+                            <Tab label={`Tất Cả (${stateLetters.length + stateModern.length})`} />
+                            <Tab label={`Nhà Nước (${stateLetters.length})`} />
+                            <Tab label={`Hiện Đại (${stateModern.length})`} />
+                        </Tabs>
+                    </Box>
+                </Box>
 
                 {displayedList.length === 0 ? (
                     <Paper
