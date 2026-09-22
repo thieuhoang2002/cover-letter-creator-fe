@@ -1,9 +1,9 @@
 # PROJECT SPECIFICATION: COVER LETTER CREATOR (FRONTEND)
 
 ## 1. Tổng quan Dự án (Project Overview)
-**Cover Letter Creator Frontend** là ứng dụng web Single Page Application (SPA) xây dựng trên nền tảng **React 18 + Vite**, cung cấp giải pháp thiết kế, chỉnh sửa và xuất bản các mẫu Cover Letter (Đơn xin việc), Modern CV (CV hiện đại) và AI CV (CV sinh tự động bởi trí tuệ nhân tạo).
+**Cover Letter Creator Frontend** là ứng dụng web Single Page Application (SPA) xây dựng trên nền tảng **React 18 + Vite 5**, cung cấp giải pháp thiết kế, chỉnh sửa và xuất bản các mẫu Cover Letter (Đơn xin việc), Modern CV (CV hiện đại) và AI CV (CV sinh tự động bởi trí tuệ nhân tạo Groq Cloud).
 
-Ứng dụng kết nối trực tiếp với backend **Java Spring Boot 3.4.3** (AI Groq Cloud, lưu trữ Cloudflare R2 và tải file binary PDF trực tiếp).
+Ứng dụng kết nối trực tiếp với backend **Java Spring Boot 3.4.3** (AI Groq Cloud, lưu trữ Cloudflare R2, cơ sở dữ liệu TiDB Cloud Serverless và tải file binary PDF trực tiếp).
 
 ---
 
@@ -16,7 +16,7 @@ flowchart TD
     Auth -->|OAuth Google / GitHub| OAuthCallback[/auth-callback]
     OAuthCallback -->|Lưu JWT Token| Session[Phiên làm việc người dùng]
 
-    Session -->|Role: user| UserArea[Khu vực Người dùng]
+    Session -->|Role: user / vip| UserArea[Khu vực Người dùng]
     Session -->|Role: admin| AdminArea[Khu vực Quản trị: /admin]
 
     subgraph UserArea [Khu vực Người dùng]
@@ -36,14 +36,15 @@ flowchart TD
         EditorModern -->|Xuất & Tải trực tiếp PDF| PDFExport
         EditorAI -->|Xuất & Tải trực tiếp PDF| PDFExport
 
-        UserArea -->|Quản lý tiến độ tuyển dụng| FollowCV[/follow-cv]
+        UserArea -->|Quản lý & Upload CV PDF| FollowCV[/follow-cv]
         UserArea -->|Mẫu yêu thích| LoveTemplates[/my-love-templates]
-        UserArea -->|Hồ sơ & Đổi mật khẩu| Profile[/information, /change-password]
+        UserArea -->|Hồ sơ & Đổi avatar R2| Profile[/information, /change-password]
     end
 
     subgraph AdminArea [Khu vực Quản trị]
         AdminArea --> AdminDashboard[Dashboard & Thống kê]
         AdminArea --> ManageUsers[Quản lý Người dùng]
+        AdminArea --> ManageVip[Quản lý & Phê duyệt VIP]
         AdminArea --> ManageTemplates[Quản lý Mẫu Cover Letter]
         AdminArea --> ManageModernTemplates[Quản lý Mẫu Modern CV]
     end
@@ -51,7 +52,7 @@ flowchart TD
 
 ---
 
-## 3. Chi tiết 3 Luồng Tạo Hồ sơ (Core Creation Flows)
+## 3. Chi tiết Các Luồng Chức Năng Chính
 
 ### 3.1. Luồng Tạo Đơn Xin Việc (Cover Letter)
 1. **Duyệt danh sách mẫu** (`/template/all`): Lọc theo phân loại, tìm kiếm, xem lượt xem (`views`) và đánh dấu yêu thích.
@@ -60,33 +61,43 @@ flowchart TD
    - Tích hợp **TinyMCE Rich Text Editor** cho phép định dạng font chữ, màu sắc, canh lề, chèn ngày tháng và chữ ký.
    - Nạp dữ liệu hồ sơ cá nhân từ API `/api/users/profile/me` để điền nhanh thông tin.
    - Hỗ trợ lưu nháp vào `localStorage`.
-4. **Xuất PDF** (`/api/pdf/generate`): Gửi HTML content lên backend, backend render PDF và trả về binary stream (`application/pdf`), frontend tải trực tiếp file về máy người dùng và chuyển hướng sang `/pdf-exported`.
+4. **Xuất PDF** (`/api/pdf/generate`): Nhận binary stream (`application/pdf`) tải trực tiếp về máy và chuyển hướng sang `/pdf-exported`.
 
 ### 3.2. Luồng Tạo CV Hiện Đại (Modern CV)
-1. **Duyệt danh sách Modern CV** (`/modern-cv/all`): Xem các mẫu CV được thiết kế đa cột, phối màu hiện đại.
-2. **Xem chi tiết mẫu** (`/modern-cv/:templateId`).
-3. **Soạn thảo linh hoạt** (`/modern-cv-editor`):
-   - Chỉnh sửa nội dung các khối: Kỹ năng (`skills`), Kinh nghiệm làm việc (`experiences`), Học vấn (`educations`), Chứng chỉ (`certificates`), Sở thích (`hobbies`).
-   - Khôi phục nội dung mẫu gốc (`handleResetToDefault`).
-4. **Xuất PDF** (`/api/modern-cv/pdf/generate`): Tải binary stream trực tiếp về máy.
+1. **Duyệt danh sách Modern CV** (`/modern-cv/all`): Xem các mẫu CV thiết kế đa cột hiện đại.
+2. **Soạn thảo linh hoạt** (`/modern-cv-editor`): Chỉnh sửa Kỹ năng, Kinh nghiệm, Học vấn, Chứng chỉ, Sở thích.
+3. **Xuất PDF** (`/api/modern-cv/pdf/generate`): Tải binary stream trực tiếp về máy và đồng bộ R2.
 
 ### 3.3. Luồng Tạo CV Thông Minh với AI (AI CV via Groq Cloud)
-1. **Nhập yêu cầu** (`/create-cv-with-ai`):
-   - Vị trí ứng tuyển (`position`).
-   - Chủ đề giao diện (`theme`: Light / Dark / Blue).
-   - Dữ liệu ứng viên từ hồ sơ người dùng (Skills, Experiences, Education).
-2. **Sinh nội dung với AI**:
-   - Gọi API `POST /api/ai/generate-cv`. Backend gọi Groq Cloud API với model **`openai/gpt-oss-120b`** (kết hợp tự động fallback sang `llama-3.3-70b-versatile`) để sinh cấu trúc CV chuẩn A4 và trả về HTML.
-3. **Hiệu chỉnh trong AI Editor** (`/cv-editor-ai`): Cho phép người dùng chỉnh sửa chi tiết câu chữ trong TinyMCE trước khi xuất bản.
-4. **Xuất PDF** (`/api/ai-cv/pdf/generate`): Tải binary stream trực tiếp về máy và lưu trữ vĩnh viễn trên Cloudflare R2.
+1. **Nhập yêu cầu** (`/create-cv-with-ai`): Vị trí ứng tuyển, bảng màu chủ đề, dữ liệu cá nhân.
+2. **Sinh nội dung AI**: Backend gọi Groq Cloud (`openai/gpt-oss-120b` + fallback `llama-3.3-70b-versatile`) với cơ chế xoay vòng nhiều API key tự động phân bổ tải.
+3. **Hiệu chỉnh trong AI Editor** (`/cv-editor-ai`): Tinh chỉnh chi tiết trước khi xuất bản.
+4. **Xuất PDF** (`/api/ai-cv/pdf/generate`): Khóa nút chống double-click (`isExporting`) và tải file trực tiếp.
 
-### 3.4. Cơ Chế Khóa Xuất PDF Chống Click Trùng Lặp (Anti-Spam Export Lock)
-- **Vấn đề**: Khi tải PDF thành công, trước đây có độ trễ 2 giây (`setTimeout`) trước khi chuyển trang, khiến nút bấm mở lại và người dùng click nhiều lần làm backend sinh nhiều bản ghi trùng lặp trên bảng `/pdf-exported`.
-- **Giải pháp Frontend**:
-  - Tích hợp state `isExporting` cho cả 3 trang soạn thảo (`EditorCvAI.jsx`, `Editor.jsx`, `ModernCVEditor.jsx`).
-  - Khi bắt đầu gọi API xuất PDF, `isExporting` lập tức đặt `true`. Nút bấm bị vô hiệu hóa (`disabled={loading || editorLoading || isExporting}`) và chuyển văn bản hiển thị thành `"Đang xuất PDF..."`.
-  - Giữ nguyên trạng thái khóa cho đến khi hàm `navigate("/pdf-exported")` hoàn tất.
-- **Giải pháp Backend**: `AICVPdfService.java` áp dụng Deduplication Guard 10s tái sử dụng bản ghi, triệt tiêu hoàn toàn bản ghi trùng lặp.
+### 3.4. Luồng Theo Dõi Ứng Tuyển & Tải Lên CV Cá Nhân (`FollowCV.jsx`)
+- **Tải lên file PDF từ máy**: Modal chọn file PDF (tối đa 10MB), nhập tên CV, công ty, ghi chú -> tải lên Cloudflare R2 qua API `POST /api/follow-cv/upload`.
+- **Hạn ngạch lưu trữ (Quota)**:
+  - Tài khoản thường: Tối đa 3 CV PDF.
+  - Tài khoản VIP: Tối đa 30 CV PDF.
+  - Thanh tiến trình Quota hiển thị trực quan số lượng đã dùng / tối đa.
+- **Nhận diện nguồn CV**:
+  - `📎 Đã tải lên` (Uploaded) cho CV người dùng tự tải từ máy.
+  - `🔗 Hệ thống` (System) cho CV xuất từ trình tạo của ứng dụng.
+- **Tối ưu Mobile/Tablet**:
+  - Các thẻ KPI co giãn linh hoạt theo màn hình.
+  - Thẻ CV trên mobile tách hàng: Badge trạng thái + nhãn nguồn ở trên, tên CV tự xuống dòng, cụm nút hành động "Xem PDF", "Cập nhật", "Xóa" dàn đều kích thước tiện cho ngón tay chạm.
+- **Modal Nâng cấp VIP**: Cho phép khách chọn gói Pro VIP / Enterprise và gửi yêu cầu đến Admin.
+
+### 3.5. Nhận Diện Thành Viên VIP Trên Toàn Hệ Thống
+- **Header Avatar Highlight**:
+  - Tài khoản VIP có viền phát sáng vàng kim hoàng gia `border: '2.5px solid #f59e0b'`, `boxShadow: '0 0 12px rgba(245, 158, 11, 0.55)'`.
+  - Huy hiệu vương miện nhỏ `VipCrownIcon` đính ở góc avatar.
+  - Chip gradient "Thành Viên VIP" trong menu thả xuống.
+- **Admin Phê Duyệt VIP**: Quản trị viên duyệt yêu cầu nâng quyền tại `/admin`, kích hoạt hạn mức 30 CV và huy hiệu VIP ngay lập tức.
+
+### 3.6. Tái Thiết Kế Mẫu Yêu Thích & Trang Chủ
+- **LoveTemplate**: Thanh filter tabs dạng **Segmented Pill** bo tròn mềm mại phong cách Apple / SaaS, không có đường gạch chân cắt ngang.
+- **Home**: Khối Social proof (5 sao ⭐⭐⭐⭐⭐ + chữ) căn giữa cân đối, nút CTA tự động mở rộng full-width trên thiết bị di động.
 
 ---
 
@@ -94,19 +105,11 @@ flowchart TD
 
 ### 4.1. Quản trị Phiên & State (AuthContext)
 - **State trung tâm**: `isAuthenticated`, `role`, `userId`, `email`, `avatarUrl`, `token`.
-- **JWT Storage**: Lưu tại `localStorage.getItem('token')`.
-- **Tự động hết hạn (Auto Logout)**: `AuthContext` giải mã `exp` trong payload JWT, tự động kích hoạt hẹn giờ đăng xuất khi token hết hạn hoặc khi token bị hỏng.
+- **Bảo toàn quyền & avatar**: Đăng nhập bằng Google/GitHub không ghi đè role `vip`/`admin` và không xóa avatar R2 tùy chỉnh của người dùng.
 
 ### 4.2. Bảo vệ Tuyến đường (Route Guard - PrivateRoute)
 ```jsx
-// Cấu hình linh hoạt kiểm tra đăng nhập và phân quyền role
 <Route path="/admin" element={<PrivateRoute allowedRoles={['admin']} />}>
   <Route index element={<AdminHomePage />} />
 </Route>
 ```
-- Người dùng chưa đăng nhập tự động được chuyển hướng về trang `/login`.
-- Người dùng không đủ quyền (`role !== 'admin'`) tự động bị chặn truy cập và chuyển hướng về trang chủ `/`.
-
-### 4.3. Theo dõi Ứng tuyển (Follow CV Tracking)
-- Quản lý danh sách các CV đã nộp: Tên vị trí, công ty ứng tuyển, ghi chú, trạng thái (`pending`, `interview`, `accepted`, `rejected`).
-- Liên kết trực tiếp xem lại file PDF đã xuất thông qua Cloudflare R2 public/presigned URL.
